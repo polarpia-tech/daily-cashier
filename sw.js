@@ -1,4 +1,4 @@
-const CACHE = "mini-cashier-cache-v4";
+const CACHE = "mini-cashier-cache-v6";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./sw.js"];
 
 self.addEventListener("install", (e) => {
@@ -17,10 +17,13 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   e.respondWith(
-    caches.match(e.request).then((cached) => cached || fetch(e.request).then((resp) => {
-      const copy = resp.clone();
-      caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(()=>{});
-      return resp;
-    }).catch(()=>cached))
+    caches.match(e.request).then((cached) => {
+      const networked = fetch(e.request).then((resp) => {
+        const copy = resp.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(()=>{});
+        return resp;
+      }).catch(()=>cached);
+      return cached || networked;
+    })
   );
 });
