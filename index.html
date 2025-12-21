@@ -2,7 +2,8 @@
 <html lang="el">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <!-- SAFE viewport (σταθερό σε Android) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Ημερήσιο Ταμείο</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#111111" />
@@ -12,30 +13,30 @@
       --bg:#0f1115; --card:#151a22; --muted:#a9b1c3; --text:#eef2ff;
       --accent:#4cc2ff; --ok:#42d392; --warn:#ffcd3c; --bad:#ff6b6b;
       --stroke: rgba(255,255,255,.10);
-      --stroke2: rgba(255,255,255,.14);
       --glass: rgba(255,255,255,.06);
-      --glass2: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.10);
     }
 
     *{ box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
-    html{ text-size-adjust:100%; -webkit-text-size-adjust:100%; }
-    html,body{ height:100%; }
+    html,body{ height:100%; width:100%; }
+    html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     body{
       margin:0;
       background:var(--bg);
       color:var(--text);
       -webkit-tap-highlight-color: transparent;
       font-size: 16px;
+      overflow-x: hidden;          /* ✅ κρίσιμο: σταματάει το “φεύγει αριστερά/δεξιά” */
     }
 
-    /* Layout wrapper (nice on tablet/desktop, still full on mobile) */
+    /* Wrapper (ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ: width:100% για να μη δημιουργεί overflow) */
     .wrap{
+      width: 100%;
       max-width: 980px;
       margin: 0 auto;
       padding: 0 12px;
     }
 
-    /* Header */
     header{
       position: sticky; top: 0; z-index: 10;
       background: linear-gradient(180deg, rgba(15,17,21,1), rgba(15,17,21,.92));
@@ -46,15 +47,13 @@
 
     .sub{
       margin-top:10px;
-      display: grid;
+      display:grid;
       grid-template-columns: 1fr;
-      gap: 10px;
-      color: var(--muted);
+      gap:10px;
+      color:var(--muted);
       font-size: 13px;
     }
-    @media (min-width: 720px){
-      .sub{ grid-template-columns: 1fr 1fr; }
-    }
+    @media (min-width: 720px){ .sub{ grid-template-columns: 1fr 1fr; } }
 
     .pill{
       padding: 10px 12px;
@@ -62,15 +61,15 @@
       border: 1px solid var(--glass2);
       border-radius: 16px;
       display:flex;
-      gap: 10px;
+      gap:10px;
       align-items:center;
       flex-wrap: wrap;
       min-height: 44px;
+      overflow: hidden; /* ✅ αποφεύγει “σπρώξιμο” από μεγάλα κείμενα */
     }
-
     .pill b{ color: var(--text); }
 
-    /* Controls in header */
+    /* Inputs */
     select, input{
       padding: 10px 10px;
       border-radius: 14px;
@@ -79,7 +78,8 @@
       color: var(--text);
       outline: none;
       min-height: 44px;
-      font-size: 16px; /* avoids weird zoom behaviour */
+      font-size: 16px;
+      max-width: 100%;
     }
     select{ padding-right: 30px; }
 
@@ -99,6 +99,8 @@
       justify-content:center;
       gap:8px;
       transition: transform .06s ease;
+      max-width: 100%;
+      white-space: nowrap;
     }
     .btn:active{ transform: translateY(1px); }
     .btn.primary{ border-color: rgba(76,194,255,.55); background: rgba(76,194,255,.12); }
@@ -113,12 +115,14 @@
       padding-bottom: calc(170px + env(safe-area-inset-bottom, 0px));
     }
     .grid{ display:grid; gap: 12px; }
+
     .card{
       background: var(--card);
       border: 1px solid rgba(255,255,255,.08);
       border-radius: 18px;
       padding: 12px;
       box-shadow: 0 10px 28px rgba(0,0,0,.28);
+      overflow: hidden; /* ✅ ασφάλεια για overflow */
     }
 
     .row{
@@ -159,9 +163,12 @@
       border: 1px solid var(--stroke);
       background: rgba(255,255,255,.05);
       cursor:pointer;
+      min-width: 0;
     }
+    .prod > div:first-child{ min-width:0; }
+    .prod .title{ overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
     .prod small{ color: var(--muted); display:block; margin-top:2px; }
-    .price{ font-weight: 900; }
+    .price{ font-weight: 900; white-space: nowrap; }
 
     /* Modal */
     .modalWrap{
@@ -180,6 +187,7 @@
       border-radius: 20px;
       padding: 12px;
       box-shadow: 0 18px 55px rgba(0,0,0,.55);
+      overflow: hidden;
     }
     .modal h2{ margin:0 0 6px; font-size: 16px; }
     .qty{ display:flex; gap:10px; align-items:center; }
@@ -196,7 +204,7 @@
     }
     input[type="checkbox"]{ width: 18px; height: 18px; }
 
-    /* Footer bar - 2x2 on mobile */
+    /* Footer bar */
     .footerBar{
       position:fixed;
       left:0; right:0; bottom:0;
@@ -205,16 +213,13 @@
       border-top: 1px solid rgba(255,255,255,.06);
       z-index: 20;
     }
-
     .footerGrid{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
     @media (min-width: 760px){
-      .footerGrid{
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-      }
+      .footerGrid{ grid-template-columns: 1fr 1fr 1fr 1fr; }
     }
     .tiny{ font-size: 12px; color: var(--muted); margin-top: 8px; }
 
@@ -369,299 +374,270 @@
 
 <script>
 (function(){
-  // PWA register
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').catch(function(){});
     });
   }
 
-  // Helpers
   function euro(n){ return n.toFixed(2).replace(".", ",") + " €"; }
   function dayKey(d){
-    var y = d.getFullYear();
-    var m = String(d.getMonth()+1).padStart(2,"0");
-    var da = String(d.getDate()).padStart(2,"0");
-    return y + "-" + m + "-" + da;
-  }
-  var toastEl = document.getElementById("toast");
-  function toast(msg){
-    toastEl.textContent = msg;
-    toastEl.style.display = "block";
-    clearTimeout(toastEl._t);
-    toastEl._t = setTimeout(function(){ toastEl.style.display = "none"; }, 1500);
+    var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), da=String(d.getDate()).padStart(2,"0");
+    return y+"-"+m+"-"+da;
   }
 
-  // Menu
-  var MENU = [
-    { cat: "☕ ΚΑΦΕΔΕΣ – ΖΕΣΤΟΙ", items: [
-      ["Espresso μονός", 2.60], ["Espresso διπλός", 3.20], ["Espresso macchiato", 2.90],
-      ["Americano", 3.20], ["Cappuccino", 3.60], ["Cappuccino διπλός", 4.20],
-      ["Latte macchiato", 4.20], ["Flat white", 4.40], ["Mocha", 4.50], ["Καφές φίλτρου", 3.00]
+  var toastEl=document.getElementById("toast");
+  function toast(msg){
+    toastEl.textContent=msg;
+    toastEl.style.display="block";
+    clearTimeout(toastEl._t);
+    toastEl._t=setTimeout(function(){ toastEl.style.display="none"; }, 1500);
+  }
+
+  var MENU=[
+    { cat:"☕ ΚΑΦΕΔΕΣ – ΖΕΣΤΟΙ", items:[
+      ["Espresso μονός",2.60],["Espresso διπλός",3.20],["Espresso macchiato",2.90],
+      ["Americano",3.20],["Cappuccino",3.60],["Cappuccino διπλός",4.20],
+      ["Latte macchiato",4.20],["Flat white",4.40],["Mocha",4.50],["Καφές φίλτρου",3.00]
     ]},
-    { cat: "❄️ ΚΑΦΕΔΕΣ – ΚΡΥΟΙ", items: [
-      ["Freddo espresso", 3.80], ["Freddo cappuccino", 4.20], ["Iced latte", 4.50], ["Cold brew", 4.80], ["Frappe", 3.50]
+    { cat:"❄️ ΚΑΦΕΔΕΣ – ΚΡΥΟΙ", items:[
+      ["Freddo espresso",3.80],["Freddo cappuccino",4.20],["Iced latte",4.50],["Cold brew",4.80],["Frappe",3.50]
     ]},
-    { cat: "🫖 ΤΣΑΪ – ΖΕΣΤΑ ΡΟΦΗΜΑΤΑ", items: [
-      ["Τσάι (μαύρο, πράσινο, βότανα)", 3.20], ["Τσάι φρούτων", 3.50], ["Chai latte", 4.30]
+    { cat:"🫖 ΤΣΑΪ – ΖΕΣΤΑ ΡΟΦΗΜΑΤΑ", items:[
+      ["Τσάι (μαύρο, πράσινο, βότανα)",3.20],["Τσάι φρούτων",3.50],["Chai latte",4.30]
     ]},
-    { cat: "🍫 ΣΟΚΟΛΑΤΕΣ – ΓΑΛΑΚΤΕΡΑ", items: [
-      ["Ζεστή σοκολάτα", 4.20], ["Κρύα σοκολάτα", 4.50], ["Λευκή σοκολάτα", 4.50], ["Κακάο", 4.00]
+    { cat:"🍫 ΣΟΚΟΛΑΤΕΣ – ΓΑΛΑΚΤΕΡΑ", items:[
+      ["Ζεστή σοκολάτα",4.20],["Κρύα σοκολάτα",4.50],["Λευκή σοκολάτα",4.50],["Κακάο",4.00]
     ]},
-    { cat: "🥤 ΑΝΑΨΥΚΤΙΚΑ – ΝΕΡΑ", items: [
-      ["Coca-Cola / Zero / Fanta (0,33l)", 3.40], ["Ice Tea", 3.60], ["Σόδα / Τόνικ", 3.20],
-      ["Μεταλλικό νερό (0,33l)", 2.80], ["Μεταλλικό νερό (0,75l)", 5.50]
+    { cat:"🥤 ΑΝΑΨΥΚΤΙΚΑ – ΝΕΡΑ", items:[
+      ["Coca-Cola / Zero / Fanta (0,33l)",3.40],["Ice Tea",3.60],["Σόδα / Τόνικ",3.20],
+      ["Μεταλλικό νερό (0,33l)",2.80],["Μεταλλικό νερό (0,75l)",5.50]
     ]},
-    { cat: "🍊 ΧΥΜΟΙ – SMOOTHIES", items: [
-      ["Φυσικός χυμός πορτοκάλι", 4.50], ["Χυμός ανάμεικτος", 4.80], ["Smoothie φρούτων", 5.80], ["Milkshake", 5.50]
+    { cat:"🍊 ΧΥΜΟΙ – SMOOTHIES", items:[
+      ["Φυσικός χυμός πορτοκάλι",4.50],["Χυμός ανάμεικτος",4.80],["Smoothie φρούτων",5.80],["Milkshake",5.50]
     ]},
-    { cat: "🥐 ΣΝΑΚ – ΓΛΥΚΑ", items: [
-      ["Κρουασάν σκέτο", 2.80], ["Κρουασάν σοκολάτα", 3.20], ["Μάφιν", 3.50], ["Κέικ (κομμάτι)", 4.20],
-      ["Cheesecake", 4.80], ["Μπισκότα", 2.50], ["Τοστ ζαμπόν-τυρί", 4.50], ["Τοστ vegetarian", 4.80]
+    { cat:"🥐 ΣΝΑΚ – ΓΛΥΚΑ", items:[
+      ["Κρουασάν σκέτο",2.80],["Κρουασάν σοκολάτα",3.20],["Μάφιν",3.50],["Κέικ (κομμάτι)",4.20],
+      ["Cheesecake",4.80],["Μπισκότα",2.50],["Τοστ ζαμπόν-τυρί",4.50],["Τοστ vegetarian",4.80]
     ]},
-    { cat: "🍺 ΜΠΥΡΕΣ", items: [
-      ["Μπύρα βαρελίσια (0,5l)", 5.20], ["Μπύρα εμφιαλωμένη (0,33l)", 4.20], ["Weissbier (0,5l)", 5.50], ["Μπύρα χωρίς αλκοόλ", 4.20]
+    { cat:"🍺 ΜΠΥΡΕΣ", items:[
+      ["Μπύρα βαρελίσια (0,5l)",5.20],["Μπύρα εμφιαλωμένη (0,33l)",4.20],["Weissbier (0,5l)",5.50],["Μπύρα χωρίς αλκοόλ",4.20]
     ]},
-    { cat: "🍷 ΚΡΑΣΙΑ", items: [
-      ["Κρασί ποτήρι", 5.50], ["Κρασί καράφα (0,5l)", 12.00], ["Φιάλη κρασί (22€)", 22.00], ["Φιάλη κρασί (28€)", 28.00], ["Prosecco ποτήρι", 6.50]
+    { cat:"🍷 ΚΡΑΣΙΑ", items:[
+      ["Κρασί ποτήρι",5.50],["Κρασί καράφα (0,5l)",12.00],["Φιάλη κρασί (22€)",22.00],["Φιάλη κρασί (28€)",28.00],["Prosecco ποτήρι",6.50]
     ]},
-    { cat: "🥃 ΠΟΤΑ (4cl)", items: [
-      ["Ουίσκι standard", 8.50], ["Premium ουίσκι", 10.50], ["Βότκα", 8.00], ["Ρούμι", 8.50],
-      ["Τζιν", 8.50], ["Ούζο / Τσίπουρο", 7.50], ["Λικέρ", 7.50]
+    { cat:"🥃 ΠΟΤΑ (4cl)", items:[
+      ["Ουίσκι standard",8.50],["Premium ουίσκι",10.50],["Βότκα",8.00],["Ρούμι",8.50],
+      ["Τζιν",8.50],["Ούζο / Τσίπουρο",7.50],["Λικέρ",7.50]
     ]},
-    { cat: "🍸 ΚΟΚΤΕΪΛ", items: [
-      ["Mojito", 9.50], ["Caipirinha", 9.50], ["Margarita", 10.00], ["Aperol Spritz", 8.50], ["Gin Tonic", 9.00], ["Negroni", 10.50]
+    { cat:"🍸 ΚΟΚΤΕΪΛ", items:[
+      ["Mojito",9.50],["Caipirinha",9.50],["Margarita",10.00],["Aperol Spritz",8.50],["Gin Tonic",9.00],["Negroni",10.50]
     ]}
   ];
 
-  var EXTRAS = { decaf:{name:"Decaf",price:0.30}, plant:{name:"Φυτικό γάλα",price:0.50} };
+  var EXTRAS={ decaf:{name:"Decaf",price:0.30}, plant:{name:"Φυτικό γάλα",price:0.50} };
 
-  // Storage
-  var LS_KEY = "mini_cashier_db_v1";
-  var LS_USERS = "mini_cashier_users_v1";
-  var LS_USER = "mini_cashier_user_v1";
+  var LS_KEY="mini_cashier_db_v1";
+  var LS_USERS="mini_cashier_users_v1";
+  var LS_USER="mini_cashier_user_v1";
 
-  function loadDB(){
-    try { return JSON.parse(localStorage.getItem(LS_KEY)) || { days:{}, lastId:0 }; }
-    catch(e){ return { days:{}, lastId:0 }; }
-  }
+  function loadDB(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {days:{},lastId:0}; }catch(e){ return {days:{},lastId:0}; } }
   function saveDB(db){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
 
   function loadUsers(){
-    var fallback = [{id:"pavlos",name:"Παύλος"},{id:"tablet",name:"Tablet (έκτακτη)"}];
+    var fallback=[{id:"pavlos",name:"Παύλος"},{id:"tablet",name:"Tablet (έκτακτη)"}];
     try{
-      var raw = localStorage.getItem(LS_USERS);
+      var raw=localStorage.getItem(LS_USERS);
       if(!raw) return fallback;
-      var arr = JSON.parse(raw);
-      if(!Array.isArray(arr) || !arr.length) return fallback;
+      var arr=JSON.parse(raw);
+      if(!Array.isArray(arr)||!arr.length) return fallback;
       return arr;
     }catch(e){ return fallback; }
   }
   function saveUsers(arr){ localStorage.setItem(LS_USERS, JSON.stringify(arr)); }
-
   function normalizeId(name){
-    var s = name.trim().toLowerCase().replace(/\s+/g,"_");
-    s = s.replace(/[^a-z0-9\u0370-\u03ff_-]/g,"");
+    var s=name.trim().toLowerCase().replace(/\s+/g,"_");
+    s=s.replace(/[^a-z0-9\u0370-\u03ff_-]/g,"");
     return s;
   }
 
-  var db = loadDB();
-  var BASE_TODAY = dayKey(new Date());
+  var db=loadDB();
+  var BASE_TODAY=dayKey(new Date());
 
-  // User UI
-  var userSel = document.getElementById("userSel");
-  var userAdd = document.getElementById("userAdd");
-  var userRename = document.getElementById("userRename");
-  var userDelete = document.getElementById("userDelete");
-  var USERS = loadUsers();
+  var userSel=document.getElementById("userSel");
+  var userAdd=document.getElementById("userAdd");
+  var userRename=document.getElementById("userRename");
+  var userDelete=document.getElementById("userDelete");
+  var USERS=loadUsers();
 
   function renderUserSelect(){
-    var selected = localStorage.getItem(LS_USER) || (USERS[0] && USERS[0].id);
-    userSel.innerHTML = "";
+    var selected=localStorage.getItem(LS_USER) || (USERS[0] && USERS[0].id);
+    userSel.innerHTML="";
     USERS.forEach(function(u){
-      var opt = document.createElement("option");
-      opt.value = u.id;
-      opt.textContent = u.name;
+      var opt=document.createElement("option");
+      opt.value=u.id; opt.textContent=u.name;
       userSel.appendChild(opt);
     });
-    if(!USERS.some(function(u){ return u.id === selected; })) selected = USERS[0].id;
-    userSel.value = selected;
+    if(!USERS.some(function(u){return u.id===selected;})) selected=USERS[0].id;
+    userSel.value=selected;
     localStorage.setItem(LS_USER, selected);
   }
 
   function currentUser(){
-    var id = userSel.value;
-    var u = USERS.find(function(x){ return x.id === id; });
-    return u || {id:id, name:id};
+    var id=userSel.value;
+    var u=USERS.find(function(x){return x.id===id;});
+    return u || {id:id,name:id};
   }
 
-  var TODAY = "";
-  function currentDayKey(){
-    return BASE_TODAY + "__" + currentUser().id;
-  }
+  var TODAY="";
+  function currentDayKey(){ return BASE_TODAY + "__" + currentUser().id; }
 
   function ensureDay(){
-    TODAY = currentDayKey();
-    if(!db.days[TODAY]) db.days[TODAY] = { entries:[] };
+    TODAY=currentDayKey();
+    if(!db.days[TODAY]) db.days[TODAY]={entries:[]};
     saveDB(db);
-    document.getElementById("dayKey").textContent = BASE_TODAY;
-    document.getElementById("todayPill").textContent = "Σήμερα: " + BASE_TODAY.split("-").reverse().join("/");
+    document.getElementById("dayKey").textContent=BASE_TODAY;
+    document.getElementById("todayPill").textContent="Σήμερα: " + BASE_TODAY.split("-").reverse().join("/");
   }
 
   userSel.addEventListener("change", function(){
     localStorage.setItem(LS_USER, userSel.value);
-    ensureDay();
-    renderAll();
+    ensureDay(); renderAll();
   });
 
   userAdd.addEventListener("click", function(){
-    var name = prompt("Όνομα υπαλλήλου/χρήστη:");
-    if(!name || !name.trim()) return;
-    var id = normalizeId(name);
+    var name=prompt("Όνομα υπαλλήλου/χρήστη:");
+    if(!name||!name.trim()) return;
+    var id=normalizeId(name);
     if(!id){ alert("Δώσε έγκυρο όνομα."); return; }
-    var base = id, n = 2;
-    while(USERS.some(function(u){ return u.id === id; })) id = base + "_" + (n++);
-    USERS.push({id:id, name:name.trim()});
+    var base=id,n=2;
+    while(USERS.some(function(u){return u.id===id;})) id=base+"_"+(n++);
+    USERS.push({id:id,name:name.trim()});
     saveUsers(USERS);
-    renderUserSelect();
-    ensureDay();
-    renderAll();
+    renderUserSelect(); ensureDay(); renderAll();
   });
 
   userRename.addEventListener("click", function(){
-    var cur = currentUser();
-    var name = prompt("Νέο όνομα:", cur.name);
-    if(!name || !name.trim()) return;
-    var idx = USERS.findIndex(function(u){ return u.id === cur.id; });
-    if(idx < 0) return;
-    USERS[idx].name = name.trim();
+    var cur=currentUser();
+    var name=prompt("Νέο όνομα:", cur.name);
+    if(!name||!name.trim()) return;
+    var idx=USERS.findIndex(function(u){return u.id===cur.id;});
+    if(idx<0) return;
+    USERS[idx].name=name.trim();
     saveUsers(USERS);
-    renderUserSelect();
-    ensureDay();
-    renderAll();
+    renderUserSelect(); ensureDay(); renderAll();
   });
 
   userDelete.addEventListener("click", function(){
-    var cur = currentUser();
-    if(USERS.length <= 1){ alert("Πρέπει να υπάρχει τουλάχιστον ένας χρήστης."); return; }
+    var cur=currentUser();
+    if(USERS.length<=1){ alert("Πρέπει να υπάρχει τουλάχιστον ένας χρήστης."); return; }
     if(!confirm('Να διαγράψω τον χρήστη "'+cur.name+'"; (Δεν σβήνει παλιές εγγραφές)')) return;
-    USERS = USERS.filter(function(u){ return u.id !== cur.id; });
+    USERS=USERS.filter(function(u){return u.id!==cur.id;});
     saveUsers(USERS);
-    renderUserSelect();
-    ensureDay();
-    renderAll();
+    renderUserSelect(); ensureDay(); renderAll();
   });
 
-  // Category/Product UI
-  var catsEl = document.getElementById("cats");
-  var productsEl = document.getElementById("products");
-  var catTitle = document.getElementById("catTitle");
-  var searchEl = document.getElementById("search");
-  var activeCat = MENU[0].cat;
+  var catsEl=document.getElementById("cats");
+  var productsEl=document.getElementById("products");
+  var catTitle=document.getElementById("catTitle");
+  var searchEl=document.getElementById("search");
+  var activeCat=MENU[0].cat;
 
   function buildCats(){
-    catsEl.innerHTML = "";
+    catsEl.innerHTML="";
     MENU.forEach(function(section){
-      var b = document.createElement("button");
-      b.className = "btn cat" + (section.cat === activeCat ? " active" : "");
-      b.textContent = section.cat;
-      b.onclick = function(){
-        activeCat = section.cat;
-        buildCats();
-        buildProducts();
-      };
+      var b=document.createElement("button");
+      b.className="btn cat"+(section.cat===activeCat?" active":"");
+      b.textContent=section.cat;
+      b.onclick=function(){ activeCat=section.cat; buildCats(); buildProducts(); };
       catsEl.appendChild(b);
     });
   }
 
   function buildProducts(){
-    var q = (searchEl.value || "").trim().toLowerCase();
-    productsEl.innerHTML = "";
-    var section = MENU.find(function(s){ return s.cat === activeCat; });
-    catTitle.textContent = activeCat;
+    var q=(searchEl.value||"").trim().toLowerCase();
+    productsEl.innerHTML="";
+    var section=MENU.find(function(s){return s.cat===activeCat;});
+    catTitle.textContent=activeCat;
 
-    var items = section.items.map(function(it){ return {name:it[0], price:it[1], cat:section.cat}; });
-    if(q) items = items.filter(function(x){ return x.name.toLowerCase().indexOf(q) >= 0; });
+    var items=section.items.map(function(it){return {name:it[0],price:it[1],cat:section.cat};});
+    if(q) items=items.filter(function(x){return x.name.toLowerCase().indexOf(q)>=0;});
 
     items.forEach(function(item){
-      var div = document.createElement("div");
-      div.className = "prod";
-      div.innerHTML =
-        '<div><div class="title">'+item.name+'</div><small>'+item.cat+'</small></div>' +
+      var div=document.createElement("div");
+      div.className="prod";
+      div.innerHTML=
+        '<div><div class="title">'+item.name+'</div><small>'+item.cat+'</small></div>'+
         '<div class="price">'+euro(item.price)+'</div>';
-      div.onclick = function(){ openModal(item); };
+      div.onclick=function(){ openModal(item); };
       productsEl.appendChild(div);
     });
   }
   searchEl.addEventListener("input", buildProducts);
 
-  // Modal logic
-  var modalWrap = document.getElementById("modalWrap");
-  var mTitle = document.getElementById("mTitle");
-  var mPrice = document.getElementById("mPrice");
-  var mFinal = document.getElementById("mFinal");
-  var qtyValEl = document.getElementById("qtyVal");
-  var xDecaf = document.getElementById("xDecaf");
-  var xPlant = document.getElementById("xPlant");
-  var currentItem = null;
-  var qty = 1;
+  var modalWrap=document.getElementById("modalWrap");
+  var mTitle=document.getElementById("mTitle");
+  var mPrice=document.getElementById("mPrice");
+  var mFinal=document.getElementById("mFinal");
+  var qtyValEl=document.getElementById("qtyVal");
+  var xDecaf=document.getElementById("xDecaf");
+  var xPlant=document.getElementById("xPlant");
+  var currentItem=null;
+  var qty=1;
 
   function calcFinal(base){
-    var extra = 0;
-    if(xDecaf.checked) extra += EXTRAS.decaf.price;
-    if(xPlant.checked) extra += EXTRAS.plant.price;
-    return (base + extra) * qty;
+    var extra=0;
+    if(xDecaf.checked) extra+=EXTRAS.decaf.price;
+    if(xPlant.checked) extra+=EXTRAS.plant.price;
+    return (base+extra)*qty;
   }
 
   function openModal(item){
-    currentItem = item;
-    qty = 1;
-    xDecaf.checked = false;
-    xPlant.checked = false;
+    currentItem=item;
+    qty=1;
+    xDecaf.checked=false;
+    xPlant.checked=false;
 
-    mTitle.textContent = item.name;
-    mPrice.textContent = "Τιμή: " + euro(item.price) + " (βάση)";
-    qtyValEl.textContent = String(qty);
-    mFinal.textContent = euro(calcFinal(item.price));
+    mTitle.textContent=item.name;
+    mPrice.textContent="Τιμή: "+euro(item.price)+" (βάση)";
+    qtyValEl.textContent=String(qty);
+    mFinal.textContent=euro(calcFinal(item.price));
 
-    modalWrap.style.display = "flex";
+    modalWrap.style.display="flex";
   }
 
-  function closeModal(){
-    modalWrap.style.display = "none";
-    currentItem = null;
-  }
+  function closeModal(){ modalWrap.style.display="none"; currentItem=null; }
 
-  document.getElementById("mClose").onclick = closeModal;
-  modalWrap.addEventListener("click", function(e){ if(e.target === modalWrap) closeModal(); });
+  document.getElementById("mClose").onclick=closeModal;
+  modalWrap.addEventListener("click", function(e){ if(e.target===modalWrap) closeModal(); });
 
-  document.getElementById("qtyMinus").onclick = function(){
-    qty = Math.max(1, qty - 1);
-    qtyValEl.textContent = String(qty);
-    mFinal.textContent = euro(calcFinal(currentItem.price));
+  document.getElementById("qtyMinus").onclick=function(){
+    qty=Math.max(1, qty-1);
+    qtyValEl.textContent=String(qty);
+    mFinal.textContent=euro(calcFinal(currentItem.price));
   };
-  document.getElementById("qtyPlus").onclick = function(){
-    qty = qty + 1;
-    qtyValEl.textContent = String(qty);
-    mFinal.textContent = euro(calcFinal(currentItem.price));
+  document.getElementById("qtyPlus").onclick=function(){
+    qty=qty+1;
+    qtyValEl.textContent=String(qty);
+    mFinal.textContent=euro(calcFinal(currentItem.price));
   };
-  xDecaf.onchange = function(){ if(currentItem) mFinal.textContent = euro(calcFinal(currentItem.price)); };
-  xPlant.onchange = function(){ if(currentItem) mFinal.textContent = euro(calcFinal(currentItem.price)); };
+  xDecaf.onchange=function(){ if(currentItem) mFinal.textContent=euro(calcFinal(currentItem.price)); };
+  xPlant.onchange=function(){ if(currentItem) mFinal.textContent=euro(calcFinal(currentItem.price)); };
 
   function addEntry(method){
     ensureDay();
-    var now = new Date();
-    var time = now.toTimeString().slice(0,5);
+    var now=new Date();
+    var time=now.toTimeString().slice(0,5);
 
-    var extras = [];
-    var extrasTotal = 0;
-    if(xDecaf.checked){ extras.push(EXTRAS.decaf.name); extrasTotal += EXTRAS.decaf.price; }
-    if(xPlant.checked){ extras.push(EXTRAS.plant.name); extrasTotal += EXTRAS.plant.price; }
+    var extras=[];
+    var extrasTotal=0;
+    if(xDecaf.checked){ extras.push(EXTRAS.decaf.name); extrasTotal+=EXTRAS.decaf.price; }
+    if(xPlant.checked){ extras.push(EXTRAS.plant.name); extrasTotal+=EXTRAS.plant.price; }
 
-    var unitFinal = currentItem.price + extrasTotal;
-    var total = unitFinal * qty;
+    var unitFinal=currentItem.price+extrasTotal;
+    var total=unitFinal*qty;
 
-    var entry = {
+    var entry={
       id: ++db.lastId,
       date: BASE_TODAY,
       time: time,
@@ -671,134 +647,127 @@
       extras: extras,
       unit: unitFinal,
       total: total,
-      method: method // cash | card | gift
+      method: method
     };
 
     db.days[TODAY].entries.push(entry);
     saveDB(db);
-    toast(method === "gift" ? "Καταχωρήθηκε ως κερασμένο" : "Καταχωρήθηκε");
+    toast(method==="gift" ? "Καταχωρήθηκε ως κερασμένο" : "Καταχωρήθηκε");
     closeModal();
     renderAll();
   }
 
-  document.getElementById("payCash").onclick = function(){ addEntry("cash"); };
-  document.getElementById("payCard").onclick = function(){ addEntry("card"); };
-  document.getElementById("payGift").onclick = function(){ addEntry("gift"); };
+  document.getElementById("payCash").onclick=function(){ addEntry("cash"); };
+  document.getElementById("payCard").onclick=function(){ addEntry("card"); };
+  document.getElementById("payGift").onclick=function(){ addEntry("gift"); };
 
-  // Summary
-  var sumTotalEl = document.getElementById("sumTotal");
-  var sumCashEl = document.getElementById("sumCash");
-  var sumCardEl = document.getElementById("sumCard");
-  var sumGiftEl = document.getElementById("sumGift");
-  var lastListEl = document.getElementById("lastList");
+  var sumTotalEl=document.getElementById("sumTotal");
+  var sumCashEl=document.getElementById("sumCash");
+  var sumCardEl=document.getElementById("sumCard");
+  var sumGiftEl=document.getElementById("sumGift");
+  var lastListEl=document.getElementById("lastList");
 
   function computeDay(){
     ensureDay();
-    var entries = (db.days[TODAY] && db.days[TODAY].entries) ? db.days[TODAY].entries : [];
+    var entries=(db.days[TODAY] && db.days[TODAY].entries) ? db.days[TODAY].entries : [];
     var cash=0, card=0, gift=0;
     entries.forEach(function(e){
-      if(e.method === "cash") cash += e.total;
-      else if(e.method === "card") card += e.total;
-      else if(e.method === "gift") gift += e.total;
+      if(e.method==="cash") cash+=e.total;
+      else if(e.method==="card") card+=e.total;
+      else if(e.method==="gift") gift+=e.total;
     });
-    return { entries:entries, cash:cash, card:card, gift:gift, total:(cash+card) };
+    return {entries:entries, cash:cash, card:card, gift:gift, total:(cash+card)};
   }
 
   function renderSummary(){
-    var c = computeDay();
-    sumTotalEl.textContent = euro(c.total);
-    sumCashEl.textContent = euro(c.cash);
-    sumCardEl.textContent = euro(c.card);
-    sumGiftEl.textContent = euro(c.gift);
+    var c=computeDay();
+    sumTotalEl.textContent=euro(c.total);
+    sumCashEl.textContent=euro(c.cash);
+    sumCardEl.textContent=euro(c.card);
+    sumGiftEl.textContent=euro(c.gift);
 
-    lastListEl.innerHTML = "";
-    var last = c.entries.slice(-6).reverse();
+    lastListEl.innerHTML="";
+    var last=c.entries.slice(-6).reverse();
     if(!last.length){
-      lastListEl.innerHTML = '<div class="muted">Δεν υπάρχει καταχώρηση ακόμα.</div>';
+      lastListEl.innerHTML='<div class="muted">Δεν υπάρχει καταχώρηση ακόμα.</div>';
       return;
     }
     last.forEach(function(e){
-      var m = e.method === "cash" ? "💶" : (e.method === "card" ? "💳" : "🎁");
-      var ex = (e.extras && e.extras.length) ? (" +"+e.extras.join(", ")) : "";
-      var line = document.createElement("div");
-      line.textContent = m + " " + e.time + " — " + e.qty + "x " + e.item + ex + " = " + euro(e.total);
+      var m=e.method==="cash"?"💶":(e.method==="card"?"💳":"🎁");
+      var ex=(e.extras && e.extras.length) ? (" +"+e.extras.join(", ")) : "";
+      var line=document.createElement("div");
+      line.textContent=m+" "+e.time+" — "+e.qty+"x "+e.item+ex+" = "+euro(e.total);
       lastListEl.appendChild(line);
     });
   }
 
-  // Undo / Repeat
-  document.getElementById("btnUndo").onclick = function(){
+  document.getElementById("btnUndo").onclick=function(){
     ensureDay();
-    var entries = db.days[TODAY].entries;
+    var entries=db.days[TODAY].entries;
     if(!entries.length){ toast("Τίποτα για αναίρεση"); return; }
-    var removed = entries.pop();
+    var removed=entries.pop();
     saveDB(db);
-    toast("Αναιρέθηκε: " + removed.item);
+    toast("Αναιρέθηκε: "+removed.item);
     renderAll();
   };
 
-  document.getElementById("btnRepeat").onclick = function(){
+  document.getElementById("btnRepeat").onclick=function(){
     ensureDay();
-    var entries = db.days[TODAY].entries;
+    var entries=db.days[TODAY].entries;
     if(!entries.length){ toast("Δεν υπάρχει προηγούμενη κίνηση"); return; }
-    var last = entries[entries.length-1];
-    var now = new Date();
-    var time = now.toTimeString().slice(0,5);
-    var entry = Object.assign({}, last, { id: ++db.lastId, time: time });
+    var last=entries[entries.length-1];
+    var now=new Date();
+    var time=now.toTimeString().slice(0,5);
+    var entry=Object.assign({}, last, {id: ++db.lastId, time: time});
     entries.push(entry);
     saveDB(db);
-    toast("Επαναλήφθηκε: " + entry.item);
+    toast("Επαναλήφθηκε: "+entry.item);
     renderAll();
   };
 
-  // CSV export
   function escapeCSV(s){
-    s = String(s == null ? "" : s);
-    if (/[,"\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    s=String(s==null?"":s);
+    if(/[,"\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
     return s;
   }
 
   function downloadCSV(entries, filename){
-    var uname = currentUser().name;
-    var header = ["user","date","time","category","item","qty","extras","unit","total","method"];
-    var lines = [header.join(",")];
+    var uname=currentUser().name;
+    var header=["user","date","time","category","item","qty","extras","unit","total","method"];
+    var lines=[header.join(",")];
     entries.forEach(function(e){
       lines.push([
-        uname, e.date, e.time, e.category, e.item, e.qty,
-        (e.extras||[]).join(" | "),
-        e.unit.toFixed(2),
-        e.total.toFixed(2),
-        e.method
+        uname,e.date,e.time,e.category,e.item,e.qty,(e.extras||[]).join(" | "),
+        e.unit.toFixed(2), e.total.toFixed(2), e.method
       ].map(escapeCSV).join(","));
     });
-    var blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
+    var blob=new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=filename;
     a.click();
     URL.revokeObjectURL(a.href);
     toast("Κατέβηκε CSV");
   }
 
-  document.getElementById("btnCSV").onclick = function(){
-    var c = computeDay();
+  document.getElementById("btnCSV").onclick=function(){
+    var c=computeDay();
     if(!c.entries.length){ toast("Δεν υπάρχουν καταχωρήσεις"); return; }
-    var uname = normalizeId(currentUser().name);
-    downloadCSV(c.entries, "taMeio_" + BASE_TODAY + "_" + uname + ".csv");
+    var uname=normalizeId(currentUser().name);
+    downloadCSV(c.entries, "taMeio_"+BASE_TODAY+"_"+uname+".csv");
   };
 
-  // Reset day / wipe all
-  document.getElementById("btnResetDay").onclick = function(){
+  document.getElementById("btnResetDay").onclick=function(){
     ensureDay();
-    var uname = currentUser().name;
+    var uname=currentUser().name;
     if(!confirm('Θες σίγουρα να καθαρίσεις ΜΟΝΟ τη σημερινή ημέρα για τον χρήστη "'+uname+'";')) return;
-    db.days[TODAY] = { entries:[] };
+    db.days[TODAY]={entries:[]};
     saveDB(db);
     toast("Καθαρίστηκε η ημέρα");
     renderAll();
   };
 
-  document.getElementById("btnWipeAll").onclick = function(){
+  document.getElementById("btnWipeAll").onclick=function(){
     if(!confirm("ΠΡΟΣΟΧΗ: Θα διαγραφούν ΟΛΑ τα δεδομένα από τη συσκευή. Συνέχεια;")) return;
     localStorage.removeItem(LS_KEY);
     localStorage.removeItem(LS_USERS);
@@ -806,52 +775,46 @@
     location.reload();
   };
 
-  // Close day (simple report)
-  document.getElementById("btnClose").onclick = function(){
-    var c = computeDay();
-    var uname = currentUser().name;
+  document.getElementById("btnClose").onclick=function(){
+    var c=computeDay();
+    var uname=currentUser().name;
 
-    var wrap = document.createElement("div");
-    wrap.className = "modalWrap";
-    wrap.style.display = "flex";
+    var wrap=document.createElement("div");
+    wrap.className="modalWrap";
+    wrap.style.display="flex";
 
-    var modal = document.createElement("div");
-    modal.className = "modal";
-    modal.innerHTML =
-      '<div class="row" style="align-items:flex-start;">' +
-        '<div><h2>Κλείσιμο Ημέρας – '+BASE_TODAY.split("-").reverse().join("/")+'</h2>' +
-        '<div class="muted">Χρήστης: <b>'+uname+'</b></div></div>' +
-        '<button class="btn" id="rClose">Κλείσιμο</button>' +
-      '</div>' +
-      '<div class="divider"></div>' +
-      '<div style="display:grid; gap:6px;">' +
-        '<div class="row"><span>Σύνολο (cash+card)</span><b>'+euro(c.total)+'</b></div>' +
-        '<div class="row"><span>Μετρητά</span><b>'+euro(c.cash)+'</b></div>' +
-        '<div class="row"><span>Κάρτα</span><b>'+euro(c.card)+'</b></div>' +
-        '<div class="row"><span>Κερασμένα</span><b>'+euro(c.gift)+'</b></div>' +
-        '<div class="row"><span>Σύνολο κινήσεων</span><b>'+c.entries.length+'</b></div>' +
-      '</div>' +
-      '<div class="divider"></div>' +
+    var modal=document.createElement("div");
+    modal.className="modal";
+    modal.innerHTML=
+      '<div class="row" style="align-items:flex-start;">'+
+        '<div><h2>Κλείσιμο Ημέρας – '+BASE_TODAY.split("-").reverse().join("/")+'</h2>'+
+        '<div class="muted">Χρήστης: <b>'+uname+'</b></div></div>'+
+        '<button class="btn" id="rClose">Κλείσιμο</button>'+
+      '</div>'+
+      '<div class="divider"></div>'+
+      '<div style="display:grid; gap:6px;">'+
+        '<div class="row"><span>Σύνολο (cash+card)</span><b>'+euro(c.total)+'</b></div>'+
+        '<div class="row"><span>Μετρητά</span><b>'+euro(c.cash)+'</b></div>'+
+        '<div class="row"><span>Κάρτα</span><b>'+euro(c.card)+'</b></div>'+
+        '<div class="row"><span>Κερασμένα</span><b>'+euro(c.gift)+'</b></div>'+
+        '<div class="row"><span>Σύνολο κινήσεων</span><b>'+c.entries.length+'</b></div>'+
+      '</div>'+
+      '<div class="divider"></div>'+
       '<button class="btn primary" id="rCSV" style="width:100%;">Λήψη CSV (σημερινά)</button>';
 
     wrap.appendChild(modal);
     document.body.appendChild(wrap);
 
-    modal.querySelector("#rClose").onclick = function(){ wrap.remove(); };
-    wrap.addEventListener("click", function(e){ if(e.target === wrap) wrap.remove(); });
-    modal.querySelector("#rCSV").onclick = function(){
-      var uname2 = normalizeId(currentUser().name);
-      downloadCSV(c.entries, "taMeio_" + BASE_TODAY + "_" + uname2 + ".csv");
+    modal.querySelector("#rClose").onclick=function(){ wrap.remove(); };
+    wrap.addEventListener("click", function(e){ if(e.target===wrap) wrap.remove(); });
+    modal.querySelector("#rCSV").onclick=function(){
+      var uname2=normalizeId(currentUser().name);
+      downloadCSV(c.entries, "taMeio_"+BASE_TODAY+"_"+uname2+".csv");
     };
   };
 
-  function renderAll(){
-    buildCats();
-    buildProducts();
-    renderSummary();
-  }
+  function renderAll(){ buildCats(); buildProducts(); renderSummary(); }
 
-  // INIT
   renderUserSelect();
   ensureDay();
   renderAll();
