@@ -1,4 +1,4 @@
-const CACHE = "mini-cashier-cache-v102";
+const CACHE = "mini-cashier-cache-v104";
 const ASSETS = [
   "./",
   "./index.html",
@@ -26,7 +26,6 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Για navigation (άνοιγμα σαν app / refresh) δώσε πάντα index.html
   if (req.mode === "navigate") {
     event.respondWith(
       caches.match("./index.html").then((cached) => cached || fetch("./index.html"))
@@ -34,7 +33,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Cache-first για τα δικά μας αρχεία
   if (url.origin === location.origin) {
     event.respondWith(
       caches.match(req).then((cached) => {
