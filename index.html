@@ -198,45 +198,26 @@
     .modal h2{ margin:0 0 6px; font-size:16px; }
     .qty{ display:flex; gap:10px; align-items:center; }
     .qty .n{ font-size:18px; font-weight:900; min-width:40px; text-align:center; }
-    .toggle{ display:flex; gap:10px; flex-wrap:wrap; }
-    label.cb{
-      display:flex; gap:10px; align-items:center;
-      padding:10px 12px;
-      border-radius:16px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.05);
-      cursor:pointer;
-      min-height:44px;
-    }
-    input[type="checkbox"]{ width:18px; height:18px; }
+/* --- FORCE tables grid (fix for mobile / cache weirdness) --- */
+#tablesGrid{
+  display:grid !important;
+  gap:10px !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
 
-    /* Footer */
-    .footerBar{
-      position:fixed; left:0; right:0; bottom:0;
-      padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
-      z-index: 40;
-      background: rgba(15,17,21,0.95);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,.14);
-      box-shadow: 0 -14px 40px rgba(0,0,0,.55);
-    }
-    .footerGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media (min-width:760px){ .footerGrid{ grid-template-columns:1fr 1fr 1fr 1fr; } }
-    .tiny{ font-size:12px; color:var(--muted); margin-top:8px; }
+@media (min-width: 420px){
+  #tablesGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 520px){
+  #tablesGrid{ grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 820px){
+  #tablesGrid{ grid-template-columns: repeat(10, minmax(0, 1fr)) !important; }
+}
 
-    .toast{
-      position: fixed; left:50%; transform:translateX(-50%);
-      bottom: calc(126px + env(safe-area-inset-bottom, 0px));
-      background: rgba(20,24,32,.95);
-      border:1px solid rgba(255,255,255,.10);
-      padding:10px 12px;
-      border-radius:16px;
-      display:none;
-      z-index:80;
-      max-width:92vw;
-      text-align:center;
-    }
+#tablesGrid .tableBtn{
+  min-width:0 !important;
+}
   </style>
 </head>
 
