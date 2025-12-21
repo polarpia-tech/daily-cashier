@@ -5,7 +5,7 @@ const ASSETS = [
   "./manifest.webmanifest",
   "./sw.js"
 ];
-
+const tables = getTablesInRightOrder(db.tables || db?.days?.[TODAY]?.tables || null);
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(ASSETS))
