@@ -2,140 +2,326 @@
 <html lang="el">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Ημερήσιο Ταμείο</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#111111" />
 
   <style>
-    :root { --bg:#0f1115; --card:#151a22; --muted:#a9b1c3; --text:#eef2ff; --accent:#4cc2ff; --ok:#42d392; --warn:#ffcd3c; --bad:#ff6b6b; }
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    body { margin:0; background:var(--bg); color:var(--text); }
-    header { position: sticky; top:0; z-index:10; background: linear-gradient(180deg, rgba(15,17,21,1), rgba(15,17,21,.92)); padding: 14px 14px 10px; border-bottom: 1px solid rgba(255,255,255,.06); }
-    h1 { margin:0; font-size: 18px; letter-spacing:.2px; }
-    .sub { margin-top:8px; color:var(--muted); font-size: 13px; display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
-    .pill { padding:6px 10px; background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); border-radius:999px; font-size: 12px; color: var(--muted); display:flex; align-items:center; gap:8px; flex-wrap: wrap; }
-    main { padding: 14px; padding-bottom: 140px; }
-    .grid { display:grid; gap:12px; }
-    .card { background: var(--card); border:1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 12px; box-shadow: 0 8px 22px rgba(0,0,0,.25); }
-    .row { display:flex; gap:10px; align-items:center; justify-content: space-between; flex-wrap: wrap; }
-    .btn { border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: var(--text); padding: 12px 12px; border-radius: 14px; font-weight: 650; cursor:pointer; user-select:none; }
-    .btn:active { transform: translateY(1px); }
-    .btn.primary { border-color: rgba(76,194,255,.55); background: rgba(76,194,255,.12); }
-    .btn.ok { border-color: rgba(66,211,146,.55); background: rgba(66,211,146,.14); }
-    .btn.warn { border-color: rgba(255,205,60,.55); background: rgba(255,205,60,.14); }
-    .btn.bad { border-color: rgba(255,107,107,.55); background: rgba(255,107,107,.14); }
-    .muted { color: var(--muted); font-size: 13px; }
-    .title { font-weight: 800; font-size: 15px; }
-    .divider { height:1px; background: rgba(255,255,255,.08); margin: 10px 0; }
-    .cats { display:flex; gap:8px; overflow:auto; padding-bottom:4px; }
-    .cat { white-space: nowrap; }
-    .cat.active { outline: 2px solid rgba(76,194,255,.5); }
+    :root{
+      --bg:#0f1115; --card:#151a22; --muted:#a9b1c3; --text:#eef2ff;
+      --accent:#4cc2ff; --ok:#42d392; --warn:#ffcd3c; --bad:#ff6b6b;
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.14);
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(255,255,255,.08);
+    }
 
-    .products { display:grid; grid-template-columns: 1fr; gap:10px; }
-    @media (min-width: 540px) { .products { grid-template-columns: 1fr 1fr; } }
-    @media (min-width: 820px) { .products { grid-template-columns: 1fr 1fr 1fr; } }
-    @media (min-width: 1100px) { .products { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+    *{ box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+    html{ text-size-adjust:100%; -webkit-text-size-adjust:100%; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-tap-highlight-color: transparent;
+      font-size: 16px;
+    }
 
-    .prod { display:flex; justify-content: space-between; gap: 10px; align-items:center; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.05); cursor:pointer; }
-    .prod small { color: var(--muted); display:block; margin-top:2px; }
-    .price { font-weight: 850; color: rgba(238,242,255,.92); }
+    /* Layout wrapper (nice on tablet/desktop, still full on mobile) */
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 12px;
+    }
 
-    .modalWrap { position: fixed; inset: 0; background: rgba(0,0,0,.55); display:none; align-items:flex-end; justify-content:center; padding: 14px; z-index: 50; }
-    .modal { width: min(820px, 100%); background: var(--card); border:1px solid rgba(255,255,255,.10); border-radius: 18px; padding: 12px; box-shadow: 0 18px 50px rgba(0,0,0,.5); }
-    .modal h2 { margin: 0 0 6px; font-size: 16px; }
-    .qty { display:flex; gap:10px; align-items:center; justify-content:flex-start; }
-    .qty .n { font-size: 18px; font-weight: 900; min-width: 36px; text-align:center; }
-    .toggle { display:flex; gap:10px; flex-wrap: wrap; }
-    label.cb { display:flex; gap:10px; align-items:center; padding: 10px 12px; border-radius: 14px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.05); cursor:pointer; }
-    input[type="checkbox"] { width: 18px; height: 18px; }
+    /* Header */
+    header{
+      position: sticky; top: 0; z-index: 10;
+      background: linear-gradient(180deg, rgba(15,17,21,1), rgba(15,17,21,.92));
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      padding: 12px 0 10px;
+    }
+    h1{ margin:0; font-size: 20px; letter-spacing:.2px; }
 
-    .footerBar { position: fixed; bottom: 0; left:0; right:0; padding: 10px 14px; background: linear-gradient(180deg, rgba(15,17,21,0), rgba(15,17,21,1)); border-top: 1px solid rgba(255,255,255,.06); z-index: 20; }
-    .footerBar .row { gap: 8px; }
-    .tiny { font-size: 12px; color: var(--muted); }
-    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 104px; background: rgba(20,24,32,.95); border:1px solid rgba(255,255,255,.10); padding: 10px 12px; border-radius: 14px; display:none; z-index:60; }
-    .table { width:100%; border-collapse: collapse; }
-    .table td, .table th { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,.08); text-align:left; font-size: 13px; }
-    .table th { color: var(--muted); font-weight: 700; }
-    .right { text-align:right; }
+    .sub{
+      margin-top:10px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (min-width: 720px){
+      .sub{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .pill{
+      padding: 10px 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass2);
+      border-radius: 16px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      min-height: 44px;
+    }
+
+    .pill b{ color: var(--text); }
+
+    /* Controls in header */
+    select, input{
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      outline: none;
+      min-height: 44px;
+      font-size: 16px; /* avoids weird zoom behaviour */
+    }
+    select{ padding-right: 30px; }
+
+    /* Buttons */
+    .btn{
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 12px 12px;
+      border-radius: 16px;
+      font-weight: 750;
+      cursor: pointer;
+      user-select:none;
+      min-height: 44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition: transform .06s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{ border-color: rgba(76,194,255,.55); background: rgba(76,194,255,.12); }
+    .btn.ok{ border-color: rgba(66,211,146,.55); background: rgba(66,211,146,.14); }
+    .btn.warn{ border-color: rgba(255,205,60,.55); background: rgba(255,205,60,.14); }
+    .btn.bad{ border-color: rgba(255,107,107,.55); background: rgba(255,107,107,.14); }
+    .btn.ghost{ background: rgba(255,255,255,.04); }
+
+    /* Main */
+    main{
+      padding: 12px 0;
+      padding-bottom: calc(170px + env(safe-area-inset-bottom, 0px));
+    }
+    .grid{ display:grid; gap: 12px; }
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.28);
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .title{ font-weight: 900; font-size: 15px; }
+    .muted{ color: var(--muted); font-size: 13px; }
+    .divider{ height:1px; background: rgba(255,255,255,.08); margin: 10px 0; }
+
+    /* Categories */
+    .cats{
+      display:flex;
+      gap: 8px;
+      overflow:auto;
+      padding-bottom: 6px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .cat{ white-space: nowrap; }
+    .cat.active{ outline: 2px solid rgba(76,194,255,.55); }
+
+    /* Products */
+    .products{ display:grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 560px){ .products{ grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 920px){ .products{ grid-template-columns: 1fr 1fr 1fr; } }
+
+    .prod{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+    }
+    .prod small{ color: var(--muted); display:block; margin-top:2px; }
+    .price{ font-weight: 900; }
+
+    /* Modal */
+    .modalWrap{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.56);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 12px;
+      z-index: 50;
+    }
+    .modal{
+      width: min(860px, 100%);
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 20px;
+      padding: 12px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.55);
+    }
+    .modal h2{ margin:0 0 6px; font-size: 16px; }
+    .qty{ display:flex; gap:10px; align-items:center; }
+    .qty .n{ font-size: 18px; font-weight: 900; min-width: 40px; text-align:center; }
+    .toggle{ display:flex; gap:10px; flex-wrap: wrap; }
+    label.cb{
+      display:flex; gap:10px; align-items:center;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+      min-height: 44px;
+    }
+    input[type="checkbox"]{ width: 18px; height: 18px; }
+
+    /* Footer bar - 2x2 on mobile */
+    .footerBar{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(180deg, rgba(15,17,21,0), rgba(15,17,21,1));
+      border-top: 1px solid rgba(255,255,255,.06);
+      z-index: 20;
+    }
+
+    .footerGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 760px){
+      .footerGrid{
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+      }
+    }
+    .tiny{ font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(126px + env(safe-area-inset-bottom, 0px));
+      background: rgba(20,24,32,.95);
+      border:1px solid rgba(255,255,255,.10);
+      padding: 10px 12px;
+      border-radius: 16px;
+      display:none;
+      z-index:60;
+      max-width: 92vw;
+      text-align:center;
+    }
   </style>
 </head>
 
 <body>
 <header>
-  <h1>Ημερήσιο Ταμείο</h1>
-  <div class="sub">
-    <span class="pill" id="todayPill">Σήμερα: —</span>
+  <div class="wrap">
+    <h1>Ημερήσιο Ταμείο</h1>
 
-    <span class="pill">
-      Ημέρα: <b id="dayKey">—</b> —
-      Χρήστης:
-      <select id="userSel" style="margin-left:6px; padding:6px 8px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: var(--text);"></select>
-      <button class="btn" id="userAdd" style="padding:8px 10px; border-radius:12px;">+ Προσθήκη</button>
-      <button class="btn" id="userRename" style="padding:8px 10px; border-radius:12px;">✎ Μετονομασία</button>
-      <button class="btn bad" id="userDelete" style="padding:8px 10px; border-radius:12px;">🗑 Διαγραφή</button>
-    </span>
+    <div class="sub">
+      <div class="pill" id="todayPill">Σήμερα: —</div>
 
-    <span class="pill">Μετρητά/Κάρτα/Κερασμένα</span>
+      <div class="pill">
+        <span>Ημέρα: <b id="dayKey">—</b></span>
+        <span style="opacity:.7;">—</span>
+
+        <span>Χρήστης:</span>
+        <select id="userSel"></select>
+
+        <button class="btn ghost" id="userAdd">+ Προσθήκη</button>
+        <button class="btn ghost" id="userRename">✎ Μετονομασία</button>
+        <button class="btn bad" id="userDelete">🗑 Διαγραφή</button>
+      </div>
+
+      <div class="pill">Τρόποι: <b>Μετρητά</b> / <b>Κάρτα</b> / <b>Κερασμένα</b></div>
+    </div>
   </div>
 </header>
 
-<main class="grid">
-  <section class="card">
-    <div class="row">
-      <div>
-        <div class="title">Κατηγορίες</div>
-        <div class="muted">Διάλεξε κατηγορία και πάτα προϊόν.</div>
-      </div>
-      <button class="btn" id="btnResetDay">Καθαρισμός ημέρας</button>
-    </div>
-    <div class="divider"></div>
-    <div class="cats" id="cats"></div>
-  </section>
+<main>
+  <div class="wrap">
+    <div class="grid">
+      <section class="card">
+        <div class="row">
+          <div>
+            <div class="title">Κατηγορίες</div>
+            <div class="muted">Διάλεξε κατηγορία και πάτα προϊόν.</div>
+          </div>
+          <button class="btn" id="btnResetDay">Καθαρισμός ημέρας</button>
+        </div>
+        <div class="divider"></div>
+        <div class="cats" id="cats"></div>
+      </section>
 
-  <section class="card">
-    <div class="row">
-      <div>
-        <div class="title" id="catTitle">Προϊόντα</div>
-        <div class="muted">Πάτησε προϊόν για καταχώρηση.</div>
-      </div>
-      <input id="search" placeholder="Αναζήτηση…" style="padding:12px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.05); color: var(--text); outline:none; width: 180px;">
-    </div>
-    <div class="divider"></div>
-    <div class="products" id="products"></div>
-  </section>
+      <section class="card">
+        <div class="row">
+          <div>
+            <div class="title" id="catTitle">Προϊόντα</div>
+            <div class="muted">Πάτησε προϊόν για καταχώρηση.</div>
+          </div>
+          <input id="search" placeholder="Αναζήτηση…">
+        </div>
+        <div class="divider"></div>
+        <div class="products" id="products"></div>
+      </section>
 
-  <section class="card">
-    <div class="row">
-      <div>
-        <div class="title">Σύνοψη ημέρας</div>
-        <div class="muted">Για τον επιλεγμένο χρήστη.</div>
-      </div>
-      <button class="btn primary" id="btnClose">Κλείσιμο ημέρας</button>
-    </div>
-    <div class="divider"></div>
+      <section class="card">
+        <div class="row">
+          <div>
+            <div class="title">Σύνοψη ημέρας</div>
+            <div class="muted">Για τον επιλεγμένο χρήστη.</div>
+          </div>
+          <button class="btn primary" id="btnClose">Κλείσιμο ημέρας</button>
+        </div>
+        <div class="divider"></div>
 
-    <div style="display:grid; gap:6px;">
-      <div class="row"><span>Σύνολο</span><b id="sumTotal">0,00 €</b></div>
-      <div class="row"><span>Μετρητά</span><b id="sumCash">0,00 €</b></div>
-      <div class="row"><span>Κάρτα</span><b id="sumCard">0,00 €</b></div>
-      <div class="row"><span>Κερασμένα (αξία)</span><b id="sumGift">0,00 €</b></div>
-    </div>
+        <div style="display:grid; gap:6px;">
+          <div class="row"><span>Σύνολο</span><b id="sumTotal">0,00 €</b></div>
+          <div class="row"><span>Μετρητά</span><b id="sumCash">0,00 €</b></div>
+          <div class="row"><span>Κάρτα</span><b id="sumCard">0,00 €</b></div>
+          <div class="row"><span>Κερασμένα (αξία)</span><b id="sumGift">0,00 €</b></div>
+        </div>
 
-    <div class="divider"></div>
-    <div class="muted">Τελευταίες κινήσεις</div>
-    <div id="lastList" class="tiny" style="margin-top:8px; display:grid; gap:6px;"></div>
-  </section>
+        <div class="divider"></div>
+        <div class="muted">Τελευταίες κινήσεις</div>
+        <div id="lastList" class="tiny" style="margin-top:8px; display:grid; gap:6px;"></div>
+      </section>
+    </div>
+  </div>
 </main>
 
 <div class="footerBar">
-  <div class="row">
-    <button class="btn ok" id="btnUndo">Αναίρεση τελευταίου</button>
-    <button class="btn primary" id="btnRepeat">Τελευταίο ξανά</button>
-    <button class="btn" id="btnCSV">Εξαγωγή CSV</button>
-    <button class="btn bad" id="btnWipeAll">Διαγραφή όλων</button>
+  <div class="wrap">
+    <div class="footerGrid">
+      <button class="btn ok" id="btnUndo">Αναίρεση τελευταίου</button>
+      <button class="btn primary" id="btnRepeat">Τελευταίο ξανά</button>
+      <button class="btn" id="btnCSV">Εξαγωγή CSV</button>
+      <button class="btn bad" id="btnWipeAll">Διαγραφή όλων</button>
+    </div>
+    <div class="tiny">Tip: Chrome ⋮ → <b>Προσθήκη στην αρχική οθόνη</b> (ανοίγει σαν app).</div>
   </div>
-  <div class="tiny" style="margin-top:6px;">Tip: Chrome ⋮ → <b>Προσθήκη στην αρχική οθόνη</b>.</div>
 </div>
 
 <!-- Modal -->
@@ -274,7 +460,6 @@
   function saveUsers(arr){ localStorage.setItem(LS_USERS, JSON.stringify(arr)); }
 
   function normalizeId(name){
-    // απλό/ασφαλές: κρατά γράμματα/αριθμούς/_/-
     var s = name.trim().toLowerCase().replace(/\s+/g,"_");
     s = s.replace(/[^a-z0-9\u0370-\u03ff_-]/g,"");
     return s;
@@ -621,7 +806,7 @@
     location.reload();
   };
 
-  // Close day (simple modal report)
+  // Close day (simple report)
   document.getElementById("btnClose").onclick = function(){
     var c = computeDay();
     var uname = currentUser().name;
@@ -666,12 +851,11 @@
     renderSummary();
   }
 
-  // INIT (πολύ σημαντικό: αυτά πρέπει να τρέξουν)
+  // INIT
   renderUserSelect();
   ensureDay();
   renderAll();
-
-})(); // end IIFE
+})();
 </script>
 </body>
-</html> 
+</html>
