@@ -204,7 +204,6 @@
   gap:10px !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }
-
 @media (min-width: 420px){
   #tablesGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 }
@@ -218,6 +217,26 @@
 #tablesGrid .tableBtn{
   min-width:0 !important;
 }
+   /* --- FORCE tables grid (fix for mobile / cache weirdness) --- */
+#tablesGrid{
+  display:grid !important;
+  gap:10px !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+@media (min-width: 420px){
+  #tablesGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 520px){
+  #tablesGrid{ grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 820px){
+  #tablesGrid{ grid-template-columns: repeat(10, minmax(0, 1fr)) !important; }
+}
+
+#tablesGrid .tableBtn{
+  min-width:0 !important;
+} 
   </style>
 </head>
 
