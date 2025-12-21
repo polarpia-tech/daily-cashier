@@ -207,7 +207,6 @@
     .payLine .s{color:var(--muted); font-size:13px; margin-top:3px;}
     .payLine .right{font-weight:900;}
 
-    /* Category quick sheet buttons */
     .catGrid{
       display:grid;
       grid-template-columns:1fr;
@@ -315,7 +314,7 @@
       <div id="viewTickets" class="hide">
         <div class="card2">
           <div class="h2">Tickets</div>
-          <div class="muted">Διάλεξε τραπέζι για να πας στις παραγγελίες του.</div>
+          <div class="muted">Διάλεξε τραπέζι για να δεις/πληρώσεις τα ανοιχτά του.</div>
           <div class="sp"></div>
           <div id="ticketsList" class="list"></div>
         </div>
@@ -422,7 +421,7 @@
     </div>
   </div>
 
-  <!-- Category Quick Sheet (NEW) -->
+  <!-- Category Quick Sheet -->
   <div class="overlay" id="catOverlay">
     <div class="sheet">
       <div class="sheetHead">
@@ -544,19 +543,19 @@ function isValidPin(pin){ return /^\d{4}$/.test(pin); }
 
 /* =================== USERS + PIN =================== */
 function ensureUsers(){
-  let users = load(LS_USERS, null);
+  let users = load("mini_cashier_users_v2", null);
   if(!users || !Array.isArray(users) || users.length===0){
     users = [{id:uid(), name:"Χρήστης 1", pinHash:null}];
-    save(LS_USERS, users);
-    save(LS_ACTIVE_USER, users[0].id);
+    save("mini_cashier_users_v2", users);
+    save("mini_cashier_active_user_v2", users[0].id);
   }
   return users;
 }
 function getActiveUserId(){
   const users = ensureUsers();
-  const saved = load(LS_ACTIVE_USER, null);
+  const saved = load("mini_cashier_active_user_v2", null);
   if(saved && users.some(u=>u.id===saved)) return saved;
-  save(LS_ACTIVE_USER, users[0].id);
+  save("mini_cashier_active_user_v2", users[0].id);
   return users[0].id;
 }
 function getActiveUser(){
@@ -574,7 +573,7 @@ async function requirePin(user, reason){
     const users = ensureUsers();
     const idx = users.findIndex(u=>u.id===user.id);
     users[idx].pinHash = await sha256Hex(pin1);
-    save(LS_USERS, users);
+    save("mini_cashier_users_v2", users);
     return true;
   }
   const pin = prompt(`PIN απαιτείται (${reason}).\nΓράψε 4-ψήφιο PIN:`);
@@ -587,7 +586,7 @@ async function requirePin(user, reason){
 
 /* =================== DB =================== */
 function ensureDB(){
-  const db = load(LS_KEY, { days:{} });
+  const db = load("mini_cashier_db_v2", { days:{} });
   if(!db.days[TODAY]){
     db.days[TODAY] = {
       meta:{ day:TODAY, activeTable: defaultTables[0] },
@@ -598,7 +597,7 @@ function ensureDB(){
     for(const t of defaultTables){
       db.days[TODAY].tables[t] = { lines:[] };
     }
-    save(LS_KEY, db);
+    save("mini_cashier_db_v2", db);
   } else {
     for(const t of defaultTables){
       if(!db.days[TODAY].tables[t]) db.days[TODAY].tables[t] = { lines:[] };
@@ -655,7 +654,6 @@ function renderTabs(){
   $("viewTickets").classList.toggle("hide", tab!=="tickets");
   $("ticketActions").classList.toggle("hide", tab!=="order");
 }
-
 function getCats(){
   const cats = [...new Set(products.map(p=>p.cat))];
   if(!activeCat) activeCat = cats[0];
@@ -680,13 +678,11 @@ function renderTables(){
 
     btn.onclick = ()=>{
       day.meta.activeTable = t;
-      save(LS_KEY, db);
+      save("mini_cashier_db_v2", db);
       tab = "order";
       renderTabs();
       renderAll();
-
-      // NEW: after selecting table, open categories quick sheet
-      openCategoriesQuick();
+      openCategoriesQuick(); // OK εδώ (Παραγγελία)
     };
     grid.appendChild(btn);
   }
@@ -705,7 +701,6 @@ function renderCatsRow(){
     row.appendChild(b);
   }
 }
-
 function renderProducts(){
   const q = $("search").value.trim().toLowerCase();
   const list = $("productList");
@@ -730,7 +725,6 @@ function renderProducts(){
     list.appendChild(div);
   }
 }
-
 function addLine(name, cat, price){
   const db = ensureDB();
   const day = db.days[TODAY];
@@ -744,7 +738,7 @@ function addLine(name, cat, price){
     paid: null
   });
 
-  save(LS_KEY, db);
+  save("mini_cashier_db_v2", db);
   renderAll();
 }
 
@@ -781,7 +775,6 @@ function renderTicket(){
     box.appendChild(div);
   }
 }
-
 function removeOneLine(id){
   const db = ensureDB();
   const day = db.days[TODAY];
@@ -790,7 +783,7 @@ function removeOneLine(id){
   const idx = lines.findIndex(x=>x.id===id && !x.paid);
   if(idx>=0){
     lines.splice(idx,1);
-    save(LS_KEY, db);
+    save("mini_cashier_db_v2", db);
     renderAll();
   }
 }
@@ -803,23 +796,34 @@ function renderTicketsTab(){
 
   for(const t of defaultTables){
     const open = sumOpen(db,t);
+
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
       <div>
         <div class="name">${t}</div>
-        <div class="meta">Ανοιχτό υπόλοιπο</div>
+        <div class="meta">${open>0 ? "Πάτα για πληρωμή (Split)" : "Δεν έχει ανοιχτά"}</div>
       </div>
       <div class="price">${open>0?fmt(open):"—"}</div>
     `;
+
     div.onclick = ()=>{
+      // ✅ FIX: Tickets -> πάει στο ticket/πληρωμή, ΟΧΙ σε κατηγορίες/προϊόντα
       day.meta.activeTable = t;
-      save(LS_KEY, db);
+      save("mini_cashier_db_v2", db);
+
       tab="order";
       renderTabs();
       renderAll();
-      openCategoriesQuick();
+
+      if(open>0){
+        // άνοιξε κατευθείαν πληρωμή/split (το ζητούμενο του Tickets)
+        openPaySheet();
+      } else {
+        alert("Αυτό το τραπέζι δεν έχει ανοιχτά.");
+      }
     };
+
     list.appendChild(div);
   }
 }
@@ -834,7 +838,7 @@ function renderAll(){
   renderTicketsTab();
 }
 
-/* =================== CATEGORY QUICK FLOW (NEW) =================== */
+/* =================== CATEGORY QUICK FLOW =================== */
 function renderCatGrid(){
   const cats = getCats();
   const grid = $("catGrid");
@@ -850,8 +854,6 @@ function renderCatGrid(){
       renderCatsRow();
       renderProducts();
       showCats(false);
-
-      // scroll products into view (fast for waiter)
       setTimeout(()=> {
         document.getElementById("productsCard").scrollIntoView({behavior:"smooth", block:"start"});
       }, 50);
@@ -859,9 +861,7 @@ function renderCatGrid(){
     grid.appendChild(b);
   }
 }
-
 function openCategoriesQuick(){
-  // Always open on phones; on large screens it's still ok.
   renderCatGrid();
   const db = ensureDB();
   const t = db.days[TODAY].meta.activeTable;
@@ -982,7 +982,7 @@ ${preview}${more}
 
   day.payments.push({ id: uid(), at: now, table: t, user, method, total, itemIds: ids });
   day.undone = [];
-  save(LS_KEY, db);
+  save("mini_cashier_db_v2", db);
 
   showPay(false);
   renderAll();
@@ -999,7 +999,7 @@ function undoPayment(){
     if(l.paid && last.itemIds.includes(l.id)) l.paid = null;
   }
   day.undone.push(last);
-  save(LS_KEY, db);
+  save("mini_cashier_db_v2", db);
   renderAll();
 }
 function redoPayment(){
@@ -1015,7 +1015,7 @@ function redoPayment(){
     }
   }
   day.payments.push(last);
-  save(LS_KEY, db);
+  save("mini_cashier_db_v2", db);
   renderAll();
 }
 
@@ -1057,7 +1057,7 @@ async function resetOpenForTable(){
 
   const before = lines.length;
   day.tables[t].lines = lines.filter(x=>x.paid);
-  save(LS_KEY, db);
+  save("mini_cashier_db_v2", db);
   renderAll();
   alert(`Έγινε. Έφυγαν ${before - day.tables[t].lines.length} ανοιχτές γραμμές.`);
 }
@@ -1071,9 +1071,9 @@ async function wipeAll(){
   if(word !== "DELETE"){ alert("Ακυρώθηκε."); return; }
   if(!confirm("Τελευταία επιβεβαίωση: Θα σβηστούν ΟΛΑ. Συνέχεια;")) return;
 
-  localStorage.removeItem(LS_KEY);
-  localStorage.removeItem(LS_USERS);
-  localStorage.removeItem(LS_ACTIVE_USER);
+  localStorage.removeItem("mini_cashier_db_v2");
+  localStorage.removeItem("mini_cashier_users_v2");
+  localStorage.removeItem("mini_cashier_active_user_v2");
   location.reload();
 }
 
@@ -1089,8 +1089,8 @@ async function addUser(){
 
   const users = ensureUsers();
   users.push({ id: uid(), name: name.trim(), pinHash: await sha256Hex(pin1) });
-  save(LS_USERS, users);
-  save(LS_ACTIVE_USER, users[users.length-1].id);
+  save("mini_cashier_users_v2", users);
+  save("mini_cashier_active_user_v2", users[users.length-1].id);
   renderAll();
 }
 async function renameUser(){
@@ -1104,7 +1104,7 @@ async function renameUser(){
   const users = ensureUsers();
   const idx = users.findIndex(u=>u.id===active.id);
   users[idx].name = name.trim();
-  save(LS_USERS, users);
+  save("mini_cashier_users_v2", users);
   renderAll();
 }
 async function setPin(){
@@ -1120,7 +1120,7 @@ async function setPin(){
   const users = ensureUsers();
   const idx = users.findIndex(u=>u.id===active.id);
   users[idx].pinHash = await sha256Hex(pin1);
-  save(LS_USERS, users);
+  save("mini_cashier_users_v2", users);
   alert("Το PIN άλλαξε.");
 }
 async function deleteUser(){
@@ -1133,8 +1133,8 @@ async function deleteUser(){
   if(!confirm(`Να διαγραφεί ο χρήστης "${active.name}";`)) return;
 
   const left = users.filter(u=>u.id!==active.id);
-  save(LS_USERS, left);
-  save(LS_ACTIVE_USER, left[0].id);
+  save("mini_cashier_users_v2", left);
+  save("mini_cashier_active_user_v2", left[0].id);
   renderAll();
 }
 async function changeUserWithPin(newId){
@@ -1147,7 +1147,7 @@ async function changeUserWithPin(newId){
     $("userSelect").value = getActiveUserId();
     return;
   }
-  save(LS_ACTIVE_USER, newUser.id);
+  save("mini_cashier_active_user_v2", newUser.id);
   renderAll();
 }
 
@@ -1193,7 +1193,6 @@ $("catOverlay").onclick=(e)=>{ if(e.target.id==="catOverlay") showCats(false); }
 renderTabs();
 renderAll();
 
-/* service worker */
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("./sw.js");
 }
