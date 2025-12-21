@@ -257,6 +257,34 @@
       max-width:92vw;
       text-align:center;
     }
+    /* =========================
+   HOTFIX: Mobile layout fix
+   (για να μην "φεύγει" δεξιά
+   και να μην σπάει το grid)
+   ========================= */
+
+html, body { width: 100% !important; max-width: 100% !important; overflow-x: hidden !important; }
+
+.wrap { max-width: 100% !important; width: 100% !important; }
+
+header, main, .footerBar { width: 100% !important; max-width: 100% !important; }
+
+#tablesGrid{
+  width: 100% !important;
+  display: grid !important;
+  gap: 10px !important;
+  /* Αυτό “κλειδώνει” σωστά τις στήλες σε ΟΛΑ τα κινητά */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+}
+
+.tableBtn{
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* αν το κείμενο/κουμπιά μεγαλώνουν υπερβολικά σε κάποια κινητά */
+.tableBtn div { font-size: 16px !important; }
+.tableBtn small { font-size: 12px !important; }
   </style>
 </head>
 
