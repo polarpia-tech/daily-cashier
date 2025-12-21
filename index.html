@@ -36,37 +36,32 @@
       padding: 0 12px;
     }
 
+    /* ======= COMPACT HEADER ======= */
     header{
       position: sticky; top: 0; z-index: 10;
-      background: linear-gradient(180deg, rgba(15,17,21,1), rgba(15,17,21,.92));
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      padding: 12px 0 10px;
+      background: rgba(15,17,21,.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 10px 0;
     }
-    h1{ margin:0; font-size: 20px; letter-spacing:.2px; }
 
-    .sub{
-      margin-top:10px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-      color:var(--muted);
-      font-size: 13px;
-    }
-    @media (min-width: 720px){ .sub{ grid-template-columns: 1fr 1fr; } }
-
-    .pill{
-      padding: 10px 12px;
-      background: var(--glass);
-      border: 1px solid var(--glass2);
-      border-radius: 16px;
+    .topRow{
       display:flex;
-      gap:10px;
       align-items:center;
-      flex-wrap: wrap;
-      min-height: 44px;
-      overflow: hidden;
+      justify-content:space-between;
+      gap:10px;
     }
-    .pill b{ color: var(--text); }
+    .topLeft{ min-width:0; }
+    .appTitle{ font-weight:900; font-size:18px; margin:0; }
+    .appSub{ color: var(--muted); font-size:12px; margin-top:2px; }
+
+    .topRight{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap: nowrap;
+    }
 
     select, input{
       padding: 10px 10px;
@@ -79,7 +74,10 @@
       font-size: 16px;
       max-width: 100%;
     }
-    select{ padding-right: 30px; }
+    .userSel{
+      max-width: 58vw;
+      min-width: 140px;
+    }
 
     .btn{
       border: 1px solid var(--stroke);
@@ -106,9 +104,24 @@
     .btn.bad{ border-color: rgba(255,107,107,.55); background: rgba(255,107,107,.14); }
     .btn.ghost{ background: rgba(255,255,255,.04); }
 
+    .pill{
+      padding: 10px 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass2);
+      border-radius: 16px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: wrap;
+      min-height: 44px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .pill b{ color: var(--text); }
+
     main{
       padding: 12px 0;
-      /* χώρος για το fixed footer */
       padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px));
     }
     .grid{ display:grid; gap: 12px; }
@@ -198,7 +211,7 @@
     }
     input[type="checkbox"]{ width: 18px; height: 18px; }
 
-    /* ✅ FIX ΕΜΦΑΝΙΣΗΣ: footer bar καθαρό/σκούρο */
+    /* ✅ footer bar καθαρό/σκούρο (δεν μπερδεύεται με το scroll) */
     .footerBar{
       position:fixed;
       left:0; right:0; bottom:0;
@@ -240,33 +253,52 @@
 </head>
 
 <body>
+
 <header>
   <div class="wrap">
-    <h1>Ημερήσιο Ταμείο</h1>
-
-    <div class="sub">
-      <div class="pill" id="todayPill">Σήμερα: —</div>
-
-      <div class="pill">
-        <span>Ημέρα: <b id="dayKey">—</b></span>
-        <span style="opacity:.7;">—</span>
-
-        <span>Χρήστης:</span>
-        <select id="userSel"></select>
-
-        <button class="btn ghost" id="userAdd">+ Προσθήκη</button>
-        <button class="btn ghost" id="userRename">✎ Μετονομασία</button>
-        <button class="btn bad" id="userDelete">🗑 Διαγραφή</button>
+    <div class="topRow">
+      <div class="topLeft">
+        <div class="appTitle">Ημερήσιο Ταμείο</div>
+        <div class="appSub" id="todayPill">Σήμερα: —</div>
       </div>
 
-      <div class="pill">Τρόποι: <b>Μετρητά</b> / <b>Κάρτα</b> / <b>Κερασμένα</b></div>
+      <div class="topRight">
+        <select id="userSel" class="userSel"></select>
+        <button class="btn ghost" id="btnSettings">⚙</button>
+      </div>
     </div>
   </div>
 </header>
 
+<!-- Settings panel (χρησιμοποιεί το ίδιο modal style) -->
+<div class="modalWrap" id="settingsWrap">
+  <div class="modal">
+    <div class="row" style="align-items:flex-start;">
+      <div>
+        <h2>Ρυθμίσεις</h2>
+        <div class="muted">Ημέρα: <b id="dayKey">—</b> — Χρήστης: <b id="userNameLabel">—</b></div>
+      </div>
+      <button class="btn" id="btnSettingsClose">Κλείσιμο</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row" style="gap:10px;">
+      <button class="btn ghost" style="flex:1" id="userAdd">+ Προσθήκη χρήστη</button>
+      <button class="btn ghost" style="flex:1" id="userRename">✎ Μετονομασία</button>
+      <button class="btn bad" style="flex:1" id="userDelete">🗑 Διαγραφή</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="pill">Τρόποι: <b>Μετρητά</b> / <b>Κάρτα</b> / <b>Κερασμένα</b></div>
+  </div>
+</div>
+
 <main>
   <div class="wrap">
     <div class="grid">
+
       <section class="card">
         <div class="row">
           <div>
@@ -312,6 +344,7 @@
         <div class="muted">Τελευταίες κινήσεις</div>
         <div id="lastList" class="tiny" style="margin-top:8px; display:grid; gap:6px;"></div>
       </section>
+
     </div>
   </div>
 </main>
@@ -328,6 +361,7 @@
   </div>
 </div>
 
+<!-- Order modal -->
 <div class="modalWrap" id="modalWrap">
   <div class="modal">
     <div class="row" style="align-items:flex-start;">
@@ -372,6 +406,7 @@
 
 <script>
 (function(){
+  // PWA register
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').catch(function(){});
@@ -392,6 +427,7 @@
     toastEl._t=setTimeout(function(){ toastEl.style.display="none"; }, 1500);
   }
 
+  // MENU
   var MENU=[
     { cat:"☕ ΚΑΦΕΔΕΣ – ΖΕΣΤΟΙ", items:[
       ["Espresso μονός",2.60],["Espresso διπλός",3.20],["Espresso macchiato",2.90],
@@ -435,6 +471,7 @@
 
   var EXTRAS={ decaf:{name:"Decaf",price:0.30}, plant:{name:"Φυτικό γάλα",price:0.50} };
 
+  // Storage
   var LS_KEY="mini_cashier_db_v1";
   var LS_USERS="mini_cashier_users_v1";
   var LS_USER="mini_cashier_user_v1";
@@ -462,6 +499,24 @@
   var db=loadDB();
   var BASE_TODAY=dayKey(new Date());
 
+  // Settings panel
+  var settingsWrap=document.getElementById("settingsWrap");
+  var btnSettings=document.getElementById("btnSettings");
+  var btnSettingsClose=document.getElementById("btnSettingsClose");
+  var userNameLabel=document.getElementById("userNameLabel");
+
+  function openSettings(){
+    if(userNameLabel) userNameLabel.textContent = currentUser().name;
+    settingsWrap.style.display="flex";
+  }
+  function closeSettings(){
+    settingsWrap.style.display="none";
+  }
+  btnSettings.onclick=openSettings;
+  btnSettingsClose.onclick=closeSettings;
+  settingsWrap.addEventListener("click", function(e){ if(e.target===settingsWrap) closeSettings(); });
+
+  // User UI
   var userSel=document.getElementById("userSel");
   var userAdd=document.getElementById("userAdd");
   var userRename=document.getElementById("userRename");
@@ -494,8 +549,11 @@
     TODAY=currentDayKey();
     if(!db.days[TODAY]) db.days[TODAY]={entries:[]};
     saveDB(db);
+
     document.getElementById("dayKey").textContent=BASE_TODAY;
     document.getElementById("todayPill").textContent="Σήμερα: " + BASE_TODAY.split("-").reverse().join("/");
+
+    if(userNameLabel) userNameLabel.textContent = currentUser().name;
   }
 
   userSel.addEventListener("change", function(){
@@ -535,6 +593,7 @@
     renderUserSelect(); ensureDay(); renderAll();
   });
 
+  // Category/Product UI
   var catsEl=document.getElementById("cats");
   var productsEl=document.getElementById("products");
   var catTitle=document.getElementById("catTitle");
@@ -573,6 +632,7 @@
   }
   searchEl.addEventListener("input", buildProducts);
 
+  // Modal logic
   var modalWrap=document.getElementById("modalWrap");
   var mTitle=document.getElementById("mTitle");
   var mPrice=document.getElementById("mPrice");
@@ -659,6 +719,7 @@
   document.getElementById("payCard").onclick=function(){ addEntry("card"); };
   document.getElementById("payGift").onclick=function(){ addEntry("gift"); };
 
+  // Summary
   var sumTotalEl=document.getElementById("sumTotal");
   var sumCashEl=document.getElementById("sumCash");
   var sumCardEl=document.getElementById("sumCard");
@@ -699,6 +760,7 @@
     });
   }
 
+  // Undo / Repeat
   document.getElementById("btnUndo").onclick=function(){
     ensureDay();
     var entries=db.days[TODAY].entries;
@@ -723,12 +785,12 @@
     renderAll();
   };
 
+  // CSV
   function escapeCSV(s){
     s=String(s==null?"":s);
     if(/[,"\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
     return s;
   }
-
   function downloadCSV(entries, filename){
     var uname=currentUser().name;
     var header=["user","date","time","category","item","qty","extras","unit","total","method"];
@@ -755,6 +817,7 @@
     downloadCSV(c.entries, "taMeio_"+BASE_TODAY+"_"+uname+".csv");
   };
 
+  // Reset / Wipe
   document.getElementById("btnResetDay").onclick=function(){
     ensureDay();
     var uname=currentUser().name;
@@ -773,6 +836,7 @@
     location.reload();
   };
 
+  // Close day report
   document.getElementById("btnClose").onclick=function(){
     var c=computeDay();
     var uname=currentUser().name;
@@ -813,10 +877,12 @@
 
   function renderAll(){ buildCats(); buildProducts(); renderSummary(); }
 
+  // INIT
   renderUserSelect();
   ensureDay();
   renderAll();
 })();
 </script>
+
 </body>
 </html>
