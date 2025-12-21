@@ -1,4 +1,4 @@
-const CACHE = "mini-cashier-cache-v6";
+const CACHE = "mini-cashier-cache-v7";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./sw.js"];
 
 self.addEventListener("install", (e) => {
