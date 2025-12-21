@@ -60,7 +60,6 @@
       padding:12px;
     }
 
-    /* ---------- buttons/pills ---------- */
     .pill{
       height:var(--tap);
       border-radius:999px;
@@ -74,7 +73,6 @@
       cursor:pointer;
       user-select:none;
       transition:.15s transform,.15s border-color,.15s background;
-      /* IMPORTANT: allow wrap so buttons never go off-screen */
       white-space:normal;
       text-align:center;
       line-height:1.1;
@@ -146,7 +144,6 @@
     .hr{height:1px; background:var(--line); margin:12px 0;}
     .hide{display:none !important;}
 
-    /* ---------- bottom action bar ---------- */
     .bottomBar{
       position:fixed;
       left:0; right:0;
@@ -164,14 +161,12 @@
       grid-template-columns:1fr 1fr;
       gap:10px;
     }
-    /* Make bottom buttons fit Android screens */
     .bottomBar .pill{
       font-size:13px;
       padding:0 10px;
       min-height:46px;
     }
 
-    /* ---------- Overlay / sheet ---------- */
     .overlay{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -211,6 +206,21 @@
     .payLine .t{font-weight:900;}
     .payLine .s{color:var(--muted); font-size:13px; margin-top:3px;}
     .payLine .right{font-weight:900;}
+
+    /* Category quick sheet buttons */
+    .catGrid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    @media (min-width:520px){
+      .catGrid{ grid-template-columns: 1fr 1fr; }
+    }
+    .catBtn{
+      height:56px;
+      border-radius:18px;
+      font-weight:900;
+    }
 
     @media (max-width:420px){
       .title{font-size:24px;}
@@ -259,18 +269,18 @@
       <div class="hr"></div>
 
       <div id="viewOrder">
-        <div class="card2">
+        <div class="card2" id="tablesCard">
           <div class="h2">Γρήγορη επιλογή τραπεζιού</div>
-          <div class="muted">Πάτα τραπέζι → και μετά γράφεις προϊόντα.</div>
+          <div class="muted">Πάτα τραπέζι → ανοίγουν κατηγορίες → μετά προϊόντα.</div>
           <div class="sp"></div>
           <div id="tableGrid" class="gridAuto"></div>
         </div>
 
         <div class="sp"></div>
 
-        <div class="card2">
+        <div class="card2" id="productsCard">
           <div class="h2">Προϊόντα</div>
-          <div class="muted">Ό,τι πατάς μπαίνει στο ενεργό τραπέζι.</div>
+          <div class="muted">Διάλεξε κατηγορία και μετά προϊόν.</div>
           <div class="sp"></div>
           <div id="catRow" class="row" style="gap:8px; flex-wrap:wrap;"></div>
           <div class="sp"></div>
@@ -285,7 +295,7 @@
           <div class="row between">
             <div>
               <div class="h2">Ticket: <span id="ticketTitle">—</span></div>
-              <div class="muted">Πληρώνεις ανά προϊόν (και μερικά τεμάχια αν χρειάζεται).</div>
+              <div class="muted">Πληρώνεις ανά προϊόν (split).</div>
             </div>
             <button class="pill warn small" id="btnPay">Πληρωμή / Split</button>
           </div>
@@ -305,7 +315,7 @@
       <div id="viewTickets" class="hide">
         <div class="card2">
           <div class="h2">Tickets</div>
-          <div class="muted">Διάλεξε ένα τραπέζι για να δεις/πληρώσεις τα ανοιχτά.</div>
+          <div class="muted">Διάλεξε τραπέζι για να πας στις παραγγελίες του.</div>
           <div class="sp"></div>
           <div id="ticketsList" class="list"></div>
         </div>
@@ -366,7 +376,7 @@
         <div class="hr"></div>
 
         <div class="muted" style="font-size:13px;">
-          Σημείωση: Για αλλαγές χρήστη/διαγραφές ζητάει PIN.
+          Confirm πληρωμής μόνο αν ≥ <b>15€</b> ή ≥ <b>3 προϊόντα</b>. Στα <b>Κερασμένα</b> πάντα confirm.
         </div>
       </div>
 
@@ -374,19 +384,9 @@
 
       <div class="card2">
         <div class="h2">Καθαρισμός ανοιχτών</div>
-        <div class="muted">Καθαρίζει τα ανοιχτά προϊόντα του ενεργού τραπεζιού (ΔΕΝ ακουμπάει πληρωμές).</div>
+        <div class="muted">Καθαρίζει τα ανοιχτά προϊόντα του ενεργού τραπεζιού (δεν ακουμπάει πληρωμές).</div>
         <div class="sp"></div>
         <button class="pill warn block" id="btnClearOpen">Καθαρισμός ανοιχτών (τραπέζι)</button>
-      </div>
-
-      <div class="sp"></div>
-
-      <div class="card2">
-        <div class="h2">Όρια επιβεβαίωσης πληρωμής</div>
-        <div class="muted" style="font-size:13px;">
-          Θα ζητάει confirm μόνο αν είναι ≥ <b>15€</b> ή ≥ <b>3 προϊόντα</b>.
-          Στα <b>Κερασμένα</b> ζητάει πάντα.
-        </div>
       </div>
     </div>
   </div>
@@ -422,6 +422,23 @@
     </div>
   </div>
 
+  <!-- Category Quick Sheet (NEW) -->
+  <div class="overlay" id="catOverlay">
+    <div class="sheet">
+      <div class="sheetHead">
+        <div>
+          <div id="catTitle" style="font-weight:900; font-size:18px;">Κατηγορίες</div>
+          <div class="muted" id="catSub">Διάλεξε κατηγορία για να εμφανιστούν τα προϊόντα.</div>
+        </div>
+        <button class="pill small" id="btnCloseCats">Κλείσιμο</button>
+      </div>
+
+      <div class="card2">
+        <div class="catGrid" id="catGrid"></div>
+      </div>
+    </div>
+  </div>
+
 <script>
 /* =================== CONFIG =================== */
 const LS_KEY = "mini_cashier_db_v2";
@@ -429,7 +446,6 @@ const LS_USERS = "mini_cashier_users_v2";
 const LS_ACTIVE_USER = "mini_cashier_active_user_v2";
 const TODAY = new Date().toISOString().slice(0,10);
 
-// Confirm only if >=15€ OR >=3 items (free always confirms)
 const CONFIRM_MIN_TOTAL = 15;
 const CONFIRM_MIN_ITEMS = 3;
 
@@ -524,28 +540,18 @@ async function sha256Hex(str){
   const buf = await crypto.subtle.digest("SHA-256", enc);
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
 }
-
-function isValidPin(pin){
-  return /^\d{4}$/.test(pin);
-}
+function isValidPin(pin){ return /^\d{4}$/.test(pin); }
 
 /* =================== USERS + PIN =================== */
-/*
-User shape:
-{ id, name, pinHash }
-*/
 function ensureUsers(){
   let users = load(LS_USERS, null);
   if(!users || !Array.isArray(users) || users.length===0){
-    // First time: create Χρήστης 1 with PIN 1234 (user must change in settings)
-    // We store hash, not raw
     users = [{id:uid(), name:"Χρήστης 1", pinHash:null}];
     save(LS_USERS, users);
     save(LS_ACTIVE_USER, users[0].id);
   }
   return users;
 }
-
 function getActiveUserId(){
   const users = ensureUsers();
   const saved = load(LS_ACTIVE_USER, null);
@@ -553,20 +559,17 @@ function getActiveUserId(){
   save(LS_ACTIVE_USER, users[0].id);
   return users[0].id;
 }
-
 function getActiveUser(){
   const users = ensureUsers();
   const id = getActiveUserId();
   return users.find(u=>u.id===id) || users[0];
 }
-
 async function requirePin(user, reason){
-  // If user has no PIN yet, force set one
   if(!user.pinHash){
-    alert("Ο χρήστης δεν έχει PIN ακόμα. Πρέπει να βάλεις 4-ψήφιο PIN.");
+    alert("Ο χρήστης δεν έχει PIN ακόμα. Βάλε 4-ψήφιο PIN.");
     const pin1 = prompt("Βάλε νέο 4-ψήφιο PIN:");
     if(!pin1 || !isValidPin(pin1)) { alert("Άκυρο PIN."); return false; }
-    const pin2 = prompt("Ξαναγράψε το PIN για επιβεβαίωση:");
+    const pin2 = prompt("Ξαναγράψε το PIN:");
     if(pin2 !== pin1) { alert("Δεν ταιριάζουν."); return false; }
     const users = ensureUsers();
     const idx = users.findIndex(u=>u.id===user.id);
@@ -574,7 +577,6 @@ async function requirePin(user, reason){
     save(LS_USERS, users);
     return true;
   }
-
   const pin = prompt(`PIN απαιτείται (${reason}).\nΓράψε 4-ψήφιο PIN:`);
   if(!pin) return false;
   if(!isValidPin(pin)) { alert("Άκυρο PIN."); return false; }
@@ -598,7 +600,6 @@ function ensureDB(){
     }
     save(LS_KEY, db);
   } else {
-    // ensure tables exist
     for(const t of defaultTables){
       if(!db.days[TODAY].tables[t]) db.days[TODAY].tables[t] = { lines:[] };
       if(!Array.isArray(db.days[TODAY].tables[t].lines)) db.days[TODAY].tables[t].lines = [];
@@ -608,14 +609,9 @@ function ensureDB(){
   }
   return db;
 }
-
-function getLines(db, table){
-  return db.days[TODAY].tables[table].lines;
-}
+function getLines(db, table){ return db.days[TODAY].tables[table].lines; }
 function unpaidLines(lines){ return lines.filter(x=>!x.paid); }
-function sumOpen(db, table){
-  return unpaidLines(getLines(db, table)).reduce((s,x)=>s+x.price,0);
-}
+function sumOpen(db, table){ return unpaidLines(getLines(db, table)).reduce((s,x)=>s+x.price,0); }
 function sumByMethod(payments){
   const out = {cash:0, card:0, free:0};
   for(const p of payments) out[p.method] += p.total;
@@ -627,15 +623,18 @@ let activeCat = null;
 let tab = "order";
 const payState = { ids:new Set() };
 
+/* =================== OVERLAYS =================== */
+function showSheet(on){ $("overlay").classList.toggle("show", !!on); }
+function showPay(on){ $("payOverlay").classList.toggle("show", !!on); }
+function showCats(on){ $("catOverlay").classList.toggle("show", !!on); }
+
 /* =================== RENDER =================== */
 function renderTop(){
   $("todayText").textContent = "Σήμερα: " + TODAY.split("-").reverse().join("/");
-
   const users = ensureUsers();
   $("userSelect").innerHTML = users.map(u=>`<option value="${u.id}">${u.name}</option>`).join("");
   $("userSelect").value = getActiveUserId();
 }
-
 function renderActiveInfo(){
   const db = ensureDB();
   const day = db.days[TODAY];
@@ -649,13 +648,18 @@ function renderActiveInfo(){
   const sums = sumByMethod(day.payments);
   $("sumMini").textContent = `Μετρητά: ${fmt(sums.cash)} • Κάρτα: ${fmt(sums.card)} • Κερασμένα: ${fmt(sums.free)}`;
 }
-
 function renderTabs(){
   $("tabOrder").classList.toggle("active", tab==="order");
   $("tabTickets").classList.toggle("active", tab==="tickets");
   $("viewOrder").classList.toggle("hide", tab!=="order");
   $("viewTickets").classList.toggle("hide", tab!=="tickets");
   $("ticketActions").classList.toggle("hide", tab!=="order");
+}
+
+function getCats(){
+  const cats = [...new Set(products.map(p=>p.cat))];
+  if(!activeCat) activeCat = cats[0];
+  return cats;
 }
 
 function renderTables(){
@@ -677,17 +681,21 @@ function renderTables(){
     btn.onclick = ()=>{
       day.meta.activeTable = t;
       save(LS_KEY, db);
+      tab = "order";
+      renderTabs();
       renderAll();
+
+      // NEW: after selecting table, open categories quick sheet
+      openCategoriesQuick();
     };
     grid.appendChild(btn);
   }
 }
 
-function renderCats(){
-  const cats = [...new Set(products.map(p=>p.cat))];
-  if(!activeCat) activeCat = cats[0];
+function renderCatsRow(){
   const row = $("catRow");
   row.innerHTML = "";
+  const cats = getCats();
   for(const c of cats){
     const b = document.createElement("button");
     b.className = "pill small";
@@ -702,7 +710,6 @@ function renderProducts(){
   const q = $("search").value.trim().toLowerCase();
   const list = $("productList");
   list.innerHTML = "";
-
   const filtered = products.filter(p=>{
     if(p.cat !== activeCat) return false;
     if(!q) return true;
@@ -770,7 +777,6 @@ function renderTicket(){
       </div>
       <div class="price">${fmt(l.price)}</div>
     `;
-    // Tap to remove one unpaid line (optional)
     div.onclick = ()=> removeOneLine(l.id);
     box.appendChild(div);
   }
@@ -812,6 +818,7 @@ function renderTicketsTab(){
       tab="order";
       renderTabs();
       renderAll();
+      openCategoriesQuick();
     };
     list.appendChild(div);
   }
@@ -821,15 +828,47 @@ function renderAll(){
   renderTop();
   renderActiveInfo();
   renderTables();
-  renderCats();
+  renderCatsRow();
   renderProducts();
   renderTicket();
   renderTicketsTab();
 }
 
-/* =================== OVERLAYS =================== */
-function showSheet(on){ $("overlay").classList.toggle("show", !!on); }
-function showPay(on){ $("payOverlay").classList.toggle("show", !!on); }
+/* =================== CATEGORY QUICK FLOW (NEW) =================== */
+function renderCatGrid(){
+  const cats = getCats();
+  const grid = $("catGrid");
+  grid.innerHTML = "";
+  for(const c of cats){
+    const b = document.createElement("button");
+    b.className = "pill catBtn";
+    if(c===activeCat) b.classList.add("primary");
+    b.textContent = c;
+    b.onclick = ()=>{
+      activeCat = c;
+      $("search").value = "";
+      renderCatsRow();
+      renderProducts();
+      showCats(false);
+
+      // scroll products into view (fast for waiter)
+      setTimeout(()=> {
+        document.getElementById("productsCard").scrollIntoView({behavior:"smooth", block:"start"});
+      }, 50);
+    };
+    grid.appendChild(b);
+  }
+}
+
+function openCategoriesQuick(){
+  // Always open on phones; on large screens it's still ok.
+  renderCatGrid();
+  const db = ensureDB();
+  const t = db.days[TODAY].meta.activeTable;
+  $("catTitle").textContent = `Κατηγορίες · ${t}`;
+  $("catSub").textContent = "Διάλεξε κατηγορία → μετά προϊόντα με τιμές.";
+  showCats(true);
+}
 
 /* =================== PAY / SPLIT =================== */
 function openPaySheet(){
@@ -837,7 +876,6 @@ function openPaySheet(){
   renderPayList();
   showPay(true);
 }
-
 function renderPayList(){
   const db = ensureDB();
   const day = db.days[TODAY];
@@ -864,7 +902,6 @@ function renderPayList(){
     `;
     const cb = row.querySelector("input");
     cb.checked = payState.ids.has(l.id);
-
     cb.onchange = ()=>{
       if(cb.checked) payState.ids.add(l.id);
       else payState.ids.delete(l.id);
@@ -879,7 +916,6 @@ function renderPayList(){
   }
   updatePayTotal();
 }
-
 function updatePayTotal(){
   const db = ensureDB();
   const day = db.days[TODAY];
@@ -889,7 +925,6 @@ function updatePayTotal(){
   const total = selected.reduce((s,x)=>s+x.price,0);
   $("payTotal").textContent = `Τελικό: ${fmt(total)}`;
 }
-
 function toggleSelectAll(){
   const db = ensureDB();
   const day = db.days[TODAY];
@@ -913,17 +948,12 @@ async function doPayment(method){
 
   const open = unpaidLines(getLines(db,t));
   const selected = open.filter(x=>payState.ids.has(x.id));
-
-  if(selected.length===0){
-    alert("Διάλεξε τουλάχιστον 1 προϊόν για πληρωμή.");
-    return;
-  }
+  if(selected.length===0){ alert("Διάλεξε τουλάχιστον 1 προϊόν για πληρωμή."); return; }
 
   const now = Date.now();
   const user = getActiveUser().name;
   const total = selected.reduce((s,x)=>s+x.price,0);
 
-  // confirm only if (total >= 15 OR items >= 3) OR method free
   const mustConfirm = (method==="free") || (total >= CONFIRM_MIN_TOTAL) || (selected.length >= CONFIRM_MIN_ITEMS);
   if(mustConfirm){
     const methodLabel = ({cash:"Μετρητά", card:"Κάρτα", free:"Κερασμένα"}[method] || method);
@@ -944,17 +974,13 @@ ${preview}${more}
     if(!confirm(msg)) return;
   }
 
-  // apply paid
   const ids = selected.map(x=>x.id);
   const lines = getLines(db,t);
   for(const l of lines){
-    if(ids.includes(l.id)){
-      l.paid = { method, at: now, by: user };
-    }
+    if(ids.includes(l.id)) l.paid = { method, at: now, by: user };
   }
 
-  const payRecord = { id: uid(), at: now, table: t, user, method, total, itemIds: ids };
-  day.payments.push(payRecord);
+  day.payments.push({ id: uid(), at: now, table: t, user, method, total, itemIds: ids });
   day.undone = [];
   save(LS_KEY, db);
 
@@ -976,7 +1002,6 @@ function undoPayment(){
   save(LS_KEY, db);
   renderAll();
 }
-
 function redoPayment(){
   const db = ensureDB();
   const day = db.days[TODAY];
@@ -1023,7 +1048,6 @@ async function resetOpenForTable(){
   const user = getActiveUser();
   const ok = await requirePin(user, "Καθαρισμός ανοιχτών");
   if(!ok) return;
-
   if(!confirm("Θα διαγραφούν ΜΟΝΟ τα ανοιχτά προϊόντα του τρέχοντος τραπεζιού. Συνέχεια;")) return;
 
   const db = ensureDB();
@@ -1045,8 +1069,7 @@ async function wipeAll(){
 
   const word = prompt("Για ασφάλεια γράψε ακριβώς: DELETE");
   if(word !== "DELETE"){ alert("Ακυρώθηκε."); return; }
-
-  if(!confirm("Τελευταία επιβεβαίωση: Θα σβηστούν ΟΛΑ (ημέρες/χρήστες/τα πάντα). Συνέχεια;")) return;
+  if(!confirm("Τελευταία επιβεβαίωση: Θα σβηστούν ΟΛΑ. Συνέχεια;")) return;
 
   localStorage.removeItem(LS_KEY);
   localStorage.removeItem(LS_USERS);
@@ -1059,7 +1082,7 @@ async function addUser(){
   const name = prompt("Όνομα νέου χρήστη:");
   if(!name) return;
 
-  const pin1 = prompt("Βάλε 4-ψήφιο PIN για τον νέο χρήστη:");
+  const pin1 = prompt("Βάλε 4-ψήφιο PIN:");
   if(!pin1 || !isValidPin(pin1)) { alert("Άκυρο PIN."); return; }
   const pin2 = prompt("Ξαναγράψε το PIN:");
   if(pin2 !== pin1){ alert("Δεν ταιριάζουν."); return; }
@@ -1070,7 +1093,6 @@ async function addUser(){
   save(LS_ACTIVE_USER, users[users.length-1].id);
   renderAll();
 }
-
 async function renameUser(){
   const active = getActiveUser();
   const ok = await requirePin(active, "Μετονομασία χρήστη");
@@ -1085,7 +1107,6 @@ async function renameUser(){
   save(LS_USERS, users);
   renderAll();
 }
-
 async function setPin(){
   const active = getActiveUser();
   const ok = await requirePin(active, "Αλλαγή PIN");
@@ -1102,7 +1123,6 @@ async function setPin(){
   save(LS_USERS, users);
   alert("Το PIN άλλαξε.");
 }
-
 async function deleteUser(){
   const active = getActiveUser();
   const ok = await requirePin(active, "Διαγραφή χρήστη");
@@ -1110,7 +1130,6 @@ async function deleteUser(){
 
   const users = ensureUsers();
   if(users.length<=1){ alert("Πρέπει να υπάρχει τουλάχιστον 1 χρήστης."); return; }
-
   if(!confirm(`Να διαγραφεί ο χρήστης "${active.name}";`)) return;
 
   const left = users.filter(u=>u.id!==active.id);
@@ -1118,16 +1137,13 @@ async function deleteUser(){
   save(LS_ACTIVE_USER, left[0].id);
   renderAll();
 }
-
 async function changeUserWithPin(newId){
   const users = ensureUsers();
   const newUser = users.find(u=>u.id===newId);
   if(!newUser) return;
 
-  // Ask PIN of the new user (so you can't impersonate)
   const ok = await requirePin(newUser, "Αλλαγή χρήστη");
   if(!ok){
-    // revert select back
     $("userSelect").value = getActiveUserId();
     return;
   }
@@ -1135,7 +1151,7 @@ async function changeUserWithPin(newId){
   renderAll();
 }
 
-/* =================== INIT EVENTS =================== */
+/* =================== EVENTS =================== */
 $("search").addEventListener("input", renderProducts);
 
 $("tabOrder").onclick=()=>{tab="order"; renderTabs();};
@@ -1168,6 +1184,10 @@ $("btnUndoPay").onclick=undoPayment;
 $("btnRedoPay").onclick=redoPayment;
 $("btnCSV").onclick=exportCSV;
 $("btnWipeAll").onclick=wipeAll;
+
+/* Category overlay events */
+$("btnCloseCats").onclick=()=>showCats(false);
+$("catOverlay").onclick=(e)=>{ if(e.target.id==="catOverlay") showCats(false); };
 
 /* =================== START =================== */
 renderTabs();
