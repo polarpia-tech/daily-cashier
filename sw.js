@@ -1,4 +1,4 @@
-const CACHE = "mini-cashier-cache-v90";
+const CACHE = "mini-cashier-cache-v95";
 const ASSETS = [
   "./",
   "./index.html",
