@@ -423,6 +423,96 @@ button {
       font-size: 13px !important;
     }
   }
+    /* ===========================
+   FORCE MOBILE COMPACT UI
+   =========================== */
+
+/* γενικό reset για mobile */
+* {
+  box-sizing: border-box;
+}
+
+/* ΠΑΝΩ ΜΕΡΟΣ – να μη τρώει οθόνη */
+header,
+.top,
+.topbar,
+.app-header,
+div:first-of-type {
+  padding: 6px 10px !important;
+  margin-bottom: 6px !important;
+}
+
+/* τίτλος */
+h1 {
+  font-size: 16px !important;
+  margin: 0 0 2px 0 !important;
+}
+
+/* ημερομηνία / υπότιτλοι */
+small,
+.subtitle,
+.header-sub {
+  display: none !important;
+}
+
+/* dropdown χρήστη */
+select {
+  font-size: 14px !important;
+  padding: 6px 8px !important;
+}
+
+/* status τραπεζιού */
+div,
+span {
+  max-width: 100%;
+}
+
+/* ΟΛΑ ΤΑ ΚΟΥΜΠΙΑ */
+button {
+  font-size: 14px !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+}
+
+/* ΚΟΥΜΠΙΑ ΤΡΑΠΕΖΙΩΝ */
+button:has(strong),
+button:has(b) {
+  padding: 10px !important;
+  font-size: 14px !important;
+}
+
+/* ΚΑΤΩ FIXED ΚΟΥΜΠΙΑ */
+footer,
+.bottom,
+.actions,
+.fixed,
+div[style*="position: fixed"] {
+  padding: 6px !important;
+}
+
+/* ΓΙΑ ΝΑ ΜΗΝ ΚΡΥΒΕΤΑΙ ΤΙΠΟΤΑ ΑΠΟ ΚΑΤΩ */
+body {
+  padding-bottom: 140px !important;
+}
+
+/* ΛΙΣΤΕΣ / ΠΡΟΪΟΝΤΑ */
+li,
+.card,
+.item {
+  padding: 10px !important;
+  font-size: 14px !important;
+}
+
+/* EXTRA μικρές οθόνες */
+@media (max-height: 700px) {
+  h1 {
+    font-size: 15px !important;
+  }
+  button {
+    font-size: 13px !important;
+    padding: 6px 8px !important;
+  }
+}
 </style>
   </style>
 </head>
