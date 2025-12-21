@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Ημερήσιο Ταμείο</title>
-
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0f1115" />
 
@@ -29,14 +28,8 @@
       overflow-x: hidden;
     }
 
-    .wrap{
-      width: 100%;
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 0 12px;
-    }
+    .wrap{ width:100%; max-width:980px; margin:0 auto; padding:0 12px; }
 
-    /* ======= COMPACT HEADER ======= */
     header{
       position: sticky; top: 0; z-index: 10;
       background: rgba(15,17,21,.92);
@@ -45,208 +38,184 @@
       border-bottom: 1px solid rgba(255,255,255,.08);
       padding: 10px 0;
     }
-
-    .topRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
+    .topRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .topLeft{ min-width:0; }
-    .appTitle{ font-weight:900; font-size:18px; margin:0; }
-    .appSub{ color: var(--muted); font-size:12px; margin-top:2px; }
+    .appTitle{ font-weight:900; font-size:18px; }
+    .appSub{ color:var(--muted); font-size:12px; margin-top:2px; }
 
-    .topRight{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap: nowrap;
-    }
-
+    .topRight{ display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
     select, input{
-      padding: 10px 10px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.05);
-      color: var(--text);
-      outline: none;
-      min-height: 44px;
-      font-size: 16px;
-      max-width: 100%;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      outline:none;
+      min-height:44px;
+      font-size:16px;
+      max-width:100%;
     }
-    .userSel{
-      max-width: 58vw;
-      min-width: 140px;
-    }
+    .userSel{ max-width:58vw; min-width:140px; }
 
     .btn{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      padding: 12px 12px;
-      border-radius: 16px;
-      font-weight: 750;
-      cursor: pointer;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:12px 12px;
+      border-radius:16px;
+      font-weight:750;
+      cursor:pointer;
       user-select:none;
-      min-height: 44px;
+      min-height:44px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       gap:8px;
       transition: transform .06s ease;
-      max-width: 100%;
-      white-space: nowrap;
+      white-space:nowrap;
     }
     .btn:active{ transform: translateY(1px); }
-    .btn.primary{ border-color: rgba(76,194,255,.55); background: rgba(76,194,255,.12); }
-    .btn.ok{ border-color: rgba(66,211,146,.55); background: rgba(66,211,146,.14); }
-    .btn.warn{ border-color: rgba(255,205,60,.55); background: rgba(255,205,60,.14); }
-    .btn.bad{ border-color: rgba(255,107,107,.55); background: rgba(255,107,107,.14); }
+    .btn.primary{ border-color: rgba(76,194,255,.55); background: rgba(76,194,255,.14); }
+    .btn.ok{ border-color: rgba(66,211,146,.55); background: rgba(66,211,146,.16); }
+    .btn.warn{ border-color: rgba(255,205,60,.55); background: rgba(255,205,60,.16); }
+    .btn.bad{ border-color: rgba(255,107,107,.55); background: rgba(255,107,107,.18); }
     .btn.ghost{ background: rgba(255,255,255,.04); }
 
     .pill{
-      padding: 10px 12px;
-      background: var(--glass);
-      border: 1px solid var(--glass2);
-      border-radius: 16px;
+      padding:10px 12px;
+      background:var(--glass);
+      border:1px solid var(--glass2);
+      border-radius:16px;
       display:flex;
       gap:10px;
       align-items:center;
-      flex-wrap: wrap;
-      min-height: 44px;
-      overflow: hidden;
-      color: var(--muted);
-      font-size: 13px;
+      flex-wrap:wrap;
+      min-height:44px;
+      overflow:hidden;
+      color:var(--muted);
+      font-size:13px;
     }
-    .pill b{ color: var(--text); }
+    .pill b{ color:var(--text); }
 
     main{
       padding: 12px 0;
       padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px));
     }
+
     .grid{ display:grid; gap: 12px; }
 
     .card{
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 18px;
-      padding: 12px;
-      box-shadow: 0 10px 28px rgba(0,0,0,.28);
-      overflow: hidden;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:12px;
+      box-shadow:0 10px 28px rgba(0,0,0,.28);
+      overflow:hidden;
     }
 
-    .row{
-      display:flex;
-      gap: 10px;
-      align-items:center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
+    .row{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .title{ font-weight:900; font-size:15px; }
+    .muted{ color:var(--muted); font-size:13px; }
+    .divider{ height:1px; background: rgba(255,255,255,.08); margin:10px 0; }
 
-    .title{ font-weight: 900; font-size: 15px; }
-    .muted{ color: var(--muted); font-size: 13px; }
-    .divider{ height:1px; background: rgba(255,255,255,.08); margin: 10px 0; }
+    .cats{ display:flex; gap:8px; overflow:auto; padding-bottom:6px; -webkit-overflow-scrolling: touch; }
+    .cat{ white-space:nowrap; }
+    .cat.active{ outline:2px solid rgba(76,194,255,.55); }
 
-    .cats{
-      display:flex;
-      gap: 8px;
-      overflow:auto;
-      padding-bottom: 6px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .cat{ white-space: nowrap; }
-    .cat.active{ outline: 2px solid rgba(76,194,255,.55); }
-
-    .products{ display:grid; grid-template-columns: 1fr; gap: 10px; }
-    @media (min-width: 560px){ .products{ grid-template-columns: 1fr 1fr; } }
-    @media (min-width: 920px){ .products{ grid-template-columns: 1fr 1fr 1fr; } }
+    .products{ display:grid; grid-template-columns:1fr; gap:10px; }
+    @media (min-width:560px){ .products{ grid-template-columns:1fr 1fr; } }
+    @media (min-width:920px){ .products{ grid-template-columns:1fr 1fr 1fr; } }
 
     .prod{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 12px;
-      border-radius: 16px;
-      border: 1px solid var(--stroke);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px; border-radius:16px;
+      border:1px solid var(--stroke);
       background: rgba(255,255,255,.05);
       cursor:pointer;
-      min-width: 0;
+      min-width:0;
     }
     .prod > div:first-child{ min-width:0; }
-    .prod .title{ overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .prod small{ color: var(--muted); display:block; margin-top:2px; }
-    .price{ font-weight: 900; white-space: nowrap; }
+    .prod .title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .prod small{ color:var(--muted); display:block; margin-top:2px; }
+    .price{ font-weight:900; white-space:nowrap; }
 
+    /* OPEN ORDERS LIST */
+    .openList{ display:grid; gap:10px; }
+    .openItem{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:10px;
+      display:grid;
+      gap:8px;
+    }
+    .openTop{
+      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+    }
+    .openName{ font-weight:900; }
+    .openMeta{ color:var(--muted); font-size:12px; margin-top:2px; }
+    .openBtns{ display:flex; gap:8px; flex-wrap:wrap; }
+    .miniBtn{ padding:10px 10px; border-radius:14px; min-height:40px; font-size:14px; }
+
+    /* Modal */
     .modalWrap{
       position:fixed; inset:0;
       background: rgba(0,0,0,.56);
       display:none;
       align-items:flex-end;
       justify-content:center;
-      padding: 12px;
-      z-index: 50;
+      padding:12px;
+      z-index:50;
     }
     .modal{
-      width: min(860px, 100%);
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: 20px;
-      padding: 12px;
-      box-shadow: 0 18px 55px rgba(0,0,0,.55);
-      overflow: hidden;
+      width:min(860px, 100%);
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:20px;
+      padding:12px;
+      box-shadow:0 18px 55px rgba(0,0,0,.55);
+      overflow:hidden;
     }
-    .modal h2{ margin:0 0 6px; font-size: 16px; }
+    .modal h2{ margin:0 0 6px; font-size:16px; }
     .qty{ display:flex; gap:10px; align-items:center; }
-    .qty .n{ font-size: 18px; font-weight: 900; min-width: 40px; text-align:center; }
-    .toggle{ display:flex; gap:10px; flex-wrap: wrap; }
+    .qty .n{ font-size:18px; font-weight:900; min-width:40px; text-align:center; }
+    .toggle{ display:flex; gap:10px; flex-wrap:wrap; }
     label.cb{
       display:flex; gap:10px; align-items:center;
-      padding: 10px 12px;
-      border-radius: 16px;
-      border: 1px solid var(--stroke);
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid var(--stroke);
       background: rgba(255,255,255,.05);
       cursor:pointer;
-      min-height: 44px;
+      min-height:44px;
     }
-    input[type="checkbox"]{ width: 18px; height: 18px; }
+    input[type="checkbox"]{ width:18px; height:18px; }
 
-    /* ✅ footer bar καθαρό/σκούρο (δεν μπερδεύεται με το scroll) */
+    /* Footer */
     .footerBar{
-      position:fixed;
-      left:0; right:0; bottom:0;
+      position:fixed; left:0; right:0; bottom:0;
       padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
       z-index: 20;
-
       background: rgba(15,17,21,0.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-
       border-top: 1px solid rgba(255,255,255,.14);
       box-shadow: 0 -14px 40px rgba(0,0,0,.55);
     }
-    .footerGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    @media (min-width: 760px){
-      .footerGrid{ grid-template-columns: 1fr 1fr 1fr 1fr; }
-    }
-    .tiny{ font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .footerGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media (min-width:760px){ .footerGrid{ grid-template-columns:1fr 1fr 1fr 1fr; } }
+    .tiny{ font-size:12px; color:var(--muted); margin-top:8px; }
 
     .toast{
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
+      position: fixed; left:50%; transform:translateX(-50%);
       bottom: calc(126px + env(safe-area-inset-bottom, 0px));
       background: rgba(20,24,32,.95);
       border:1px solid rgba(255,255,255,.10);
-      padding: 10px 12px;
-      border-radius: 16px;
+      padding:10px 12px;
+      border-radius:16px;
       display:none;
       z-index:60;
-      max-width: 92vw;
+      max-width:92vw;
       text-align:center;
     }
   </style>
@@ -261,7 +230,6 @@
         <div class="appTitle">Ημερήσιο Ταμείο</div>
         <div class="appSub" id="todayPill">Σήμερα: —</div>
       </div>
-
       <div class="topRight">
         <select id="userSel" class="userSel"></select>
         <button class="btn ghost" id="btnSettings">⚙</button>
@@ -270,7 +238,7 @@
   </div>
 </header>
 
-<!-- Settings panel (χρησιμοποιεί το ίδιο modal style) -->
+<!-- Settings -->
 <div class="modalWrap" id="settingsWrap">
   <div class="modal">
     <div class="row" style="align-items:flex-start;">
@@ -290,8 +258,7 @@
     </div>
 
     <div class="divider"></div>
-
-    <div class="pill">Τρόποι: <b>Μετρητά</b> / <b>Κάρτα</b> / <b>Κερασμένα</b></div>
+    <div class="pill">Ροή: <b>Παραγγελία → Πληρωμή</b> (Μετρητά/Κάρτα/Κερασμένο)</div>
   </div>
 </div>
 
@@ -299,6 +266,22 @@
   <div class="wrap">
     <div class="grid">
 
+      <!-- Open orders -->
+      <section class="card">
+        <div class="row">
+          <div>
+            <div class="title">Ανοιχτές Παραγγελίες</div>
+            <div class="muted">Γράφεις πρώτα την παραγγελία. Πληρώνεται όταν φύγει ο πελάτης.</div>
+          </div>
+          <div class="pill" style="min-height:auto;">
+            Ανοιχτά: <b id="openCount">0</b> — Αξία: <b id="openValue">0,00 €</b>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div id="openList" class="openList"></div>
+      </section>
+
+      <!-- Categories -->
       <section class="card">
         <div class="row">
           <div>
@@ -311,11 +294,12 @@
         <div class="cats" id="cats"></div>
       </section>
 
+      <!-- Products -->
       <section class="card">
         <div class="row">
           <div>
             <div class="title" id="catTitle">Προϊόντα</div>
-            <div class="muted">Πάτησε προϊόν για καταχώρηση.</div>
+            <div class="muted">Πάτησε προϊόν για νέα παραγγελία.</div>
           </div>
           <input id="search" placeholder="Αναζήτηση…">
         </div>
@@ -323,25 +307,26 @@
         <div class="products" id="products"></div>
       </section>
 
+      <!-- Summary -->
       <section class="card">
         <div class="row">
           <div>
             <div class="title">Σύνοψη ημέρας</div>
-            <div class="muted">Για τον επιλεγμένο χρήστη.</div>
+            <div class="muted">Μετράει ΜΟΝΟ πληρωμένες.</div>
           </div>
           <button class="btn primary" id="btnClose">Κλείσιμο ημέρας</button>
         </div>
         <div class="divider"></div>
 
         <div style="display:grid; gap:6px;">
-          <div class="row"><span>Σύνολο</span><b id="sumTotal">0,00 €</b></div>
+          <div class="row"><span>Σύνολο (cash+card)</span><b id="sumTotal">0,00 €</b></div>
           <div class="row"><span>Μετρητά</span><b id="sumCash">0,00 €</b></div>
           <div class="row"><span>Κάρτα</span><b id="sumCard">0,00 €</b></div>
           <div class="row"><span>Κερασμένα (αξία)</span><b id="sumGift">0,00 €</b></div>
         </div>
 
         <div class="divider"></div>
-        <div class="muted">Τελευταίες κινήσεις</div>
+        <div class="muted">Τελευταίες πληρωμές</div>
         <div id="lastList" class="tiny" style="margin-top:8px; display:grid; gap:6px;"></div>
       </section>
 
@@ -349,15 +334,16 @@
   </div>
 </main>
 
+<!-- Footer -->
 <div class="footerBar">
   <div class="wrap">
     <div class="footerGrid">
-      <button class="btn ok" id="btnUndo">Αναίρεση τελευταίου</button>
-      <button class="btn primary" id="btnRepeat">Τελευταίο ξανά</button>
+      <button class="btn ok" id="btnUndo">Αναίρεση τελευταίας πληρωμής</button>
+      <button class="btn primary" id="btnRepeat">Τελευταία πληρωμή ξανά</button>
       <button class="btn" id="btnCSV">Εξαγωγή CSV</button>
       <button class="btn bad" id="btnWipeAll">Διαγραφή όλων</button>
     </div>
-    <div class="tiny">Tip: Chrome ⋮ → <b>Προσθήκη στην αρχική οθόνη</b> (ανοίγει σαν app).</div>
+    <div class="tiny">Tip: Chrome ⋮ → <b>Προσθήκη στην αρχική οθόνη</b>.</div>
   </div>
 </div>
 
@@ -395,10 +381,10 @@
     <div class="divider"></div>
 
     <div class="row">
-      <button class="btn ok" style="flex:1" id="payCash">ΠΛΗΡΩΘΗΚΕ ΜΕΤΡΗΤΑ</button>
-      <button class="btn primary" style="flex:1" id="payCard">ΠΛΗΡΩΘΗΚΕ ΚΑΡΤΑ</button>
-      <button class="btn warn" style="flex:1" id="payGift">ΚΕΡΑΣΜΕΝΟ</button>
+      <button class="btn primary" style="flex:1" id="addOpen">➕ ΠΡΟΣΘΗΚΗ ΠΑΡΑΓΓΕΛΙΑΣ</button>
     </div>
+
+    <div class="tiny">Η πληρωμή γίνεται μετά από την λίστα “Ανοιχτές Παραγγελίες”.</div>
   </div>
 </div>
 
@@ -406,7 +392,6 @@
 
 <script>
 (function(){
-  // PWA register
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').catch(function(){});
@@ -424,10 +409,9 @@
     toastEl.textContent=msg;
     toastEl.style.display="block";
     clearTimeout(toastEl._t);
-    toastEl._t=setTimeout(function(){ toastEl.style.display="none"; }, 1500);
+    toastEl._t=setTimeout(function(){ toastEl.style.display="none"; }, 1600);
   }
 
-  // MENU
   var MENU=[
     { cat:"☕ ΚΑΦΕΔΕΣ – ΖΕΣΤΟΙ", items:[
       ["Espresso μονός",2.60],["Espresso διπλός",3.20],["Espresso macchiato",2.90],
@@ -471,12 +455,15 @@
 
   var EXTRAS={ decaf:{name:"Decaf",price:0.30}, plant:{name:"Φυτικό γάλα",price:0.50} };
 
-  // Storage
-  var LS_KEY="mini_cashier_db_v1";
+  // DB schema: day => { open:[], paid:[] }
+  var LS_KEY="mini_cashier_db_v2";
   var LS_USERS="mini_cashier_users_v1";
   var LS_USER="mini_cashier_user_v1";
 
-  function loadDB(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {days:{},lastId:0}; }catch(e){ return {days:{},lastId:0}; } }
+  function loadDB(){
+    try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {days:{},lastId:0}; }
+    catch(e){ return {days:{},lastId:0}; }
+  }
   function saveDB(db){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
 
   function loadUsers(){
@@ -509,9 +496,7 @@
     if(userNameLabel) userNameLabel.textContent = currentUser().name;
     settingsWrap.style.display="flex";
   }
-  function closeSettings(){
-    settingsWrap.style.display="none";
-  }
+  function closeSettings(){ settingsWrap.style.display="none"; }
   btnSettings.onclick=openSettings;
   btnSettingsClose.onclick=closeSettings;
   settingsWrap.addEventListener("click", function(e){ if(e.target===settingsWrap) closeSettings(); });
@@ -547,12 +532,13 @@
 
   function ensureDay(){
     TODAY=currentDayKey();
-    if(!db.days[TODAY]) db.days[TODAY]={entries:[]};
+    if(!db.days[TODAY]) db.days[TODAY]={open:[], paid:[]};
+    if(!db.days[TODAY].open) db.days[TODAY].open=[];
+    if(!db.days[TODAY].paid) db.days[TODAY].paid=[];
     saveDB(db);
 
     document.getElementById("dayKey").textContent=BASE_TODAY;
     document.getElementById("todayPill").textContent="Σήμερα: " + BASE_TODAY.split("-").reverse().join("/");
-
     if(userNameLabel) userNameLabel.textContent = currentUser().name;
   }
 
@@ -593,7 +579,7 @@
     renderUserSelect(); ensureDay(); renderAll();
   });
 
-  // Category/Product UI
+  // Categories / Products
   var catsEl=document.getElementById("cats");
   var productsEl=document.getElementById("products");
   var catTitle=document.getElementById("catTitle");
@@ -632,7 +618,85 @@
   }
   searchEl.addEventListener("input", buildProducts);
 
-  // Modal logic
+  // Open orders UI
+  var openListEl=document.getElementById("openList");
+  var openCountEl=document.getElementById("openCount");
+  var openValueEl=document.getElementById("openValue");
+
+  function renderOpen(){
+    ensureDay();
+    var open=db.days[TODAY].open;
+    openListEl.innerHTML="";
+
+    var sum=0;
+    open.forEach(function(o){ sum += o.total; });
+
+    openCountEl.textContent=String(open.length);
+    openValueEl.textContent=euro(sum);
+
+    if(!open.length){
+      openListEl.innerHTML='<div class="muted">Δεν υπάρχουν ανοιχτές παραγγελίες.</div>';
+      return;
+    }
+
+    open.slice().reverse().forEach(function(o){
+      var ex=(o.extras && o.extras.length) ? (" +"+o.extras.join(", ")) : "";
+      var item=document.createElement("div");
+      item.className="openItem";
+
+      item.innerHTML =
+        '<div class="openTop">' +
+          '<div>' +
+            '<div class="openName">'+o.qty+'x '+o.item+ex+'</div>' +
+            '<div class="openMeta">⏱ '+o.time+' — '+euro(o.total)+'</div>' +
+          '</div>' +
+          '<div class="openBtns">' +
+            '<button class="btn ok miniBtn" data-act="cash" data-id="'+o.id+'">💶</button>' +
+            '<button class="btn primary miniBtn" data-act="card" data-id="'+o.id+'">💳</button>' +
+            '<button class="btn warn miniBtn" data-act="gift" data-id="'+o.id+'">🎁</button>' +
+            '<button class="btn bad miniBtn" data-act="cancel" data-id="'+o.id+'">🗑</button>' +
+          '</div>' +
+        '</div>';
+
+      item.querySelectorAll("button").forEach(function(b){
+        b.onclick=function(){
+          var act=b.getAttribute("data-act");
+          var id=parseInt(b.getAttribute("data-id"),10);
+          if(act==="cancel"){ cancelOpen(id); return; }
+          payOpen(id, act);
+        };
+      });
+
+      openListEl.appendChild(item);
+    });
+  }
+
+  function cancelOpen(id){
+    ensureDay();
+    var open=db.days[TODAY].open;
+    var idx=open.findIndex(function(x){return x.id===id;});
+    if(idx<0) return;
+    var removed=open.splice(idx,1)[0];
+    saveDB(db);
+    toast("Ακυρώθηκε: "+removed.item);
+    renderAll();
+  }
+
+  function payOpen(id, method){
+    ensureDay();
+    var open=db.days[TODAY].open;
+    var idx=open.findIndex(function(x){return x.id===id;});
+    if(idx<0) return;
+    var order=open.splice(idx,1)[0];
+    order.method=method;        // cash / card / gift
+    order.paidTime=(new Date()).toTimeString().slice(0,5);
+    db.days[TODAY].paid.push(order);
+    saveDB(db);
+    toast(method==="gift" ? "Κλείστηκε ως κερασμένο" : "Πληρώθηκε");
+    renderAll();
+  }
+
+  // Modal create open order
   var modalWrap=document.getElementById("modalWrap");
   var mTitle=document.getElementById("mTitle");
   var mPrice=document.getElementById("mPrice");
@@ -640,6 +704,8 @@
   var qtyValEl=document.getElementById("qtyVal");
   var xDecaf=document.getElementById("xDecaf");
   var xPlant=document.getElementById("xPlant");
+  var addOpenBtn=document.getElementById("addOpen");
+
   var currentItem=null;
   var qty=1;
 
@@ -682,7 +748,7 @@
   xDecaf.onchange=function(){ if(currentItem) mFinal.textContent=euro(calcFinal(currentItem.price)); };
   xPlant.onchange=function(){ if(currentItem) mFinal.textContent=euro(calcFinal(currentItem.price)); };
 
-  function addEntry(method){
+  function addOpenOrder(){
     ensureDay();
     var now=new Date();
     var time=now.toTimeString().slice(0,5);
@@ -695,7 +761,7 @@
     var unitFinal=currentItem.price+extrasTotal;
     var total=unitFinal*qty;
 
-    var entry={
+    var order={
       id: ++db.lastId,
       date: BASE_TODAY,
       time: time,
@@ -705,100 +771,117 @@
       extras: extras,
       unit: unitFinal,
       total: total,
-      method: method
+      status: "open",
+      method: null
     };
 
-    db.days[TODAY].entries.push(entry);
+    db.days[TODAY].open.push(order);
     saveDB(db);
-    toast(method==="gift" ? "Καταχωρήθηκε ως κερασμένο" : "Καταχωρήθηκε");
+    toast("Προστέθηκε παραγγελία");
     closeModal();
     renderAll();
   }
 
-  document.getElementById("payCash").onclick=function(){ addEntry("cash"); };
-  document.getElementById("payCard").onclick=function(){ addEntry("card"); };
-  document.getElementById("payGift").onclick=function(){ addEntry("gift"); };
+  addOpenBtn.onclick=addOpenOrder;
 
-  // Summary
+  // Paid summary
   var sumTotalEl=document.getElementById("sumTotal");
   var sumCashEl=document.getElementById("sumCash");
   var sumCardEl=document.getElementById("sumCard");
   var sumGiftEl=document.getElementById("sumGift");
   var lastListEl=document.getElementById("lastList");
 
-  function computeDay(){
+  function computePaid(){
     ensureDay();
-    var entries=(db.days[TODAY] && db.days[TODAY].entries) ? db.days[TODAY].entries : [];
+    var paid=db.days[TODAY].paid || [];
     var cash=0, card=0, gift=0;
-    entries.forEach(function(e){
+    paid.forEach(function(e){
       if(e.method==="cash") cash+=e.total;
       else if(e.method==="card") card+=e.total;
       else if(e.method==="gift") gift+=e.total;
     });
-    return {entries:entries, cash:cash, card:card, gift:gift, total:(cash+card)};
+    return {paid:paid, cash:cash, card:card, gift:gift, total:(cash+card)};
   }
 
-  function renderSummary(){
-    var c=computeDay();
+  function renderPaidSummary(){
+    var c=computePaid();
     sumTotalEl.textContent=euro(c.total);
     sumCashEl.textContent=euro(c.cash);
     sumCardEl.textContent=euro(c.card);
     sumGiftEl.textContent=euro(c.gift);
 
     lastListEl.innerHTML="";
-    var last=c.entries.slice(-6).reverse();
+    var last=c.paid.slice(-6).reverse();
     if(!last.length){
-      lastListEl.innerHTML='<div class="muted">Δεν υπάρχει καταχώρηση ακόμα.</div>';
+      lastListEl.innerHTML='<div class="muted">Δεν υπάρχει πληρωμή ακόμα.</div>';
       return;
     }
     last.forEach(function(e){
       var m=e.method==="cash"?"💶":(e.method==="card"?"💳":"🎁");
       var ex=(e.extras && e.extras.length) ? (" +"+e.extras.join(", ")) : "";
       var line=document.createElement("div");
-      line.textContent=m+" "+e.time+" — "+e.qty+"x "+e.item+ex+" = "+euro(e.total);
+      line.textContent=m+" "+(e.paidTime||e.time)+" — "+e.qty+"x "+e.item+ex+" = "+euro(e.total);
       lastListEl.appendChild(line);
     });
   }
 
-  // Undo / Repeat
+  // Undo / Repeat (paid only)
   document.getElementById("btnUndo").onclick=function(){
     ensureDay();
-    var entries=db.days[TODAY].entries;
-    if(!entries.length){ toast("Τίποτα για αναίρεση"); return; }
-    var removed=entries.pop();
+    var paid=db.days[TODAY].paid;
+    if(!paid.length){ toast("Τίποτα για αναίρεση"); return; }
+    var removed=paid.pop();
+    // επιστρέφει στα open
+    removed.method=null;
+    removed.paidTime=null;
+    db.days[TODAY].open.push(removed);
     saveDB(db);
-    toast("Αναιρέθηκε: "+removed.item);
+    toast("Γύρισε σε ανοιχτό: "+removed.item);
     renderAll();
   };
 
   document.getElementById("btnRepeat").onclick=function(){
     ensureDay();
-    var entries=db.days[TODAY].entries;
-    if(!entries.length){ toast("Δεν υπάρχει προηγούμενη κίνηση"); return; }
-    var last=entries[entries.length-1];
+    var paid=db.days[TODAY].paid;
+    if(!paid.length){ toast("Δεν υπάρχει τελευταία πληρωμή"); return; }
+    var last=paid[paid.length-1];
     var now=new Date();
     var time=now.toTimeString().slice(0,5);
-    var entry=Object.assign({}, last, {id: ++db.lastId, time: time});
-    entries.push(entry);
+
+    var copy=Object.assign({}, last);
+    copy.id=++db.lastId;
+    copy.time=time;
+    copy.paidTime=time;
+    // επανάληψη ως OPEN ή PAID; εδώ το κάνουμε OPEN (λογική σερβιτόρας)
+    copy.method=null;
+    copy.paidTime=null;
+    db.days[TODAY].open.push(copy);
+
     saveDB(db);
-    toast("Επαναλήφθηκε: "+entry.item);
+    toast("Επαναλήφθηκε ως παραγγελία");
     renderAll();
   };
 
-  // CSV
+  // CSV includes open + paid
   function escapeCSV(s){
     s=String(s==null?"":s);
     if(/[,"\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
     return s;
   }
-  function downloadCSV(entries, filename){
-    var uname=currentUser().name;
-    var header=["user","date","time","category","item","qty","extras","unit","total","method"];
+
+  function downloadCSV(rows, filename){
+    var header=["user","date","time","paidTime","status","category","item","qty","extras","unit","total","method"];
     var lines=[header.join(",")];
-    entries.forEach(function(e){
+    rows.forEach(function(e){
       lines.push([
-        uname,e.date,e.time,e.category,e.item,e.qty,(e.extras||[]).join(" | "),
-        e.unit.toFixed(2), e.total.toFixed(2), e.method
+        currentUser().name,
+        e.date, e.time, e.paidTime||"",
+        (e.method ? "paid" : "open"),
+        e.category, e.item, e.qty,
+        (e.extras||[]).join(" | "),
+        e.unit.toFixed(2),
+        e.total.toFixed(2),
+        e.method||""
       ].map(escapeCSV).join(","));
     });
     var blob=new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
@@ -811,23 +894,25 @@
   }
 
   document.getElementById("btnCSV").onclick=function(){
-    var c=computeDay();
-    if(!c.entries.length){ toast("Δεν υπάρχουν καταχωρήσεις"); return; }
+    ensureDay();
+    var rows=[].concat(db.days[TODAY].open, db.days[TODAY].paid);
+    if(!rows.length){ toast("Δεν υπάρχουν εγγραφές"); return; }
     var uname=normalizeId(currentUser().name);
-    downloadCSV(c.entries, "taMeio_"+BASE_TODAY+"_"+uname+".csv");
+    downloadCSV(rows, "taMeio_"+BASE_TODAY+"_"+uname+".csv");
   };
 
-  // Reset / Wipe
+  // Reset day
   document.getElementById("btnResetDay").onclick=function(){
     ensureDay();
     var uname=currentUser().name;
     if(!confirm('Θες σίγουρα να καθαρίσεις ΜΟΝΟ τη σημερινή ημέρα για τον χρήστη "'+uname+'";')) return;
-    db.days[TODAY]={entries:[]};
+    db.days[TODAY]={open:[], paid:[]};
     saveDB(db);
     toast("Καθαρίστηκε η ημέρα");
     renderAll();
   };
 
+  // Wipe all
   document.getElementById("btnWipeAll").onclick=function(){
     if(!confirm("ΠΡΟΣΟΧΗ: Θα διαγραφούν ΟΛΑ τα δεδομένα από τη συσκευή. Συνέχεια;")) return;
     localStorage.removeItem(LS_KEY);
@@ -836,10 +921,11 @@
     location.reload();
   };
 
-  // Close day report
+  // Close day report (paid + open)
   document.getElementById("btnClose").onclick=function(){
-    var c=computeDay();
-    var uname=currentUser().name;
+    var paid=computePaid();
+    var open=db.days[TODAY].open;
+    var openSum=open.reduce(function(a,x){ return a+x.total; }, 0);
 
     var wrap=document.createElement("div");
     wrap.className="modalWrap";
@@ -850,19 +936,19 @@
     modal.innerHTML=
       '<div class="row" style="align-items:flex-start;">'+
         '<div><h2>Κλείσιμο Ημέρας – '+BASE_TODAY.split("-").reverse().join("/")+'</h2>'+
-        '<div class="muted">Χρήστης: <b>'+uname+'</b></div></div>'+
+        '<div class="muted">Χρήστης: <b>'+currentUser().name+'</b></div></div>'+
         '<button class="btn" id="rClose">Κλείσιμο</button>'+
       '</div>'+
       '<div class="divider"></div>'+
       '<div style="display:grid; gap:6px;">'+
-        '<div class="row"><span>Σύνολο (cash+card)</span><b>'+euro(c.total)+'</b></div>'+
-        '<div class="row"><span>Μετρητά</span><b>'+euro(c.cash)+'</b></div>'+
-        '<div class="row"><span>Κάρτα</span><b>'+euro(c.card)+'</b></div>'+
-        '<div class="row"><span>Κερασμένα</span><b>'+euro(c.gift)+'</b></div>'+
-        '<div class="row"><span>Σύνολο κινήσεων</span><b>'+c.entries.length+'</b></div>'+
+        '<div class="row"><span>Σύνολο (cash+card)</span><b>'+euro(paid.total)+'</b></div>'+
+        '<div class="row"><span>Μετρητά</span><b>'+euro(paid.cash)+'</b></div>'+
+        '<div class="row"><span>Κάρτα</span><b>'+euro(paid.card)+'</b></div>'+
+        '<div class="row"><span>Κερασμένα</span><b>'+euro(paid.gift)+'</b></div>'+
+        '<div class="row"><span>Ανοιχτές παραγγελίες</span><b>'+open.length+' ('+euro(openSum)+')</b></div>'+
       '</div>'+
       '<div class="divider"></div>'+
-      '<button class="btn primary" id="rCSV" style="width:100%;">Λήψη CSV (σημερινά)</button>';
+      '<button class="btn primary" id="rCSV" style="width:100%;">Λήψη CSV (open+paid)</button>';
 
     wrap.appendChild(modal);
     document.body.appendChild(wrap);
@@ -870,12 +956,18 @@
     modal.querySelector("#rClose").onclick=function(){ wrap.remove(); };
     wrap.addEventListener("click", function(e){ if(e.target===wrap) wrap.remove(); });
     modal.querySelector("#rCSV").onclick=function(){
-      var uname2=normalizeId(currentUser().name);
-      downloadCSV(c.entries, "taMeio_"+BASE_TODAY+"_"+uname2+".csv");
+      var rows=[].concat(db.days[TODAY].open, db.days[TODAY].paid);
+      var uname=normalizeId(currentUser().name);
+      downloadCSV(rows, "taMeio_"+BASE_TODAY+"_"+uname+".csv");
     };
   };
 
-  function renderAll(){ buildCats(); buildProducts(); renderSummary(); }
+  function renderAll(){
+    buildCats();
+    buildProducts();
+    renderOpen();
+    renderPaidSummary();
+  }
 
   // INIT
   renderUserSelect();
