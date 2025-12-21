@@ -99,14 +99,21 @@
     .tab{ flex:1; }
     .tab.active{ outline:2px solid rgba(76,194,255,.55); }
 
-    /* Table grid */
-    .tablesGrid{
+    /* Tables grid (CSS + JS forces too) */
+    #tablesGrid{
       display:grid;
-      grid-template-columns: repeat(4, 1fr);
       gap:10px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-    @media (min-width:520px){ .tablesGrid{ grid-template-columns: repeat(6, 1fr); } }
-    @media (min-width:820px){ .tablesGrid{ grid-template-columns: repeat(10, 1fr); } }
+    @media (min-width:420px){
+      #tablesGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    @media (min-width:520px){
+      #tablesGrid{ grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    }
+    @media (min-width:820px){
+      #tablesGrid{ grid-template-columns: repeat(10, minmax(0, 1fr)); }
+    }
 
     .tableBtn{
       min-height:54px;
@@ -117,6 +124,7 @@
       cursor:pointer;
       font-weight:900;
       user-select:none;
+      min-width:0;
     }
     .tableBtn small{ font-weight:700; color:var(--muted); margin-top:2px; }
     .tableBtn.active{ outline: 2px solid rgba(76,194,255,.75); }
@@ -198,45 +206,57 @@
     .modal h2{ margin:0 0 6px; font-size:16px; }
     .qty{ display:flex; gap:10px; align-items:center; }
     .qty .n{ font-size:18px; font-weight:900; min-width:40px; text-align:center; }
-/* --- FORCE tables grid (fix for mobile / cache weirdness) --- */
-#tablesGrid{
-  display:grid !important;
-  gap:10px !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
-@media (min-width: 420px){
-  #tablesGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-}
-@media (min-width: 520px){
-  #tablesGrid{ grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
-}
-@media (min-width: 820px){
-  #tablesGrid{ grid-template-columns: repeat(10, minmax(0, 1fr)) !important; }
-}
+    .toggle{ display:flex; gap:10px; flex-wrap:wrap; }
+    label.cb{
+      display:flex; gap:10px; align-items:center;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+      min-height:44px;
+    }
+    input[type="checkbox"]{ width:18px; height:18px; }
 
-#tablesGrid .tableBtn{
-  min-width:0 !important;
-}
-   /* --- FORCE tables grid (fix for mobile / cache weirdness) --- */
-#tablesGrid{
-  display:grid !important;
-  gap:10px !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
+    /* Footer */
+    .footerBar{
+      position:fixed; left:0; right:0; bottom:0;
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
+      z-index: 40;
+      background: rgba(15,17,21,0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 -14px 40px rgba(0,0,0,.55);
+    }
+    .footerGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media (min-width:760px){ .footerGrid{ grid-template-columns:1fr 1fr 1fr 1fr; } }
 
-@media (min-width: 420px){
-  #tablesGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-}
-@media (min-width: 520px){
-  #tablesGrid{ grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
-}
-@media (min-width: 820px){
-  #tablesGrid{ grid-template-columns: repeat(10, minmax(0, 1fr)) !important; }
-}
+    /* IMPORTANT: make content readable behind footer */
+    .footerBar::before{
+      content:"";
+      position:absolute;
+      left:0; right:0;
+      top:-22px;
+      height:22px;
+      background: linear-gradient(to bottom, rgba(15,17,21,0), rgba(15,17,21,.95));
+      pointer-events:none;
+    }
 
-#tablesGrid .tableBtn{
-  min-width:0 !important;
-} 
+    .tiny{ font-size:12px; color:var(--muted); margin-top:8px; }
+
+    .toast{
+      position: fixed; left:50%; transform:translateX(-50%);
+      bottom: calc(126px + env(safe-area-inset-bottom, 0px));
+      background: rgba(20,24,32,.95);
+      border:1px solid rgba(255,255,255,.10);
+      padding:10px 12px;
+      border-radius:16px;
+      display:none;
+      z-index:80;
+      max-width:92vw;
+      text-align:center;
+    }
   </style>
 </head>
 
@@ -293,7 +313,7 @@
   <div class="wrap">
     <div class="grid">
 
-      <!-- Tables picker (always visible) -->
+      <!-- Tables picker -->
       <section class="card">
         <div class="row">
           <div>
@@ -303,7 +323,7 @@
           <div class="pill" style="min-height:auto;">Tip: Όσα έχουν υπόλοιπο φαίνονται με χρώμα.</div>
         </div>
         <div class="divider"></div>
-        <div id="tablesGrid" class="tablesGrid"></div>
+        <div id="tablesGrid"></div>
       </section>
 
       <!-- ORDER TAB -->
@@ -401,6 +421,7 @@
 
 <script>
 (function(){
+  // Register SW
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').catch(function(){});
@@ -432,6 +453,7 @@
     toastEl._t=setTimeout(function(){ toastEl.style.display="none"; }, 1600);
   }
 
+  // MENU
   var MENU=[
     { cat:"☕ ΚΑΦΕΔΕΣ – ΖΕΣΤΟΙ", items:[
       ["Espresso μονός",2.60],["Espresso διπλός",3.20],["Espresso macchiato",2.90],
@@ -475,7 +497,7 @@
 
   var EXTRAS={ decaf:{name:"Decaf",price:0.30}, plant:{name:"Φυτικό γάλα",price:0.50} };
 
-  // DB (same structure as tickets version)
+  // Storage keys
   var LS_KEY="mini_cashier_db_tickets_v1";
   var LS_USERS="mini_cashier_users_v1";
   var LS_USER="mini_cashier_user_v1";
@@ -545,9 +567,9 @@
     if(!db.days[TODAY]) db.days[TODAY]={tickets:[], paid:[]};
     if(!db.days[TODAY].tickets) db.days[TODAY].tickets=[];
     if(!db.days[TODAY].paid) db.days[TODAY].paid=[];
+
     if(!db.days[TODAY].tickets.length){
-      // default set of tickets (tables)
-      var defaults = [];
+      var defaults=[];
       for(var i=1;i<=20;i++) defaults.push({name:"T"+i});
       defaults.push({name:"BAR"});
       defaults.push({name:"ΕΞΩ"});
@@ -578,9 +600,6 @@
   function ticketDue(t){
     var s=0; (t.lines||[]).forEach(l=> s += l.qty_open*l.unit); return s;
   }
-  function ticketOpenCount(t){
-    var c=0; (t.lines||[]).forEach(l=> c += l.qty_open); return c;
-  }
 
   function renderUserSelect(){
     var selected=localStorage.getItem(LS_USER) || (USERS[0] && USERS[0].id);
@@ -597,7 +616,6 @@
   userSel.addEventListener("change", function(){
     localStorage.setItem(LS_USER, userSel.value);
     ensureDay();
-    // keep active ticket stable if possible
     renderAll();
   });
 
@@ -677,11 +695,27 @@
     renderAll();
   };
 
-  // Tables grid render
+  // ✅ FORCE GRID via JS (cannot break)
+  function applyTablesGridLayout(){
+    var w = tablesGrid.clientWidth || window.innerWidth || 360;
+    var cols = 3;
+    if (w >= 420) cols = 4;
+    if (w >= 520) cols = 6;
+    if (w >= 820) cols = 10;
+    tablesGrid.style.display = "grid";
+    tablesGrid.style.gap = "10px";
+    tablesGrid.style.gridTemplateColumns = "repeat(" + cols + ", minmax(0, 1fr))";
+  }
+
+  // Tables render
   function renderTablesGrid(){
     var ts=tickets();
     var activeId=getActiveTicketId();
     tablesGrid.innerHTML="";
+
+    applyTablesGridLayout();
+    setTimeout(applyTablesGridLayout, 60);
+    setTimeout(applyTablesGridLayout, 260);
 
     ts.forEach(function(t){
       var due=ticketDue(t);
@@ -692,36 +726,37 @@
         setActiveTicketId(t.id);
         toast("Ενεργό: "+t.name);
         renderAll();
-        // go to order tab automatically
         setTab("order");
       };
       tablesGrid.appendChild(btn);
     });
 
-    // update header status
     var a=activeTicket();
     activeTable.textContent=a.name;
     activeDueEl.textContent=euro(ticketDue(a));
     btnCloseTicket.style.display = ticketDue(a)===0 ? "inline-flex" : "none";
-
-    // ticket title in tickets tab
     detailName.textContent=a.name;
   }
 
-  // Ticket detail lines
+  if(!window.__tablesGridResizeHooked){
+    window.__tablesGridResizeHooked=true;
+    window.addEventListener("resize", function(){
+      try{ applyTablesGridLayout(); }catch(e){}
+    });
+  }
+
+  // Ticket lines logic
   function mergeLine(t, item, unit, extras){
     var exKey=(extras||[]).join("|");
     return (t.lines||[]).find(function(l){
       return l.item===item && Math.abs(l.unit-unit)<0.0001 && (l.extras||[]).join("|")===exKey;
     });
   }
-
   function findLine(lineId){
     var t=activeTicket();
     var idx=t.lines.findIndex(x=>x.id===lineId);
     return {t:t, idx:idx, line: idx>=0?t.lines[idx]:null};
   }
-
   function adjustPayNow(lineId, delta){
     var f=findLine(lineId); if(!f.line) return;
     var l=f.line;
@@ -733,7 +768,6 @@
     renderAll();
     setTab("tickets");
   }
-
   function cancelQty(lineId, qty){
     var f=findLine(lineId); if(!f.line) return;
     var l=f.line;
@@ -748,7 +782,6 @@
     renderAll();
     setTab("tickets");
   }
-
   function payPartial(lineId, method){
     var f=findLine(lineId); if(!f.line) return;
     var t=f.t, l=f.line;
@@ -953,7 +986,6 @@
     saveDB(db);
     toast("Προστέθηκε στο "+t.name);
     closeModal();
-    // After adding, stay in Order tab (faster)
     renderAll();
   };
 
@@ -989,7 +1021,7 @@
     }).join("");
   }
 
-  // Undo / Repeat / CSV / Reset / Wipe / Close day
+  // Footer buttons
   document.getElementById("btnUndo").onclick=function(){
     ensureDay();
     var paid=db.days[TODAY].paid;
@@ -1093,7 +1125,6 @@
     localStorage.removeItem(LS_KEY);
     localStorage.removeItem(LS_USERS);
     localStorage.removeItem(LS_USER);
-    // active ticket keys are per day-user; ok to leave
     location.reload();
   };
 
@@ -1113,117 +1144,20 @@
     );
   };
 
-  // Categories init
-  function buildCats(){
-    var catsEl=document.getElementById("cats");
-    catsEl.innerHTML="";
-    MENU.forEach(function(section){
-      var b=document.createElement("button");
-      b.className="btn small cat"+(section.cat===activeCat?" active":"");
-      b.textContent=section.cat;
-      b.onclick=function(){ activeCat=section.cat; buildCats(); buildProducts(); };
-      catsEl.appendChild(b);
-    });
-  }
-
-  // Modal hooks
-  var modalWrap=document.getElementById("modalWrap");
-  var mTitle=document.getElementById("mTitle");
-  var mPrice=document.getElementById("mPrice");
-  var mFinal=document.getElementById("mFinal");
-  var qtyVal=document.getElementById("qtyVal");
-  var xDecaf=document.getElementById("xDecaf");
-  var xPlant=document.getElementById("xPlant");
-  var addToTicket=document.getElementById("addToTicket");
-  var currentItem=null; var qty=1;
-
-  function calcFinal(base){
-    var extra=0;
-    if(xDecaf.checked) extra+=EXTRAS.decaf.price;
-    if(xPlant.checked) extra+=EXTRAS.plant.price;
-    return (base+extra)*qty;
-  }
-  function openModal(item){
-    currentItem=item; qty=1; xDecaf.checked=false; xPlant.checked=false;
-    mTitle.textContent=item.name;
-    mPrice.textContent="Τιμή: "+euro(item.price)+" (βάση)";
-    qtyVal.textContent="1";
-    mFinal.textContent=euro(calcFinal(item.price));
-    modalWrap.style.display="flex";
-  }
-  function closeModal(){ modalWrap.style.display="none"; currentItem=null; }
-  document.getElementById("mClose").onclick=closeModal;
-  modalWrap.addEventListener("click", function(e){ if(e.target===modalWrap) closeModal(); });
-
-  document.getElementById("qtyMinus").onclick=function(){
-    qty=Math.max(1, qty-1);
-    qtyVal.textContent=String(qty);
-    mFinal.textContent=euro(calcFinal(currentItem.price));
-  };
-  document.getElementById("qtyPlus").onclick=function(){
-    qty=qty+1;
-    qtyVal.textContent=String(qty);
-    mFinal.textContent=euro(calcFinal(currentItem.price));
-  };
-  xDecaf.onchange=function(){ if(currentItem) mFinal.textContent=euro(calcFinal(currentItem.price)); };
-  xPlant.onchange=function(){ if(currentItem) mFinal.textContent=euro(calcFinal(currentItem.price)); };
-
-  addToTicket.onclick=function(){
-    ensureDay();
-    var t=activeTicket();
-    var extras=[], extraTotal=0;
-    if(xDecaf.checked){ extras.push(EXTRAS.decaf.name); extraTotal+=EXTRAS.decaf.price; }
-    if(xPlant.checked){ extras.push(EXTRAS.plant.name); extraTotal+=EXTRAS.plant.price; }
-    var unit=currentItem.price + extraTotal;
-
-    var existing = mergeLine(t, currentItem.name, unit, extras);
-    if(existing){
-      existing.qty_open += qty;
-      existing.pay_now = Math.max(1, Math.min(existing.pay_now||1, existing.qty_open));
-    }else{
-      t.lines.push({ id: ++db.lastId, category: currentItem.cat, item: currentItem.name, extras: extras,
-        unit: unit, qty_open: qty, pay_now: 1, time: nowHM()
-      });
-    }
-    saveDB(db);
-    toast("Μπήκε στο "+t.name);
-    closeModal();
-    renderAll();
-  };
-
-  // Products render (needs openModal in scope)
-  function buildProducts(){
-    var productsEl=document.getElementById("products");
-    var q=(document.getElementById("search").value||"").trim().toLowerCase();
-    productsEl.innerHTML="";
-    var section=MENU.find(s=>s.cat===activeCat);
-    var items=section.items.map(it=>({name:it[0],price:it[1],cat:section.cat}));
-    if(q) items=items.filter(x=>x.name.toLowerCase().indexOf(q)>=0);
-
-    items.forEach(function(item){
-      var div=document.createElement("div");
-      div.className="prod";
-      div.innerHTML='<div><div class="title">'+item.name+'</div><small>'+item.cat+'</small></div><div class="price">'+euro(item.price)+'</div>';
-      div.onclick=function(){ openModal(item); };
-      productsEl.appendChild(div);
-    });
-  }
-  document.getElementById("search").addEventListener("input", buildProducts);
-
-  function renderAll(){
-    ensureDay();
-    renderTablesGrid();
-    buildCats();
-    buildProducts();
-    renderTicketLines();
-    renderPaid();
-  }
-
   // INIT
   renderUserSelect();
   ensureDay();
   setActiveTicketId(getActiveTicketId());
+  buildCats();
+  buildProducts();
   renderAll();
+
+  function renderAll(){
+    ensureDay();
+    renderTablesGrid();
+    renderTicketLines();
+    renderPaid();
+  }
 
 })();
 </script>
