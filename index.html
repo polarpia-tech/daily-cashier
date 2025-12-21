@@ -285,6 +285,60 @@ header, main, .footerBar { width: 100% !important; max-width: 100% !important; }
 /* αν το κείμενο/κουμπιά μεγαλώνουν υπερβολικά σε κάποια κινητά */
 .tableBtn div { font-size: 16px !important; }
 .tableBtn small { font-size: 12px !important; }
+  /* ===== ANDROID FIX LAYOUT ===== */
+
+/* Header να μην τρώει όλη την οθόνη */
+.header,
+.top-bar,
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 10px 12px;
+}
+
+/* Κεντρικό περιεχόμενο */
+main,
+.app,
+#app {
+  padding-top: 16px;
+  padding-bottom: 160px; /* ΧΩΡΟΣ για τα κάτω κουμπιά */
+}
+
+/* Κάτω action buttons */
+.bottom-actions,
+.footer-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 18, 22, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 10px;
+  z-index: 30;
+}
+
+/* Να μην καλύπτονται τραπέζια */
+.tables,
+.table-grid {
+  margin-bottom: 120px;
+}
+
+/* Κουμπιά να χωράνε σωστά */
+button {
+  min-height: 44px;
+}
+
+/* Μικρές οθόνες Android */
+@media (max-height: 700px) {
+  .header h1 {
+    font-size: 18px;
+  }
+
+  .header small {
+    display: none;
+  }
+}
   </style>
 </head>
 
