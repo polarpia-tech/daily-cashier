@@ -19,10 +19,8 @@
       --warn:#ffb020;
 
       --r:18px;
-      --pad:12px;
       --tap:42px;
     }
-
     *{box-sizing:border-box;}
     html,body{height:100%;}
     body{
@@ -31,19 +29,17 @@
                   radial-gradient(600px 400px at 20% 10%, rgba(36,209,141,.12), transparent 60%),
                   var(--bg);
       color:var(--text);
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji";
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
       -webkit-font-smoothing:antialiased;
       line-height:1.2;
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
       overflow-x:hidden;
     }
+    button,input,select{font:inherit; color:inherit;}
 
-    button, input, select{font:inherit; color:inherit;}
     .wrap{max-width:1040px; margin:0 auto; padding:16px 14px 170px;}
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     .between{justify-content:space-between;}
-    .title{font-size:28px; font-weight:800; letter-spacing:.2px;}
+    .title{font-size:28px; font-weight:800;}
     .sub{color:var(--muted); margin-top:2px; font-size:14px;}
 
     .card{
@@ -72,7 +68,7 @@
       gap:10px;
       cursor:pointer;
       user-select:none;
-      transition:.15s transform,.15s border-color,.15s background;
+      transition:.15s transform,.15s border-color;
       white-space:normal;
       text-align:center;
       line-height:1.1;
@@ -85,6 +81,7 @@
     .pill.warn{border-color:rgba(255,176,32,.55); box-shadow:0 0 0 3px rgba(255,176,32,.10) inset;}
     .pill.small{height:36px; padding:0 12px; font-size:14px;}
     .pill.block{width:100%;}
+
     .btnIcon{
       width:var(--tap);
       height:var(--tap);
@@ -94,7 +91,6 @@
       cursor:pointer;
       display:grid;
       place-items:center;
-      transition:.15s transform,.15s border-color;
     }
 
     .gridAuto{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
@@ -136,7 +132,7 @@
     .item:active{transform:translateY(0);}
     .item .name{font-weight:900;}
     .item .meta{font-size:13px; color:var(--muted); margin-top:4px;}
-    .price{font-weight:900; letter-spacing:.2px;}
+    .price{font-weight:900;}
 
     .muted{color:var(--muted);}
     .h2{font-size:18px; font-weight:900; margin:0 0 8px;}
@@ -145,9 +141,7 @@
     .hide{display:none !important;}
 
     .bottomBar{
-      position:fixed;
-      left:0; right:0;
-      bottom:0;
+      position:fixed; left:0; right:0; bottom:0;
       padding:12px 12px calc(12px + env(safe-area-inset-bottom));
       background:linear-gradient(180deg, transparent, rgba(11,15,20,.65) 20%, rgba(11,15,20,.92));
       backdrop-filter: blur(10px);
@@ -155,17 +149,12 @@
       z-index:999;
     }
     .bottomBar .inner{
-      max-width:1040px;
-      margin:0 auto;
+      max-width:1040px; margin:0 auto;
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
     }
-    .bottomBar .pill{
-      font-size:13px;
-      padding:0 10px;
-      min-height:46px;
-    }
+    .bottomBar .pill{font-size:13px; padding:0 10px; min-height:46px;}
 
     .overlay{
       position:fixed; inset:0;
@@ -192,12 +181,8 @@
     }
 
     .payLine{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      padding:10px;
-      border-radius:14px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:10px; border-radius:14px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
     }
@@ -207,19 +192,26 @@
     .payLine .s{color:var(--muted); font-size:13px; margin-top:3px;}
     .payLine .right{font-weight:900;}
 
-    .catGrid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:10px;
-    }
-    @media (min-width:520px){
-      .catGrid{ grid-template-columns: 1fr 1fr; }
-    }
-    .catBtn{
-      height:56px;
+    .catGrid{display:grid; grid-template-columns:1fr; gap:10px;}
+    @media (min-width:520px){ .catGrid{grid-template-columns:1fr 1fr;} }
+    .catBtn{height:56px; border-radius:18px; font-weight:900;}
+
+    /* ❤️ Favorites: small grid */
+    .favGrid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+    @media (min-width:520px){ .favGrid{grid-template-columns:repeat(3,1fr);} }
+    .favBtn{
+      height:54px;
       border-radius:18px;
       font-weight:900;
+      padding:0 10px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:4px;
     }
+    .favBtn .n{font-size:14px;}
+    .favBtn .p{font-size:13px; color:var(--muted); font-weight:800;}
 
     @media (max-width:420px){
       .title{font-size:24px;}
@@ -270,9 +262,27 @@
       <div id="viewOrder">
         <div class="card2" id="tablesCard">
           <div class="h2">Γρήγορη επιλογή τραπεζιού</div>
-          <div class="muted">Πάτα τραπέζι → ανοίγουν κατηγορίες → μετά προϊόντα.</div>
+          <div class="muted">Πάτα τραπέζι → κατηγορίες → προϊόντα.</div>
           <div class="sp"></div>
           <div id="tableGrid" class="gridAuto"></div>
+        </div>
+
+        <div class="sp"></div>
+
+        <!-- ❤️ Favorites (NEW) -->
+        <div class="card2" id="favoritesCard">
+          <div class="row between">
+            <div>
+              <div class="h2">❤️ Αγαπημένα</div>
+              <div class="muted">Τα πιο συχνά της ημέρας (αυτόματα).</div>
+            </div>
+            <button class="pill small" id="btnFavReset" title="Reset μετρητών αγαπημένων">Reset</button>
+          </div>
+          <div class="sp"></div>
+          <div id="favGrid" class="favGrid"></div>
+          <div class="muted" style="font-size:13px; margin-top:10px;">
+            Tip: Αν δεν υπάρχουν αρκετά δεδομένα, θα δείχνει τα πρώτα προϊόντα.
+          </div>
         </div>
 
         <div class="sp"></div>
@@ -314,9 +324,12 @@
       <div id="viewTickets" class="hide">
         <div class="card2">
           <div class="h2">Tickets</div>
-          <div class="muted">Διάλεξε τραπέζι για να δεις/πληρώσεις τα ανοιχτά του.</div>
+          <div class="muted">Εδώ εμφανίζονται μόνο τραπέζια που έχουν υπόλοιπο.</div>
           <div class="sp"></div>
           <div id="ticketsList" class="list"></div>
+          <div class="muted" id="ticketsEmpty" style="margin-top:10px; display:none;">
+            — Δεν υπάρχουν ανοιχτά tickets.
+          </div>
         </div>
 
         <div class="sp"></div>
@@ -440,13 +453,17 @@
 
 <script>
 /* =================== CONFIG =================== */
-const LS_KEY = "mini_cashier_db_v2";
+const LS_KEY = "mini_cashier_db_v3";
 const LS_USERS = "mini_cashier_users_v2";
 const LS_ACTIVE_USER = "mini_cashier_active_user_v2";
-const TODAY = new Date().toISOString().slice(0,10);
+const LS_FAVS = "mini_cashier_favs_v1";
 
+const TODAY = new Date().toISOString().slice(0,10);
 const CONFIRM_MIN_TOTAL = 15;
 const CONFIRM_MIN_ITEMS = 3;
+
+/* how many favorites */
+const FAV_COUNT = 8;
 
 /* =================== MENU =================== */
 const products = [
@@ -543,19 +560,19 @@ function isValidPin(pin){ return /^\d{4}$/.test(pin); }
 
 /* =================== USERS + PIN =================== */
 function ensureUsers(){
-  let users = load("mini_cashier_users_v2", null);
+  let users = load(LS_USERS, null);
   if(!users || !Array.isArray(users) || users.length===0){
     users = [{id:uid(), name:"Χρήστης 1", pinHash:null}];
-    save("mini_cashier_users_v2", users);
-    save("mini_cashier_active_user_v2", users[0].id);
+    save(LS_USERS, users);
+    save(LS_ACTIVE_USER, users[0].id);
   }
   return users;
 }
 function getActiveUserId(){
   const users = ensureUsers();
-  const saved = load("mini_cashier_active_user_v2", null);
+  const saved = load(LS_ACTIVE_USER, null);
   if(saved && users.some(u=>u.id===saved)) return saved;
-  save("mini_cashier_active_user_v2", users[0].id);
+  save(LS_ACTIVE_USER, users[0].id);
   return users[0].id;
 }
 function getActiveUser(){
@@ -573,7 +590,7 @@ async function requirePin(user, reason){
     const users = ensureUsers();
     const idx = users.findIndex(u=>u.id===user.id);
     users[idx].pinHash = await sha256Hex(pin1);
-    save("mini_cashier_users_v2", users);
+    save(LS_USERS, users);
     return true;
   }
   const pin = prompt(`PIN απαιτείται (${reason}).\nΓράψε 4-ψήφιο PIN:`);
@@ -586,7 +603,7 @@ async function requirePin(user, reason){
 
 /* =================== DB =================== */
 function ensureDB(){
-  const db = load("mini_cashier_db_v2", { days:{} });
+  const db = load(LS_KEY, { days:{} });
   if(!db.days[TODAY]){
     db.days[TODAY] = {
       meta:{ day:TODAY, activeTable: defaultTables[0] },
@@ -597,7 +614,7 @@ function ensureDB(){
     for(const t of defaultTables){
       db.days[TODAY].tables[t] = { lines:[] };
     }
-    save("mini_cashier_db_v2", db);
+    save(LS_KEY, db);
   } else {
     for(const t of defaultTables){
       if(!db.days[TODAY].tables[t]) db.days[TODAY].tables[t] = { lines:[] };
@@ -615,6 +632,36 @@ function sumByMethod(payments){
   const out = {cash:0, card:0, free:0};
   for(const p of payments) out[p.method] += p.total;
   return out;
+}
+
+/* =================== FAVORITES =================== */
+function loadFavs(){
+  return load(LS_FAVS, { day:TODAY, counts:{} });
+}
+function saveFavs(obj){ save(LS_FAVS, obj); }
+function bumpFav(productName){
+  let favs = loadFavs();
+  if(favs.day !== TODAY) favs = { day:TODAY, counts:{} }; // reset daily
+  favs.counts[productName] = (favs.counts[productName] || 0) + 1;
+  saveFavs(favs);
+}
+function getFavoritesList(){
+  const favs = loadFavs();
+  const counts = favs.day === TODAY ? favs.counts : {};
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0, FAV_COUNT);
+  const favNames = entries.map(([name])=>name);
+
+  // map names to product objects
+  const favProducts = favNames.map(n => products.find(p=>p.name===n)).filter(Boolean);
+
+  // if not enough data, fill with first products (stable)
+  if(favProducts.length < FAV_COUNT){
+    for(const p of products){
+      if(favProducts.length >= FAV_COUNT) break;
+      if(!favProducts.some(x=>x.name===p.name)) favProducts.push(p);
+    }
+  }
+  return favProducts.slice(0, FAV_COUNT);
 }
 
 /* =================== UI STATE =================== */
@@ -675,16 +722,31 @@ function renderTables(){
     btn.innerHTML = `<div style="font-weight:900">${t}</div><div class="muted" style="font-size:13px;">${open>0?fmt(open):"—"}</div>`;
     if(t === day.meta.activeTable) btn.classList.add("primary");
     if(open>0) btn.style.borderColor = "rgba(58,162,255,.35)";
-
     btn.onclick = ()=>{
       day.meta.activeTable = t;
-      save("mini_cashier_db_v2", db);
+      save(LS_KEY, db);
       tab = "order";
       renderTabs();
       renderAll();
-      openCategoriesQuick(); // OK εδώ (Παραγγελία)
+      openCategoriesQuick();
     };
     grid.appendChild(btn);
+  }
+}
+
+function renderFavorites(){
+  const favGrid = $("favGrid");
+  favGrid.innerHTML = "";
+  const favs = getFavoritesList();
+
+  for(const p of favs){
+    const b = document.createElement("button");
+    b.className = "pill favBtn";
+    b.innerHTML = `<div class="n">❤️ ${p.name}</div><div class="p">${fmt(p.price)}</div>`;
+    b.onclick = ()=>{
+      addLine(p.name, p.cat, p.price);
+    };
+    favGrid.appendChild(b);
   }
 }
 
@@ -738,7 +800,10 @@ function addLine(name, cat, price){
     paid: null
   });
 
-  save("mini_cashier_db_v2", db);
+  // ❤️ count favorites when an item is added
+  bumpFav(name);
+
+  save(LS_KEY, db);
   renderAll();
 }
 
@@ -783,47 +848,45 @@ function removeOneLine(id){
   const idx = lines.findIndex(x=>x.id===id && !x.paid);
   if(idx>=0){
     lines.splice(idx,1);
-    save("mini_cashier_db_v2", db);
+    save(LS_KEY, db);
     renderAll();
   }
 }
 
+/* ✅ Tickets: show ONLY tables with open balance */
 function renderTicketsTab(){
   const db = ensureDB();
   const day = db.days[TODAY];
   const list = $("ticketsList");
   list.innerHTML = "";
 
-  for(const t of defaultTables){
-    const open = sumOpen(db,t);
+  const openTables = defaultTables
+    .map(t => ({ t, open: sumOpen(db,t) }))
+    .filter(x => x.open > 0)
+    .sort((a,b)=>b.open-a.open);
 
+  $("ticketsEmpty").style.display = openTables.length ? "none" : "block";
+
+  for(const {t, open} of openTables){
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
       <div>
         <div class="name">${t}</div>
-        <div class="meta">${open>0 ? "Πάτα για πληρωμή (Split)" : "Δεν έχει ανοιχτά"}</div>
+        <div class="meta">Πάτα για πληρωμή (Split)</div>
       </div>
-      <div class="price">${open>0?fmt(open):"—"}</div>
+      <div class="price">${fmt(open)}</div>
     `;
-
     div.onclick = ()=>{
-      // ✅ FIX: Tickets -> πάει στο ticket/πληρωμή, ΟΧΙ σε κατηγορίες/προϊόντα
       day.meta.activeTable = t;
-      save("mini_cashier_db_v2", db);
+      save(LS_KEY, db);
 
       tab="order";
       renderTabs();
       renderAll();
 
-      if(open>0){
-        // άνοιξε κατευθείαν πληρωμή/split (το ζητούμενο του Tickets)
-        openPaySheet();
-      } else {
-        alert("Αυτό το τραπέζι δεν έχει ανοιχτά.");
-      }
+      openPaySheet();
     };
-
     list.appendChild(div);
   }
 }
@@ -832,6 +895,7 @@ function renderAll(){
   renderTop();
   renderActiveInfo();
   renderTables();
+  renderFavorites();
   renderCatsRow();
   renderProducts();
   renderTicket();
@@ -866,7 +930,7 @@ function openCategoriesQuick(){
   const db = ensureDB();
   const t = db.days[TODAY].meta.activeTable;
   $("catTitle").textContent = `Κατηγορίες · ${t}`;
-  $("catSub").textContent = "Διάλεξε κατηγορία → μετά προϊόντα με τιμές.";
+  $("catSub").textContent = "Διάλεξε κατηγορία → μετά προϊόντα.";
   showCats(true);
 }
 
@@ -927,8 +991,7 @@ function updatePayTotal(){
 }
 function toggleSelectAll(){
   const db = ensureDB();
-  const day = db.days[TODAY];
-  const t = day.meta.activeTable;
+  const t = db.days[TODAY].meta.activeTable;
   const open = unpaidLines(getLines(db,t));
 
   if(payState.ids.size === open.length){
@@ -948,7 +1011,7 @@ async function doPayment(method){
 
   const open = unpaidLines(getLines(db,t));
   const selected = open.filter(x=>payState.ids.has(x.id));
-  if(selected.length===0){ alert("Διάλεξε τουλάχιστον 1 προϊόν για πληρωμή."); return; }
+  if(selected.length===0){ alert("Διάλεξε τουλάχιστον 1 προϊόν."); return; }
 
   const now = Date.now();
   const user = getActiveUser().name;
@@ -957,21 +1020,7 @@ async function doPayment(method){
   const mustConfirm = (method==="free") || (total >= CONFIRM_MIN_TOTAL) || (selected.length >= CONFIRM_MIN_ITEMS);
   if(mustConfirm){
     const methodLabel = ({cash:"Μετρητά", card:"Κάρτα", free:"Κερασμένα"}[method] || method);
-    const preview = selected.slice(0,4).map(x=>x.name).join(", ");
-    const more = selected.length>4 ? ` (+${selected.length-4} ακόμα)` : "";
-    const msg =
-`Επιβεβαίωση πληρωμής
-
-Τραπέζι: ${t}
-Χρήστης: ${user}
-Τρόπος: ${methodLabel}
-Προϊόντα: ${selected.length}
-Σύνολο: ${fmt(total)}
-
-${preview}${more}
-
-Να καταχωρηθεί η πληρωμή;`;
-    if(!confirm(msg)) return;
+    if(!confirm(`Επιβεβαίωση\n\nΤραπέζι: ${t}\nΧρήστης: ${user}\nΤρόπος: ${methodLabel}\nΠροϊόντα: ${selected.length}\nΣύνολο: ${fmt(total)}\n\nΝα καταχωρηθεί;`)) return;
   }
 
   const ids = selected.map(x=>x.id);
@@ -982,7 +1031,7 @@ ${preview}${more}
 
   day.payments.push({ id: uid(), at: now, table: t, user, method, total, itemIds: ids });
   day.undone = [];
-  save("mini_cashier_db_v2", db);
+  save(LS_KEY, db);
 
   showPay(false);
   renderAll();
@@ -999,7 +1048,7 @@ function undoPayment(){
     if(l.paid && last.itemIds.includes(l.id)) l.paid = null;
   }
   day.undone.push(last);
-  save("mini_cashier_db_v2", db);
+  save(LS_KEY, db);
   renderAll();
 }
 function redoPayment(){
@@ -1015,7 +1064,7 @@ function redoPayment(){
     }
   }
   day.payments.push(last);
-  save("mini_cashier_db_v2", db);
+  save(LS_KEY, db);
   renderAll();
 }
 
@@ -1044,24 +1093,6 @@ function exportCSV(){
 }
 
 /* =================== SAFER ACTIONS =================== */
-async function resetOpenForTable(){
-  const user = getActiveUser();
-  const ok = await requirePin(user, "Καθαρισμός ανοιχτών");
-  if(!ok) return;
-  if(!confirm("Θα διαγραφούν ΜΟΝΟ τα ανοιχτά προϊόντα του τρέχοντος τραπεζιού. Συνέχεια;")) return;
-
-  const db = ensureDB();
-  const day = db.days[TODAY];
-  const t = day.meta.activeTable;
-  const lines = getLines(db,t);
-
-  const before = lines.length;
-  day.tables[t].lines = lines.filter(x=>x.paid);
-  save("mini_cashier_db_v2", db);
-  renderAll();
-  alert(`Έγινε. Έφυγαν ${before - day.tables[t].lines.length} ανοιχτές γραμμές.`);
-}
-
 async function wipeAll(){
   const user = getActiveUser();
   const ok = await requirePin(user, "Διαγραφή όλων");
@@ -1071,10 +1102,29 @@ async function wipeAll(){
   if(word !== "DELETE"){ alert("Ακυρώθηκε."); return; }
   if(!confirm("Τελευταία επιβεβαίωση: Θα σβηστούν ΟΛΑ. Συνέχεια;")) return;
 
-  localStorage.removeItem("mini_cashier_db_v2");
-  localStorage.removeItem("mini_cashier_users_v2");
-  localStorage.removeItem("mini_cashier_active_user_v2");
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_USERS);
+  localStorage.removeItem(LS_ACTIVE_USER);
+  localStorage.removeItem(LS_FAVS);
   location.reload();
+}
+
+async function resetOpenForTable(){
+  const user = getActiveUser();
+  const ok = await requirePin(user, "Καθαρισμός ανοιχτών");
+  if(!ok) return;
+  if(!confirm("Θα διαγραφούν ΜΟΝΟ τα ανοιχτά του τρέχοντος τραπεζιού. Συνέχεια;")) return;
+
+  const db = ensureDB();
+  const day = db.days[TODAY];
+  const t = day.meta.activeTable;
+  const lines = getLines(db,t);
+
+  const before = lines.length;
+  day.tables[t].lines = lines.filter(x=>x.paid);
+  save(LS_KEY, db);
+  renderAll();
+  alert(`Έγινε. Έφυγαν ${before - day.tables[t].lines.length} γραμμές.`);
 }
 
 /* =================== USER MANAGEMENT =================== */
@@ -1089,8 +1139,8 @@ async function addUser(){
 
   const users = ensureUsers();
   users.push({ id: uid(), name: name.trim(), pinHash: await sha256Hex(pin1) });
-  save("mini_cashier_users_v2", users);
-  save("mini_cashier_active_user_v2", users[users.length-1].id);
+  save(LS_USERS, users);
+  save(LS_ACTIVE_USER, users[users.length-1].id);
   renderAll();
 }
 async function renameUser(){
@@ -1104,7 +1154,7 @@ async function renameUser(){
   const users = ensureUsers();
   const idx = users.findIndex(u=>u.id===active.id);
   users[idx].name = name.trim();
-  save("mini_cashier_users_v2", users);
+  save(LS_USERS, users);
   renderAll();
 }
 async function setPin(){
@@ -1120,7 +1170,7 @@ async function setPin(){
   const users = ensureUsers();
   const idx = users.findIndex(u=>u.id===active.id);
   users[idx].pinHash = await sha256Hex(pin1);
-  save("mini_cashier_users_v2", users);
+  save(LS_USERS, users);
   alert("Το PIN άλλαξε.");
 }
 async function deleteUser(){
@@ -1133,8 +1183,8 @@ async function deleteUser(){
   if(!confirm(`Να διαγραφεί ο χρήστης "${active.name}";`)) return;
 
   const left = users.filter(u=>u.id!==active.id);
-  save("mini_cashier_users_v2", left);
-  save("mini_cashier_active_user_v2", left[0].id);
+  save(LS_USERS, left);
+  save(LS_ACTIVE_USER, left[0].id);
   renderAll();
 }
 async function changeUserWithPin(newId){
@@ -1147,7 +1197,7 @@ async function changeUserWithPin(newId){
     $("userSelect").value = getActiveUserId();
     return;
   }
-  save("mini_cashier_active_user_v2", newUser.id);
+  save(LS_ACTIVE_USER, newUser.id);
   renderAll();
 }
 
@@ -1188,6 +1238,14 @@ $("btnWipeAll").onclick=wipeAll;
 /* Category overlay events */
 $("btnCloseCats").onclick=()=>showCats(false);
 $("catOverlay").onclick=(e)=>{ if(e.target.id==="catOverlay") showCats(false); };
+
+/* Favorites reset */
+$("btnFavReset").onclick=()=>{
+  if(confirm("Να γίνει reset στα αγαπημένα για σήμερα;")){
+    save(LS_FAVS, { day:TODAY, counts:{} });
+    renderFavorites();
+  }
+};
 
 /* =================== START =================== */
 renderTabs();
