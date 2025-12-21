@@ -4,375 +4,218 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Ημερήσιο Ταμείο</title>
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#0b0f14">
+
   <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#141a22;
+      --line:rgba(255,255,255,.10);
+      --text:#eef2ff;
+      --muted:#a9b1c3;
+      --accent:#4cc3ff;
+      --ok:#44d08a;
+      --bad:#ff6363;
 
-:root{
-  --bg:#0b0f14;
-  --card:#151a22;
-  --card2:#111622;
-  --text:#eef2ff;
-  --muted:#a9b1c3;
-  --line:rgba(255,255,255,.10);
-  --shadow: 0 14px 40px rgba(0,0,0,.45);
-  --accent:#4cc3ff;
-  --ok:#44d08a;
-  --bad:#ff6363;
-  --radius:18px;
-  --pad:12px;
-  --tap:44px;
-  --footerH: 132px; /* ύψος bottom bar στο κινητό */
-}
+      --r:16px;
+      --pad:12px;
+      --tap:42px;
+    }
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-  background: radial-gradient(1200px 800px at 50% -220px, rgba(76,195,255,.18), rgba(0,0,0,0)) , var(--bg);
-  color:var(--text);
-  overflow-x:hidden;
-}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x:hidden;
 
-/* Κεντρικό πλάτος */
-.wrap{
-  width:min(980px, 100% - 20px);
-  margin:0 auto;
-}
+      /* Android fix: μην κάνει “αυτο-μεγέθυνση” κειμένων */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
 
-/* ---------------- HEADER (compact) ---------------- */
-header{
-  padding: 10px 0 8px;
-}
-.top{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-  justify-content:space-between;
-  flex-wrap:wrap;
-}
-.brand{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  min-width: 160px;
-}
-.brand b{
-  font-size:18px;
-  letter-spacing:.2px;
-}
-#todayPill{
-  font-size:13px;
-  color:var(--muted);
-}
-.statusBar{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-.statusBar select{
-  height: var(--tap);
-  padding: 0 10px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.04);
-  border: 1px solid var(--line);
-  color: var(--text);
-  font-size:14px;
-  outline:none;
-}
-.pill{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.04);
-  border:1px solid var(--line);
-  color:var(--muted);
-  height: var(--tap);
-  white-space:nowrap;
-}
-.pill b{ color:var(--text); }
+    .wrap{ width:min(980px, calc(100% - 16px)); margin:0 auto; }
 
-.row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    /* ------- HEADER (πολύ πιο compact) ------- */
+    header{ padding:10px 0 6px; }
+    .top{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand b{ font-size:18px; }
+    .brand .muted{ font-size:12px; color:var(--muted); }
 
-.tabs{
-  display:flex;
-  gap:8px;
-  background: rgba(255,255,255,.03);
-  border:1px solid var(--line);
-  border-radius: 18px;
-  padding: 6px;
-}
-.tabs .btn{
-  flex:1;
-  min-width: 120px;
-}
+    .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .pill{
+      display:flex; gap:8px; align-items:center;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--muted);
+      white-space:nowrap;
+      font-size:13px;
+    }
+    .pill b{ color:var(--text); }
 
-/* ---------------- BUTTONS ---------------- */
-.btn{
-  appearance:none;
-  border:1px solid var(--line);
-  background: rgba(255,255,255,.03);
-  color: var(--text);
-  height: var(--tap);
-  padding: 0 14px;
-  border-radius: 16px;
-  font-weight:600;
-  letter-spacing:.1px;
-  box-shadow: 0 6px 18px rgba(0,0,0,.22);
-  cursor:pointer;
-  user-select:none;
-}
-.btn:active{ transform: translateY(1px); }
-.btn.ghost{ background: rgba(255,255,255,.02); }
-.btn.tab{ background: transparent; box-shadow:none; }
-.btn.tab.active{
-  background: rgba(76,195,255,.12);
-  border-color: rgba(76,195,255,.45);
-}
-.btn.primary{ border-color: rgba(76,195,255,.45); }
-.btn.ok{ border-color: rgba(68,208,138,.55); }
-.btn.bad{ border-color: rgba(255,99,99,.55); background: rgba(255,99,99,.08); }
+    select{
+      height: var(--tap);
+      border-radius: 12px;
+      padding:0 10px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      outline:none;
+      font-size:14px;
+    }
 
-.divider{
-  height:1px;
-  background: var(--line);
-  margin: 12px 0;
-}
+    /* ------- BUTTONS ------- */
+    .btn{
+      height: var(--tap);
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      font-weight:700;
+      padding:0 12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{ border-color: rgba(76,195,255,.45); }
+    .btn.ok{ border-color: rgba(68,208,138,.55); }
+    .btn.bad{ border-color: rgba(255,99,99,.55); background: rgba(255,99,99,.08); }
+    .tabs{
+      display:flex; gap:6px;
+      padding:6px;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .tab{ flex:1; min-width:120px; background:transparent; }
+    .tab.active{
+      background: rgba(76,195,255,.12);
+      border-color: rgba(76,195,255,.45);
+    }
 
-/* ---------------- MAIN CARDS ---------------- */
-main{
-  padding: 8px 0 calc(var(--footerH) + 24px + env(safe-area-inset-bottom, 0px));
-}
-.grid{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-@media (min-width: 860px){
-  .grid{ grid-template-columns: 1fr 1fr; }
-}
-.card{
-  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--pad);
-  box-shadow: var(--shadow);
-  overflow:hidden;
-}
-.title{ font-size:16px; font-weight:800; }
-.muted{ color:var(--muted); font-size:13px; }
-.tiny{ font-size:12px; color:var(--muted); margin-top:8px; }
+    .divider{ height:1px; background: var(--line); margin:10px 0; }
 
-/* ---------------- TABLES GRID ---------------- */
-#tablesGrid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
-}
-@media (min-width: 520px){
-  #tablesGrid{ grid-template-columns: 1fr 1fr 1fr; }
-}
-@media (min-width: 860px){
-  #tablesGrid{ grid-template-columns: 1fr 1fr 1fr 1fr; }
-}
+    /* ------- LAYOUT ------- */
+    main{ padding: 6px 0 14px; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 860px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
 
-/* κουμπιά που δημιουργεί το JS για τραπέζια */
-#tablesGrid .btn,
-#tablesGrid button{
-  height: 56px;
-  border-radius: 18px;
-  font-size:16px;
-  font-weight:800;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  gap:4px;
-  padding: 10px;
-}
-#tablesGrid .btn .muted,
-#tablesGrid button .muted{
-  font-size:12px;
-  font-weight:600;
-  opacity:.9;
-}
+    .card{
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.02);
+      padding: var(--pad);
+      overflow:hidden;
+    }
+    .title{ font-size:16px; font-weight:900; }
+    .muted{ color:var(--muted); font-size:13px; }
 
-/* ---------------- PRODUCTS ---------------- */
-#catsRow{
-  display:flex;
-  gap:8px;
-  overflow:auto;
-  padding-bottom:6px;
-  -webkit-overflow-scrolling: touch;
-}
-#catsRow .btn{ white-space:nowrap; height: 42px; border-radius: 14px; font-size:13px; padding:0 12px; }
+    /* ------- TABLES GRID (mobile-first) ------- */
+    #tablesGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (min-width:520px){ #tablesGrid{ grid-template-columns: 1fr 1fr 1fr; } }
+    @media (min-width:860px){ #tablesGrid{ grid-template-columns: 1fr 1fr 1fr 1fr; } }
 
-#productsList{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.productCard{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding: 12px;
-  border-radius: 18px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid var(--line);
-}
-.productCard b{ font-size:15px; }
-.productCard .muted{ font-size:12px; }
-.productCard .price{ font-weight:900; }
+    #tablesGrid button{
+      height: 56px;
+      border-radius: 16px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:4px;
+      font-weight:900;
+      font-size:15px;
+    }
+    #tablesGrid button .sub{ font-size:12px; color:var(--muted); font-weight:700; }
 
-/* ---------------- TICKET LIST ---------------- */
-#ticketList .line{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-}
-#ticketList .line:last-child{ border-bottom:0; }
+    /* ------- CATEGORIES ------- */
+    #catsRow{
+      display:flex;
+      gap:8px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom:6px;
+    }
+    #catsRow .btn{
+      height: 40px;
+      border-radius: 12px;
+      white-space:nowrap;
+      font-size:13px;
+    }
 
-/* ---------------- FOOTER BAR (not huge, readable) ---------------- */
-.footerBar{
-  position:fixed;
-  left:0; right:0; bottom:0;
-  z-index: 50;
-  background: rgba(11,15,20,.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255,255,255,.12);
-  padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
-}
-.footerGrid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
-}
-.footerGrid .btn{
-  height: 48px;
-  border-radius: 16px;
-  font-size:13px;
-  padding: 0 10px;
-  white-space: nowrap;
-}
-@media (min-width:760px){
-  :root{ --footerH: 98px; }
-  .footerGrid{ grid-template-columns: 1fr 1fr 1fr 1fr; }
-}
+    /* ------- PRODUCTS ------- */
+    #productsList{ display:flex; flex-direction:column; gap:10px; }
+    .product{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding: 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+    }
+    .product b{ font-size:15px; }
+    .price{ font-weight:900; }
 
-/* toast */
-.toast{
-  position: fixed;
-  left:50%;
-  transform:translateX(-50%);
-  bottom: calc(var(--footerH) + 14px + env(safe-area-inset-bottom, 0px));
-  background: rgba(20,24,32,.95);
-  border:1px solid rgba(255,255,255,.10);
-  padding:10px 12px;
-  border-radius:16px;
-  display:none;
-  z-index:80;
-  max-width:92vw;
-  text-align:center;
-}
+    input[type="search"]{
+      height: var(--tap);
+      border-radius: 12px;
+      padding: 0 10px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      outline:none;
+      width: 100%;
+      max-width: 220px;
+    }
 
-/* ---------------- MODALS ---------------- */
-.modalWrap{
-  position: fixed;
-  inset: 0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding: 14px;
-  background: rgba(0,0,0,.55);
-  z-index: 90;
-}
-.modalWrap.show{ display:flex; }
-.modal{
-  width: min(720px, 100%);
-  max-height: min(86vh, 860px);
-  overflow:auto;
-  background: linear-gradient(180deg, rgba(21,26,34,.98), rgba(15,18,26,.98));
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 22px;
-  padding: 14px;
-  box-shadow: 0 22px 70px rgba(0,0,0,.65);
-}
-.modal h2{ margin: 0 0 6px; font-size:18px; }
-.modal .btn{ height: 42px; }
+    /* ------- TICKET LIST ------- */
+    #ticketList{ display:flex; flex-direction:column; gap:10px; }
+    .line{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+    }
 
-/* lists inside modal */
-.lineList{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
-.line{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.08);
-}
-.line .muted{ font-size:12px; }
-.qty{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width: 34px;
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(76,195,255,.14);
-  border: 1px solid rgba(76,195,255,.30);
-  font-weight:900;
-}
+    /* ------- ACTIONS (Στο κινητό ΔΕΝ είναι fixed) ------- */
+    .actions{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (min-width:760px){
+      .actions{ grid-template-columns: 1fr 1fr 1fr 1fr; }
+    }
+    .actions .btn{
+      height: 46px;
+      font-size:13px;
+      white-space:nowrap;
+    }
 
-/* toggle */
-.toggle{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.08);
-}
-.cb{ width:18px; height:18px; }
-
-/* inputs */
-input[type="text"], input[type="number"], input[type="search"]{
-  height: 42px;
-  width: 100%;
-  padding: 0 12px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.10);
-  color: var(--text);
-  outline:none;
-}
-
-/* ---------------- MOBILE COMPACT OVERRIDES ---------------- */
-@media (max-width: 420px){
-  .wrap{ width: calc(100% - 16px); }
-  .brand b{ font-size:16px; }
-  #todayPill{ font-size:12px; }
-  .pill{ height: 40px; padding: 8px 10px; border-radius: 14px; }
-  .statusBar select{ height: 40px; border-radius: 14px; }
-  .btn{ height: 40px; border-radius: 14px; font-size:14px; }
-  #tablesGrid .btn, #tablesGrid button{ height: 54px; font-size:15px; }
-  .tabs{ padding:5px; border-radius:16px; }
-}
-
+    /* extra mobile tightening */
+    @media (max-width:420px){
+      :root{ --tap:40px; --pad:10px; }
+      .brand b{ font-size:16px; }
+      input[type="search"]{ max-width: 100%; }
+      .tab{ min-width: 0; }
+    }
   </style>
 </head>
 
@@ -382,102 +225,46 @@ input[type="text"], input[type="number"], input[type="search"]{
     <div class="top">
       <div class="brand">
         <b>Ημερήσιο Ταμείο</b>
-        <div id="todayPill">Σήμερα: —</div>
+        <div class="muted" id="todayPill">Σήμερα: —</div>
       </div>
 
-      <div class="statusBar">
+      <div class="row">
         <select id="userSelect" title="Χρήστης"></select>
-        <div class="pill" id="activeInfo">Τραπέζι: <b id="activeTable">—</b> · Υπόλοιπο: <b id="activeBal">0,00 €</b></div>
-        <button class="btn ghost" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
+        <div class="pill">Τραπέζι: <b id="activeTable">—</b> · Υπόλοιπο: <b id="activeBal">0,00 €</b></div>
       </div>
 
-      <div class="row" style="width:100%;">
-        <div class="tabs" style="flex:1;">
-          <button class="btn tab active" id="tabOrder">Παραγγελία</button>
-          <button class="btn tab" id="tabTickets">Tickets</button>
-        </div>
-
-        <button class="btn ghost" id="btnNewTicket">+ Ticket</button>
-        <button class="btn ghost" id="btnCloseTicket" style="display:none;">Κλείσε Ticket</button>
+      <div class="tabs" style="width:100%;">
+        <button class="btn tab active" id="tabOrder">Παραγγελία</button>
+        <button class="btn tab" id="tabTickets">Tickets</button>
       </div>
     </div>
   </div>
 </header>
 
-<!-- Settings -->
-<div class="modalWrap" id="settingsWrap">
-  <div class="modal">
-    <div class="row" style="align-items:flex-start;">
-      <div>
-        <h2>Ρυθμίσεις</h2>
-        <div class="muted">Ημέρα: <b id="dayKey">—</b> — Χρήστης: <b id="userNameLabel">—</b></div>
-      </div>
-      <button class="btn" id="btnSettingsClose">Κλείσιμο</button>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="row">
-      <button class="btn primary" id="btnAddUser">+ Προσθήκη χρήστη</button>
-      <button class="btn" id="btnRenameUser">✏️ Μετονομασία</button>
-      <button class="btn bad" id="btnDeleteUser">🗑️ Διαγραφή</button>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="row">
-      <button class="btn ok" id="btnResetDay">Καθαρισμός ημέρας</button>
-      <button class="btn bad" id="btnWipeAll">Διαγραφή όλων</button>
-    </div>
-
-    <div class="tiny">Tip: Αν έχεις “κολλήσει” στο κινητό, μετά από αλλαγές κάνε refresh ή καθάρισε cache (βλ. οδηγίες κάτω).</div>
-  </div>
-</div>
-
-<!-- Pay modal -->
-<div class="modalWrap" id="payWrap">
-  <div class="modal">
-    <div class="row" style="align-items:flex-start;">
-      <div>
-        <h2>Πληρωμή / Διαχωρισμός</h2>
-        <div class="muted">Διάλεξε γραμμές και δήλωσε τρόπο πληρωμής.</div>
-      </div>
-      <button class="btn" id="btnPayClose">Κλείσιμο</button>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="row">
-      <button class="btn" id="payCash">Μετρητά</button>
-      <button class="btn" id="payCard">Κάρτα</button>
-      <button class="btn" id="payGift">Κερασμένα</button>
-    </div>
-
-    <div class="lineList" id="payLines"></div>
-  </div>
-</div>
-
 <main>
   <div class="wrap">
     <div class="grid">
 
-      <!-- Tables picker -->
       <section class="card">
-        <div class="row">
-          <div>
-            <div class="title">Γρήγορη επιλογή τραπεζιού</div>
-            <div class="muted">Πάτα τραπέζι → και μετά γράφεις προϊόντα.</div>
-          </div>
-          <div class="pill" style="min-height:auto;">Tip: Όσα έχουν υπόλοιπο φαίνονται με χρώμα.</div>
-        </div>
+        <div class="title">Γρήγορη επιλογή τραπεζιού</div>
+        <div class="muted">Πάτα τραπέζι → μετά βάλε προϊόντα.</div>
         <div class="divider"></div>
         <div id="tablesGrid"></div>
+
+        <div class="divider"></div>
+
+        <div class="title" style="margin-bottom:6px;">Ενέργειες</div>
+        <div class="actions">
+          <button class="btn ok" id="btnUndoPay">Αναίρεση τελευταίας πληρωμής</button>
+          <button class="btn primary" id="btnRedoPay">Τελευταία πληρωμή ξανά</button>
+          <button class="btn" id="btnCSV">Εξαγωγή CSV</button>
+          <button class="btn bad" id="btnWipeDay">Διαγραφή ημέρας</button>
+        </div>
       </section>
 
-      <!-- Products -->
-      <section class="card products">
-        <div class="row">
-          <div style="flex:1;">
+      <section class="card">
+        <div class="row" style="justify-content:space-between;">
+          <div>
             <div class="title">Προϊόντα</div>
             <div class="muted">Ό,τι πατάς μπαίνει στο ενεργό τραπέζι.</div>
           </div>
@@ -485,121 +272,67 @@ input[type="text"], input[type="number"], input[type="search"]{
         </div>
 
         <div class="divider"></div>
-
-        <div id="catsRow" class="cats"></div>
-
+        <div id="catsRow"></div>
         <div class="divider"></div>
-
         <div id="productsList"></div>
       </section>
 
-      <!-- Active ticket -->
       <section class="card" id="orderCard">
-        <div class="row">
-          <div style="flex:1;">
-            <div class="title">Παραγγελία (ανοιχτή)</div>
-            <div class="muted">Γραμμές: <b id="openCount">0</b> · Ανοιχτό υπόλοιπο: <b id="openTotal">0,00 €</b></div>
+        <div class="row" style="justify-content:space-between;">
+          <div>
+            <div class="title">Παραγγελία</div>
+            <div class="muted">Ανοιχτό: <b id="openTotal">0,00 €</b></div>
           </div>
           <button class="btn primary" id="btnPaySplit">Πληρωμή / Split</button>
         </div>
-
         <div class="divider"></div>
-
-        <div id="ticketList" class="lineList"></div>
+        <div id="ticketList"></div>
       </section>
 
-      <!-- Tickets view -->
       <section class="card" id="ticketsCard" style="display:none;">
-        <div class="row">
-          <div style="flex:1;">
-            <div class="title">Tickets</div>
-            <div class="muted">Όλα τα τραπέζια/ανοιχτά tickets του χρήστη.</div>
-          </div>
-        </div>
+        <div class="title">Tickets</div>
+        <div class="muted">Ανοιχτά τραπέζια</div>
         <div class="divider"></div>
-        <div id="ticketsList" class="lineList"></div>
+        <div id="ticketsList"></div>
       </section>
 
     </div>
   </div>
 </main>
 
-<!-- Footer actions -->
-<div class="footerBar">
-  <div class="wrap">
-    <div class="footerGrid">
-      <button class="btn ok" id="btnUndoPay">Αναίρεση τελευταίας πληρωμής</button>
-      <button class="btn primary" id="btnRedoPay">Τελευταία πληρωμή ξανά</button>
-      <button class="btn" id="btnCSV">Εξαγωγή CSV</button>
-      <button class="btn bad" id="btnWipeDay">Διαγραφή ημέρας</button>
-    </div>
-    <div class="tiny">Chrome: → Προσθήκη στην αρχική οθόνη (ανοίγει σαν app).</div>
-  </div>
-</div>
-
-<div class="toast" id="toast">—</div>
-
 <script>
 (() => {
-  const LS_KEY = "mini-cashier-db-v5";
-  const LS_USERS = "mini-cashier-users-v3";
-  const LS_USER = "mini-cashier-current-user-v3";
+  const LS_KEY = "mini-cashier-db-v6";
+  const LS_USERS = "mini-cashier-users-v4";
+  const LS_USER = "mini-cashier-current-user-v4";
   const TODAY = new Date().toISOString().slice(0,10);
 
   const fmtEUR = (n) => (n||0).toFixed(2).replace(".", ",") + " €";
+  const $ = (id) => document.getElementById(id);
+  const uid = () => Math.random().toString(16).slice(2)+Date.now().toString(16);
 
   const menu = [
     {cat:"☕ ΚΑΦΕΔΕΣ – ΖΕΣΤΟΙ", items:[
       ["Espresso μονός",2.60],["Espresso διπλός",3.20],["Espresso macchiato",2.90],["Americano",3.20],
       ["Cappuccino",3.60],["Cappuccino διπλός",4.20],["Latte macchiato",4.20],["Flat white",4.40],
-      ["Mocha",4.50],["Καφές φίλτρου",3.00],["Decaf (+)",0.30]
+      ["Mocha",4.50],["Καφές φίλτρου",3.00]
     ]},
     {cat:"❄️ ΚΑΦΕΔΕΣ – ΚΡΥΟΙ", items:[
-      ["Freddo espresso",3.80],["Freddo cappuccino",4.20],["Iced latte",4.50],["Cold brew",4.80],["Frappe",3.50]
-    ]},
-    {cat:"🫖 ΤΣΑΪ – ΖΕΣΤΑ ΡΟΦΗΜΑΤΑ", items:[
-      ["Τσάι (μαύρο, πράσινο, βότανα)",3.20],["Τσάι φρούτων",3.50],["Chai latte",4.30]
-    ]},
-    {cat:"🍫 ΣΟΚΟΛΑΤΕΣ – ΓΑΛΑΚΤΕΡΑ", items:[
-      ["Ζεστή σοκολάτα",4.20],["Κρύα σοκολάτα",4.50],["Λευκή σοκολάτα",4.50],["Κακάο",4.00],["Φυτικό γάλα (+)",0.50]
+      ["Freddo espresso",3.80],["Freddo cappuccino",4.20],["Iced latte",4.50],["Frappe",3.50]
     ]},
     {cat:"🥤 ΑΝΑΨΥΚΤΙΚΑ – ΝΕΡΑ", items:[
-      ["Coca-Cola / Zero / Fanta (0,33l)",3.40],["Ice Tea",3.60],["Σόδα / Τόνικ",3.20],
+      ["Coca-Cola / Zero / Fanta (0,33l)",3.40],["Ice Tea",3.60],
       ["Μεταλλικό νερό (0,33l)",2.80],["Μεταλλικό νερό (0,75l)",5.50]
     ]},
-    {cat:"🍊 ΧΥΜΟΙ – SMOOTHIES", items:[
-      ["Φυσικός χυμός πορτοκάλι",4.50],["Χυμός ανάμεικτος",4.80],["Smoothie φρούτων",5.80],["Milkshake",5.50]
-    ]},
-    {cat:"🥐 ΣΝΑΚ – ΓΛΥΚΑ", items:[
-      ["Κρουασάν σκέτο",2.80],["Κρουασάν σοκολάτα",3.20],["Μάφιν",3.50],["Κέικ (κομμάτι)",4.20],
-      ["Cheesecake",4.80],["Μπισκότα",2.50],["Τοστ ζαμπόν-τυρί",4.50],["Τοστ vegetarian",4.80]
-    ]},
     {cat:"🍺 ΜΠΥΡΕΣ", items:[
-      ["Μπύρα βαρελίσια (0,5l)",5.20],["Μπύρα εμφιαλωμένη (0,33l)",4.20],["Weissbier (0,5l)",5.50],["Μπύρα χωρίς αλκοόλ",4.20]
-    ]},
-    {cat:"🍷 ΚΡΑΣΙΑ", items:[
-      ["Κρασί ποτήρι",5.50],["Κρασί καράφα (0,5l)",12.00],["Φιάλη κρασί (μέσος όρος)",25.00],["Prosecco ποτήρι",6.50]
+      ["Μπύρα βαρελίσια (0,5l)",5.20],["Μπύρα εμφιαλωμένη (0,33l)",4.20]
     ]},
     {cat:"🥃 ΠΟΤΑ (4cl)", items:[
-      ["Ουίσκι standard",8.50],["Premium ουίσκι",10.50],["Βότκα",8.00],["Ρούμι",8.50],["Τζιν",8.50],
-      ["Ούζο / Τσίπουρο",7.50],["Λικέρ",7.50]
-    ]},
-    {cat:"🍸 ΚΟΚΤΕΪΛ", items:[
-      ["Mojito",9.50],["Caipirinha",9.50],["Margarita",10.00],["Aperol Spritz",8.50],["Gin Tonic",9.00],["Negroni",10.50]
+      ["Ουίσκι standard",8.50],["Βότκα",8.00],["Τζιν",8.50]
     ]}
   ];
 
   const DEFAULT_TABLES = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14","T15","T16","T17","BAR","ΕΞΩ"];
-
-  const $ = (id) => document.getElementById(id);
-  const toastEl = $("toast");
-  let toastTimer = null;
-  const toast = (msg) => {
-    toastEl.textContent = msg;
-    toastEl.style.display = "block";
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> toastEl.style.display="none", 1800);
-  };
 
   const load = (k, fallback) => {
     try { return JSON.parse(localStorage.getItem(k) || "null") ?? fallback; } catch { return fallback; }
@@ -609,13 +342,12 @@ input[type="text"], input[type="number"], input[type="search"]{
   function ensureDB(){
     const db = load(LS_KEY, { days:{} });
     if(!db.days) db.days = {};
-    if(!db.days[TODAY]) db.days[TODAY] = { tables:{}, tickets:{} , payments:[] };
+    if(!db.days[TODAY]) db.days[TODAY] = { tables:{}, meta:{}, payments:[] };
     if(!db.days[TODAY].tables) db.days[TODAY].tables = {};
-    if(!db.days[TODAY].tickets) db.days[TODAY].tickets = {};
-    if(!db.days[TODAY].payments) db.days[TODAY].payments = [];
-    DEFAULT_TABLES.forEach(t => {
+    DEFAULT_TABLES.forEach(t=>{
       if(!db.days[TODAY].tables[t]) db.days[TODAY].tables[t] = { open:[] };
     });
+    if(!db.days[TODAY].meta.activeTable) db.days[TODAY].meta.activeTable = "T1";
     save(LS_KEY, db);
     return db;
   }
@@ -630,72 +362,57 @@ input[type="text"], input[type="number"], input[type="search"]{
     return users;
   }
 
-  function getCurrentUser(){
+  function currentUser(){
     const users = ensureUsers();
     let u = localStorage.getItem(LS_USER) || users[0];
     if(!users.includes(u)){ u = users[0]; save(LS_USER,u); }
     return u;
   }
 
-  function dayData(db){ return db.days[TODAY]; }
-
-  function getUserDay(db, uname){
-    const d = dayData(db);
-    if(!d.tickets[uname]) d.tickets[uname] = {}; // per user tickets map
-    if(!d.tickets[uname].activeTable) d.tickets[uname].activeTable = "T1";
-    return d.tickets[uname];
-  }
-
-  function getOpenLines(db, uname, table){
-    const d = dayData(db);
-    if(!d.tables[table]) d.tables[table] = { open:[] };
-    if(!d.tables[table].open) d.tables[table].open = [];
-    // each line: {id, name, cat, price, ts, paid:null|{method,ts}}
-    return d.tables[table].open;
-  }
-
-  function calcOpenTotal(lines){
-    return lines.filter(x=>!x.paid).reduce((s,x)=>s+x.price,0);
-  }
-
-  function setActive(table){
+  function setActiveTable(t){
     const db = ensureDB();
-    const uname = getCurrentUser();
-    const uday = getUserDay(db, uname);
-    uday.activeTable = table;
+    db.days[TODAY].meta.activeTable = t;
     save(LS_KEY, db);
     renderAll();
+  }
+
+  function openLines(db, table){
+    const tbl = db.days[TODAY].tables[table];
+    if(!tbl.open) tbl.open = [];
+    return tbl.open;
+  }
+
+  function openTotal(lines){
+    return lines.filter(x=>!x.paid).reduce((s,x)=>s+x.price,0);
   }
 
   function buildUsers(){
     const users = ensureUsers();
     const sel = $("userSelect");
-    sel.innerHTML = "";
+    sel.innerHTML="";
     users.forEach(u=>{
       const opt=document.createElement("option");
       opt.value=u; opt.textContent=u;
       sel.appendChild(opt);
     });
-    sel.value = getCurrentUser();
-    sel.onchange = () => { save(LS_USER, sel.value); renderAll(); };
+    sel.value = currentUser();
+    sel.onchange=()=>{ save(LS_USER, sel.value); renderAll(); };
   }
 
   function buildTables(){
     const db = ensureDB();
-    const uname = getCurrentUser();
-    const uday = getUserDay(db, uname);
-    const active = uday.activeTable;
+    const active = db.days[TODAY].meta.activeTable;
 
     const wrap = $("tablesGrid");
-    wrap.innerHTML = "";
+    wrap.innerHTML="";
     DEFAULT_TABLES.forEach(t=>{
-      const lines = getOpenLines(db, uname, t);
-      const open = calcOpenTotal(lines);
+      const lines = openLines(db, t);
+      const sum = openTotal(lines);
       const btn = document.createElement("button");
-      btn.className = "btn " + (t===active ? "primary" : "ghost");
-      btn.innerHTML = `<div>${t}</div><div class="muted">${open>0?fmtEUR(open):"—"}</div>`;
-      if(open>0) btn.style.borderColor = "rgba(68,208,138,.55)";
-      btn.onclick = ()=> setActive(t);
+      btn.className = "btn " + (t===active ? "primary" : "");
+      if(sum>0) btn.style.borderColor = "rgba(68,208,138,.55)";
+      btn.innerHTML = `<div>${t}</div><div class="sub">${sum>0?fmtEUR(sum):"—"}</div>`;
+      btn.onclick=()=>setActiveTable(t);
       wrap.appendChild(btn);
     });
   }
@@ -704,50 +421,42 @@ input[type="text"], input[type="number"], input[type="search"]{
 
   function buildCats(){
     const row = $("catsRow");
-    row.innerHTML = "";
+    row.innerHTML="";
     menu.forEach(c=>{
       const b=document.createElement("button");
-      b.className = "btn tab " + (c.cat===activeCat?"active":"");
+      b.className = "btn " + (c.cat===activeCat ? "primary" : "");
       b.textContent = c.cat;
-      b.onclick = ()=>{ activeCat=c.cat; buildCats(); buildProducts(); };
+      b.onclick=()=>{ activeCat=c.cat; buildCats(); buildProducts(); };
       row.appendChild(b);
     });
   }
 
-  function buildProducts(){
-    const list = $("productsList");
-    const q = ($("search").value||"").trim().toLowerCase();
-    list.innerHTML = "";
-    const cat = menu.find(x=>x.cat===activeCat);
-    if(!cat) return;
-    cat.items
-      .filter(([name,price]) => !q || name.toLowerCase().includes(q))
-      .forEach(([name,price])=>{
-        const el=document.createElement("div");
-        el.className="productCard";
-        el.innerHTML = `<div><b>${name}</b><div class="muted">${activeCat}</div></div><div class="price">${fmtEUR(price)}</div>`;
-        el.onclick = ()=> addLine(name, activeCat, price);
-        list.appendChild(el);
-      });
-  }
-
-  function uid(){
-    return Math.random().toString(16).slice(2)+Date.now().toString(16);
-  }
-
   function addLine(name, cat, price){
-    const db=ensureDB();
-    const uname=getCurrentUser();
-    const uday=getUserDay(db, uname);
-    const t=uday.activeTable;
-    const lines=getOpenLines(db, uname, t);
-    lines.push({id:uid(), name, cat, price, ts:Date.now(), paid:null});
+    const db = ensureDB();
+    const t = db.days[TODAY].meta.activeTable;
+    openLines(db,t).push({id:uid(), name, cat, price, ts:Date.now(), paid:null});
     save(LS_KEY, db);
     renderAll();
   }
 
-  // ---------------- Tabs
-  let view = "order";
+  function buildProducts(){
+    const q = ($("search").value||"").trim().toLowerCase();
+    const list = $("productsList");
+    list.innerHTML="";
+    const cat = menu.find(x=>x.cat===activeCat);
+    if(!cat) return;
+    cat.items
+      .filter(([n])=> !q || n.toLowerCase().includes(q))
+      .forEach(([name,price])=>{
+        const el=document.createElement("div");
+        el.className="product";
+        el.innerHTML = `<div><b>${name}</b><div class="muted">${activeCat}</div></div><div class="price">${fmtEUR(price)}</div>`;
+        el.onclick=()=>addLine(name, activeCat, price);
+        list.appendChild(el);
+      });
+  }
+
+  let view="order";
   $("tabOrder").onclick=()=>{
     view="order";
     $("tabOrder").classList.add("active");
@@ -764,231 +473,64 @@ input[type="text"], input[type="number"], input[type="search"]{
     renderTickets();
   };
 
-  // ---------------- Settings modal
-  const showSettings = (on)=> $("settingsWrap").classList.toggle("show", !!on);
-  $("btnSettings").onclick = ()=> { renderHeaderMeta(); showSettings(true); };
-  $("btnSettingsClose").onclick = ()=> showSettings(false);
-  $("settingsWrap").onclick = (e)=> { if(e.target.id==="settingsWrap") showSettings(false); };
+  function renderTicket(){
+    const db = ensureDB();
+    const t = db.days[TODAY].meta.activeTable;
+    $("activeTable").textContent = t;
 
-  function renderHeaderMeta(){
-    const db=ensureDB();
-    const uname=getCurrentUser();
-    $("dayKey").textContent = TODAY;
-    $("userNameLabel").textContent = uname;
-  }
+    const lines = openLines(db, t);
+    const sum = openTotal(lines);
+    $("activeBal").textContent = fmtEUR(sum);
+    $("openTotal").textContent = fmtEUR(sum);
 
-  $("btnAddUser").onclick = ()=>{
-    const name = prompt("Νέος χρήστης (όνομα):");
-    if(!name) return;
-    const users = ensureUsers();
-    if(users.includes(name)){ toast("Υπάρχει ήδη"); return; }
-    users.push(name);
-    save(LS_USERS, users);
-    save(LS_USER, name);
-    buildUsers();
-    renderAll();
-    toast("Προστέθηκε");
-  };
-
-  $("btnRenameUser").onclick = ()=>{
-    const users = ensureUsers();
-    const cur = getCurrentUser();
-    const name = prompt("Νέο όνομα για: "+cur, cur);
-    if(!name) return;
-    if(users.includes(name) && name!==cur){ toast("Υπάρχει ήδη"); return; }
-    const idx=users.indexOf(cur);
-    users[idx]=name;
-    save(LS_USERS, users);
-    save(LS_USER, name);
-
-    // migrate tickets key
-    const db=ensureDB();
-    const d=dayData(db);
-    if(d.tickets[cur]){ d.tickets[name]=d.tickets[cur]; delete d.tickets[cur]; }
-    save(LS_KEY, db);
-
-    buildUsers(); renderAll();
-    toast("Μετονομάστηκε");
-  };
-
-  $("btnDeleteUser").onclick = ()=>{
-    const users = ensureUsers();
-    const cur = getCurrentUser();
-    if(!confirm("Διαγραφή χρήστη: "+cur+" ;")) return;
-    const left = users.filter(u=>u!==cur);
-    if(left.length===0){ toast("Πρέπει να μείνει 1 χρήστης"); return; }
-    save(LS_USERS, left);
-    save(LS_USER, left[0]);
-    buildUsers(); renderAll();
-    toast("Διαγράφηκε");
-  };
-
-  $("btnResetDay").onclick = ()=>{
-    const db=ensureDB();
-    if(!confirm("Θες σίγουρα καθαρισμό ημέρας;")) return;
-    db.days[TODAY] = { tables:{}, tickets:{}, payments:[] };
-    save(LS_KEY, db);
-    renderAll();
-    toast("Καθαρίστηκε");
-  };
-
-  $("btnWipeAll").onclick = ()=>{
-    if(!confirm("ΠΡΟΣΟΧΗ: Διαγραφή ΟΛΩΝ;")) return;
-    localStorage.removeItem(LS_KEY);
-    localStorage.removeItem(LS_USERS);
-    localStorage.removeItem(LS_USER);
-    location.reload();
-  };
-
-  // ---------------- Pay / split modal
-  const showPay = (on)=> $("payWrap").classList.toggle("show", !!on);
-  $("btnPayClose").onclick = ()=> showPay(false);
-  $("payWrap").onclick = (e)=> { if(e.target.id==="payWrap") showPay(false); };
-
-  let selectedLineIds = new Set();
-  let lastPayment = null;
-
-  function openPay(){
-    selectedLineIds = new Set();
-    renderPayLines();
-    showPay(true);
-  }
-
-  $("btnPaySplit").onclick = openPay;
-
-  function renderPayLines(){
-    const db=ensureDB();
-    const uname=getCurrentUser();
-    const uday=getUserDay(db, uname);
-    const t=uday.activeTable;
-    const lines=getOpenLines(db, uname, t);
-
-    const wrap=$("payLines");
-    wrap.innerHTML="";
-    const unpaid = lines.filter(x=>!x.paid);
-    if(unpaid.length===0){
-      wrap.innerHTML = `<div class="muted">Δεν υπάρχουν ανοιχτές γραμμές.</div>`;
+    const list=$("ticketList");
+    list.innerHTML="";
+    if(lines.length===0){
+      list.innerHTML = `<div class="muted">Δεν υπάρχει τίποτα ακόμα.</div>`;
       return;
     }
-    unpaid.forEach(x=>{
+    lines.slice().reverse().forEach(line=>{
+      const status = line.paid ? "Πληρωμένο" : "Ανοιχτό";
       const row=document.createElement("div");
       row.className="line";
-      const checked = selectedLineIds.has(x.id);
-      row.innerHTML = `<div style="display:flex; gap:10px; align-items:center;">
-        <input class="cb" type="checkbox" ${checked?"checked":""}>
-        <div><b>${x.name}</b><div class="muted">${x.cat}</div></div>
-      </div>
-      <div><b>${fmtEUR(x.price)}</b></div>`;
-      row.querySelector("input").onchange = (e)=>{
-        if(e.target.checked) selectedLineIds.add(x.id);
-        else selectedLineIds.delete(x.id);
-      };
-      row.onclick = (e)=>{
-        if(e.target.tagName==="INPUT") return;
-        const cb=row.querySelector("input");
-        cb.checked = !cb.checked;
-        cb.dispatchEvent(new Event("change"));
-      };
+      row.innerHTML = `<div><b>${line.name}</b><div class="muted">${line.cat} · ${status}</div></div><div><b>${fmtEUR(line.price)}</b></div>`;
+      list.appendChild(row);
+    });
+  }
+
+  function renderTickets(){
+    const db = ensureDB();
+    const wrap=$("ticketsList");
+    wrap.innerHTML="";
+    DEFAULT_TABLES.forEach(t=>{
+      const sum = openTotal(openLines(db,t));
+      if(sum<=0) return;
+      const row=document.createElement("div");
+      row.className="line";
+      row.innerHTML = `<div><b>${t}</b><div class="muted">Ανοιχτό</div></div><div><b>${fmtEUR(sum)}</b></div>`;
+      row.onclick=()=>{ setActiveTable(t); $("tabOrder").click(); };
       wrap.appendChild(row);
     });
+    if(!wrap.children.length) wrap.innerHTML = `<div class="muted">Δεν υπάρχουν ανοιχτά tickets.</div>`;
   }
 
-  function applyPayment(method){
+  // (Προσωρινά) Πληρωμή/split: θα το ξαναβάλουμε σωστά αφού στρώσει το mobile UI
+  $("btnPaySplit").onclick=()=>alert("Πληρωμή/Split: θα το βάλουμε στο επόμενο βήμα.");
+
+  // Undo/Redo/CSV/Wipe (μίνι)
+  $("btnUndoPay").onclick=()=>alert("Undo: θα το συνδέσουμε στο επόμενο βήμα.");
+  $("btnRedoPay").onclick=()=>alert("Redo: θα το συνδέσουμε στο επόμενο βήμα.");
+
+  $("btnCSV").onclick=()=>{
     const db=ensureDB();
-    const uname=getCurrentUser();
-    const uday=getUserDay(db, uname);
-    const t=uday.activeTable;
-    const lines=getOpenLines(db, uname, t);
-    const ids = Array.from(selectedLineIds);
-    if(ids.length===0){ toast("Διάλεξε γραμμές"); return; }
-
-    const now=Date.now();
-    const paidLines=[];
-    ids.forEach(id=>{
-      const it = lines.find(x=>x.id===id);
-      if(it && !it.paid){
-        it.paid = {method, ts: now};
-        paidLines.push(it);
-      }
-    });
-
-    const sum = paidLines.reduce((s,x)=>s+x.price,0);
-    const payRec = { id: uid(), user: uname, table: t, method, ts: now, lineIds: ids, amount: sum };
-    dayData(db).payments.push(payRec);
-    lastPayment = payRec;
-    save(LS_KEY, db);
-    showPay(false);
-    renderAll();
-    toast("Πληρώθηκε: "+fmtEUR(sum));
-  }
-
-  $("payCash").onclick = ()=> applyPayment("cash");
-  $("payCard").onclick = ()=> applyPayment("card");
-  $("payGift").onclick = ()=> applyPayment("gift");
-
-  // Undo / redo payment
-  $("btnUndoPay").onclick = ()=>{
-    const db=ensureDB();
-    const pays = dayData(db).payments;
-    if(pays.length===0){ toast("Δεν υπάρχει πληρωμή"); return; }
-    const last = pays.pop();
-    lastPayment = last;
-
-    // revert lines paid flag
-    Object.values(dayData(db).tables).forEach(tbl=>{
-      (tbl.open||[]).forEach(line=>{
-        if(line.paid && last.lineIds.includes(line.id)){
-          line.paid = null;
-        }
-      });
-    });
-
-    save(LS_KEY, db);
-    renderAll();
-    toast("Αναιρέθηκε");
-  };
-
-  $("btnRedoPay").onclick = ()=>{
-    if(!lastPayment){ toast("Δεν υπάρχει"); return; }
-    const db=ensureDB();
-    const rec = {...lastPayment, id: uid(), ts: Date.now()};
-    const ids = rec.lineIds;
-
-    Object.values(dayData(db).tables).forEach(tbl=>{
-      (tbl.open||[]).forEach(line=>{
-        if(!line.paid && ids.includes(line.id)){
-          line.paid = {method: rec.method, ts: rec.ts};
-        }
-      });
-    });
-
-    dayData(db).payments.push(rec);
-    save(LS_KEY, db);
-    renderAll();
-    toast("Έγινε ξανά");
-  };
-
-  // CSV export
-  $("btnCSV").onclick = ()=>{
-    const db=ensureDB();
-    const d=dayData(db);
-    const rows = [["date","user","table","item","category","price","paid_method","paid_ts"]];
-    for(const [table, obj] of Object.entries(d.tables)){
-      for(const line of (obj.open||[])){
-        rows.push([
-          TODAY,
-          getCurrentUser(),
-          table,
-          line.name,
-          line.cat,
-          line.price,
-          line.paid?line.paid.method:"",
-          line.paid?new Date(line.paid.ts).toISOString():""
-        ]);
+    const rows=[["date","table","item","category","price","paid"]];
+    for(const [t,obj] of Object.entries(db.days[TODAY].tables)){
+      for(const l of (obj.open||[])){
+        rows.push([TODAY,t,l.name,l.cat,l.price,l.paid?"yes":"no"]);
       }
     }
-    const csv = rows.map(r=>r.map(x=>String(x).replaceAll('"','""')).map(x=>`"${x}"`).join(",")).join("\n");
-    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const csv = rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
     a.download=`cashier_${TODAY}.csv`;
@@ -996,87 +538,16 @@ input[type="text"], input[type="number"], input[type="search"]{
     URL.revokeObjectURL(a.href);
   };
 
-  $("btnWipeDay").onclick = ()=>{
+  $("btnWipeDay").onclick=()=>{
+    if(!confirm("Διαγραφή σημερινής ημέρας;")) return;
     const db=ensureDB();
-    if(!confirm("Διαγραφή ΜΟΝΟ της σημερινής ημέρας;")) return;
     delete db.days[TODAY];
     save(LS_KEY, db);
     renderAll();
-    toast("Διαγράφηκε");
   };
 
-  // render active ticket list
-  function renderTicket(){
-    const db=ensureDB();
-    const uname=getCurrentUser();
-    const uday=getUserDay(db, uname);
-    const t=uday.activeTable;
-    $("activeTable").textContent = t;
-
-    const lines=getOpenLines(db, uname, t);
-    const unpaid = lines.filter(x=>!x.paid);
-    const total = calcOpenTotal(lines);
-
-    $("openCount").textContent = unpaid.length;
-    $("openTotal").textContent = fmtEUR(total);
-    $("activeBal").textContent = fmtEUR(total);
-
-    const list=$("ticketList");
-    list.innerHTML="";
-
-    if(lines.length===0){
-      list.innerHTML = `<div class="muted">Δεν υπάρχει τίποτα ακόμα.</div>`;
-      return;
-    }
-
-    lines.slice().reverse().forEach(line=>{
-      const row=document.createElement("div");
-      row.className="line";
-      const status = line.paid ? (line.paid.method==="cash"?"Μετρητά":line.paid.method==="card"?"Κάρτα":"Κερασμένα") : "Ανοιχτό";
-      row.innerHTML = `<div>
-        <b>${line.name}</b>
-        <div class="muted">${line.cat} · ${status}</div>
-      </div>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <b>${fmtEUR(line.price)}</b>
-        ${line.paid ? "" : `<button class="btn ghost" style="height:36px;border-radius:12px;" data-pay="${line.id}">Pay</button>`}
-      </div>`;
-      const payBtn=row.querySelector("[data-pay]");
-      if(payBtn){
-        payBtn.onclick=(e)=>{
-          e.stopPropagation();
-          selectedLineIds=new Set([line.id]);
-          renderPayLines();
-          showPay(true);
-        };
-      }
-      list.appendChild(row);
-    });
-  }
-
-  function renderTickets(){
-    const db=ensureDB();
-    const uname=getCurrentUser();
-    const d=dayData(db);
-    const wrap=$("ticketsList");
-    wrap.innerHTML="";
-    for(const t of DEFAULT_TABLES){
-      const lines=(d.tables[t]?.open||[]);
-      const open = calcOpenTotal(lines);
-      if(open<=0) continue;
-      const card=document.createElement("div");
-      card.className="line";
-      card.innerHTML = `<div><b>${t}</b><div class="muted">${lines.filter(x=>!x.paid).length} ανοιχτά</div></div><div><b>${fmtEUR(open)}</b></div>`;
-      card.onclick=()=>{ setActive(t); $("tabOrder").click(); };
-      wrap.appendChild(card);
-    }
-    if(!wrap.children.length){
-      wrap.innerHTML = `<div class="muted">Δεν υπάρχουν ανοιχτά tickets.</div>`;
-    }
-  }
-
   function renderAll(){
-    $("todayPill").textContent = "Σήμερα: " + TODAY;
+    $("todayPill").textContent="Σήμερα: "+TODAY;
     buildUsers();
     buildTables();
     buildCats();
@@ -1086,20 +557,8 @@ input[type="text"], input[type="number"], input[type="search"]{
   }
 
   $("search").addEventListener("input", buildProducts);
-
-  // New ticket / Close ticket (UI only)
-  $("btnNewTicket").onclick = ()=> toast("Το ticket είναι το τραπέζι. Διάλεξε τραπέζι → βάλε προϊόντα.");
-  $("btnCloseTicket").onclick = ()=> toast("Κλείσιμο γίνεται μέσω πληρωμής των γραμμών.");
-
-  // PWA
-  if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("./sw.js").catch(()=>{});
-  }
-
-  // init
   renderAll();
 })();
 </script>
-
 </body>
 </html>
