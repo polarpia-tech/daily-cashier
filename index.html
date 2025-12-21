@@ -17,25 +17,34 @@
     }
     *{ box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
     html,body{ height:100%; width:100%; }
-    html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
-    body{ margin:0; background:var(--bg); color:var(--text); -webkit-tap-highlight-color: transparent; overflow-x:hidden; }
-
-    .wrap{ width:100%; max-width:980px; margin:0 auto; padding:0 12px; }
+    body{ margin:0; background:var(--bg); color:var(--text); overflow-x:hidden; -webkit-tap-highlight-color: transparent; }
+    .wrap{ width:100%; max-width:1020px; margin:0 auto; padding:0 12px; }
 
     header{
-      position: sticky; top: 0; z-index: 10;
-      background: rgba(15,17,21,.92);
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(15,17,21,.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(255,255,255,.10);
       padding: 10px 0;
     }
-    .topRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-    .topLeft{ min-width:0; }
-    .appTitle{ font-weight:900; font-size:18px; }
-    .appSub{ color:var(--muted); font-size:12px; margin-top:2px; }
+    .top{
+      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    }
+    .brand{ display:flex; flex-direction:column; gap:2px; }
+    .brand b{ font-size:16px; }
+    .brand span{ color:var(--muted); font-size:12px; }
 
-    .topRight{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .statusBar{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;
+    }
+    .pill{
+      padding:10px 12px; background:var(--glass); border:1px solid var(--glass2);
+      border-radius:16px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      min-height:44px; color:var(--muted); font-size:13px;
+    }
+    .pill b{ color:var(--text); }
+
     select, input{
       padding:10px 10px; border-radius:14px; border:1px solid var(--stroke);
       background:rgba(255,255,255,.05); color:var(--text);
@@ -48,7 +57,7 @@
       color:var(--text);
       padding:12px 12px;
       border-radius:16px;
-      font-weight:750;
+      font-weight:800;
       cursor:pointer;
       user-select:none;
       min-height:44px;
@@ -56,7 +65,6 @@
       align-items:center;
       justify-content:center;
       gap:8px;
-      transition: transform .06s ease;
       white-space:nowrap;
     }
     .btn:active{ transform: translateY(1px); }
@@ -65,37 +73,62 @@
     .btn.warn{ border-color: rgba(255,205,60,.55); background: rgba(255,205,60,.16); }
     .btn.bad{ border-color: rgba(255,107,107,.55); background: rgba(255,107,107,.18); }
     .btn.ghost{ background: rgba(255,255,255,.04); }
+    .btn.small{ min-height:40px; padding:10px 10px; border-radius:14px; font-size:14px; }
 
-    .pill{
-      padding:10px 12px; background:var(--glass); border:1px solid var(--glass2);
-      border-radius:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      min-height:44px; overflow:hidden; color:var(--muted); font-size:13px;
-    }
-    .pill b{ color:var(--text); }
-
-    main{ padding: 12px 0; padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
-    .grid{ display:grid; gap: 12px; }
+    main{ padding:12px 0; padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
+    .grid{ display:grid; gap:12px; }
     .card{
       background:var(--card);
       border:1px solid rgba(255,255,255,.08);
       border-radius:18px;
       padding:12px;
       box-shadow:0 10px 28px rgba(0,0,0,.28);
-      overflow:hidden;
     }
     .row{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
     .title{ font-weight:900; font-size:15px; }
     .muted{ color:var(--muted); font-size:13px; }
     .divider{ height:1px; background: rgba(255,255,255,.08); margin:10px 0; }
 
-    .cats{ display:flex; gap:8px; overflow:auto; padding-bottom:6px; -webkit-overflow-scrolling: touch; }
-    .cat{ white-space:nowrap; }
-    .cat.active{ outline:2px solid rgba(76,194,255,.55); }
+    /* Tabs */
+    .tabs{
+      display:flex; gap:10px; align-items:center;
+      padding:8px; border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+    }
+    .tab{ flex:1; }
+    .tab.active{ outline:2px solid rgba(76,194,255,.55); }
 
+    /* Table grid */
+    .tablesGrid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+    }
+    @media (min-width:520px){ .tablesGrid{ grid-template-columns: repeat(6, 1fr); } }
+    @media (min-width:820px){ .tablesGrid{ grid-template-columns: repeat(10, 1fr); } }
+
+    .tableBtn{
+      min-height:54px;
+      border-radius:16px;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+      font-weight:900;
+      user-select:none;
+    }
+    .tableBtn small{ font-weight:700; color:var(--muted); margin-top:2px; }
+    .tableBtn.active{ outline: 2px solid rgba(76,194,255,.75); }
+    .tableBtn.hasDue{ border-color: rgba(255,205,60,.45); }
+    .tableBtn:active{ transform: translateY(1px); }
+
+    /* Categories & products */
+    .cats{ display:flex; gap:8px; overflow:auto; padding-bottom:6px; -webkit-overflow-scrolling: touch; }
+    .cat.active{ outline:2px solid rgba(76,194,255,.55); }
     .products{ display:grid; grid-template-columns:1fr; gap:10px; }
     @media (min-width:560px){ .products{ grid-template-columns:1fr 1fr; } }
     @media (min-width:920px){ .products{ grid-template-columns:1fr 1fr 1fr; } }
-
     .prod{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       padding:12px; border-radius:16px;
@@ -108,22 +141,6 @@
     .prod .title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .prod small{ color:var(--muted); display:block; margin-top:2px; }
     .price{ font-weight:900; white-space:nowrap; }
-
-    /* Tickets list */
-    .ticketList{ display:grid; gap:10px; }
-    .ticket{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.05);
-      border-radius:16px;
-      padding:10px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .ticketName{ font-weight:900; }
-    .ticketMeta{ color:var(--muted); font-size:12px; margin-top:2px; }
-    .ticketBtns{ display:flex; gap:8px; flex-wrap:wrap; }
 
     /* Ticket detail lines */
     .lineList{ display:grid; gap:10px; }
@@ -138,19 +155,26 @@
     .lineTop{ display:flex; gap:10px; align-items:flex-start; justify-content:space-between; }
     .lineName{ font-weight:900; }
     .lineMeta{ color:var(--muted); font-size:12px; margin-top:2px; }
-    .lineBtns{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
 
-    .miniBtn{ padding:10px 10px; border-radius:14px; min-height:40px; font-size:14px; }
+    .payRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+    }
+    .payRow .btn{ width:100%; }
     .qtyNow{
-      display:flex; gap:8px; align-items:center;
-      padding:8px 10px;
-      border-radius:14px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:10px 10px;
+      border-radius:16px;
       border:1px solid var(--stroke);
       background: rgba(255,255,255,.04);
-      min-height:40px;
+      min-height:44px;
     }
-    .qtyNow b{ min-width: 18px; text-align:center; }
-    .qtyNow .miniBtn{ min-height:34px; padding:8px 10px; }
+    .qtyNow b{ min-width:18px; text-align:center; font-size:16px; }
+    .qtyNow .btn{ min-height:40px; padding:10px 12px; border-radius:14px; }
+
+    .dangerRow{ display:flex; gap:10px; flex-wrap:wrap; }
+    .dangerRow .btn{ flex:1; min-width:140px; }
 
     /* Modal */
     .modalWrap{
@@ -160,7 +184,7 @@
       align-items:flex-end;
       justify-content:center;
       padding:12px;
-      z-index:50;
+      z-index:60;
     }
     .modal{
       width:min(860px, 100%);
@@ -190,7 +214,7 @@
     .footerBar{
       position:fixed; left:0; right:0; bottom:0;
       padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
-      z-index: 20;
+      z-index: 40;
       background: rgba(15,17,21,0.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -209,7 +233,7 @@
       padding:10px 12px;
       border-radius:16px;
       display:none;
-      z-index:60;
+      z-index:80;
       max-width:92vw;
       text-align:center;
     }
@@ -220,21 +244,28 @@
 
 <header>
   <div class="wrap">
-    <div class="topRow">
-      <div class="topLeft">
-        <div class="appTitle">Ημερήσιο Ταμείο</div>
-        <div class="appSub" id="todayPill">Σήμερα: —</div>
+    <div class="top">
+      <div class="brand">
+        <b>Ημερήσιο Ταμείο</b>
+        <span id="todayPill">Σήμερα: —</span>
       </div>
 
-      <div class="topRight">
+      <div class="statusBar">
         <select id="userSel"></select>
-
-        <select id="ticketSel"></select>
-        <button class="btn ghost" id="btnNewTicket">+ Ticket</button>
-        <button class="btn ghost" id="btnCloseTicket">Κλείσε Ticket</button>
-
+        <div class="pill">
+          Τραπέζι: <b id="activeTable">—</b> • Υπόλοιπο: <b id="activeDue">0,00 €</b>
+        </div>
         <button class="btn ghost" id="btnSettings">⚙</button>
       </div>
+    </div>
+
+    <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div class="tabs" style="flex:1; min-width:260px;">
+        <button class="btn tab active" id="tabOrder">Παραγγελία</button>
+        <button class="btn tab" id="tabTickets">Tickets</button>
+      </div>
+      <button class="btn ghost" id="btnNewTicket">+ Ticket</button>
+      <button class="btn ghost" id="btnCloseTicket" style="display:none;">Κλείσε Ticket</button>
     </div>
   </div>
 </header>
@@ -255,8 +286,6 @@
       <button class="btn ghost" style="flex:1" id="userRename">✎ Μετονομασία</button>
       <button class="btn bad" style="flex:1" id="userDelete">🗑 Διαγραφή</button>
     </div>
-    <div class="divider"></div>
-    <div class="pill">Ροή: <b>Ticket (τραπέζι) → προϊόντα → μερική πληρωμή ανά προϊόν</b></div>
   </div>
 </div>
 
@@ -264,79 +293,54 @@
   <div class="wrap">
     <div class="grid">
 
-      <!-- Tickets -->
+      <!-- Tables picker (always visible) -->
       <section class="card">
         <div class="row">
           <div>
-            <div class="title">Ανοιχτά Tickets (Τραπέζια)</div>
-            <div class="muted">Κάθε ticket έχει πολλά προϊόντα (καφέ/μπύρα/ποτό) και πληρώνονται ξεχωριστά.</div>
+            <div class="title">Γρήγορη επιλογή τραπεζιού</div>
+            <div class="muted">Πάτα τραπέζι → και μετά γράφεις προϊόντα.</div>
           </div>
-          <div class="pill" style="min-height:auto;">
-            Ticket: <b id="activeTicketLabel">—</b> — Υπόλοιπο: <b id="activeTicketDue">0,00 €</b>
-          </div>
+          <div class="pill" style="min-height:auto;">Tip: Όσα έχουν υπόλοιπο φαίνονται με χρώμα.</div>
         </div>
         <div class="divider"></div>
-        <div id="ticketList" class="ticketList"></div>
+        <div id="tablesGrid" class="tablesGrid"></div>
       </section>
 
-      <!-- Ticket detail -->
-      <section class="card" id="ticketDetailCard" style="display:none;">
+      <!-- ORDER TAB -->
+      <section class="card" id="orderView">
         <div class="row">
           <div>
-            <div class="title">Ticket: <span id="detailTicketName">—</span></div>
-            <div class="muted">Πάτα 💶/💳/🎁 για να πληρώσεις μέρος ή όλο, ανά γραμμή.</div>
-          </div>
-          <button class="btn" id="btnBackTickets">Πίσω</button>
-        </div>
-        <div class="divider"></div>
-        <div id="lineList" class="lineList"></div>
-      </section>
-
-      <!-- Categories -->
-      <section class="card">
-        <div class="row">
-          <div>
-            <div class="title">Κατηγορίες</div>
-            <div class="muted">Πάτα προϊόν για να μπει στο ΕΝΕΡΓΟ ticket.</div>
-          </div>
-          <button class="btn" id="btnResetDay">Καθαρισμός ημέρας</button>
-        </div>
-        <div class="divider"></div>
-        <div class="cats" id="cats"></div>
-      </section>
-
-      <!-- Products -->
-      <section class="card">
-        <div class="row">
-          <div>
-            <div class="title" id="catTitle">Προϊόντα</div>
-            <div class="muted">Αν θες άλλο τραπέζι, άλλαξε ticket από πάνω.</div>
+            <div class="title">Προϊόντα</div>
+            <div class="muted">Ό,τι πατάς μπαίνει στο ενεργό τραπέζι.</div>
           </div>
           <input id="search" placeholder="Αναζήτηση…">
         </div>
+
+        <div class="divider"></div>
+        <div class="cats" id="cats"></div>
+
         <div class="divider"></div>
         <div class="products" id="products"></div>
       </section>
 
-      <!-- Summary -->
-      <section class="card">
+      <!-- TICKETS TAB -->
+      <section class="card" id="ticketsView" style="display:none;">
         <div class="row">
           <div>
-            <div class="title">Σύνοψη ημέρας</div>
-            <div class="muted">Μετράει μόνο πληρωμένες (όλων των tickets).</div>
+            <div class="title">Ticket: <span id="detailName">—</span></div>
+            <div class="muted">Πληρώνεις ανά προϊόν (και μερικά τεμάχια αν χρειάζεται).</div>
           </div>
+          <button class="btn ghost" id="btnResetDay">Καθαρισμός ημέρας</button>
+        </div>
+        <div class="divider"></div>
+        <div id="lineList" class="lineList"></div>
+
+        <div class="divider"></div>
+        <div class="row">
+          <div class="pill">Μετρητά: <b id="sumCash">0,00 €</b> • Κάρτα: <b id="sumCard">0,00 €</b> • Κερασμένα: <b id="sumGift">0,00 €</b></div>
           <button class="btn primary" id="btnClose">Κλείσιμο ημέρας</button>
         </div>
-        <div class="divider"></div>
-        <div style="display:grid; gap:6px;">
-          <div class="row"><span>Σύνολο (cash+card)</span><b id="sumTotal">0,00 €</b></div>
-          <div class="row"><span>Μετρητά</span><b id="sumCash">0,00 €</b></div>
-          <div class="row"><span>Κάρτα</span><b id="sumCard">0,00 €</b></div>
-          <div class="row"><span>Κερασμένα (αξία)</span><b id="sumGift">0,00 €</b></div>
-        </div>
-        <div class="divider"></div>
-        <div class="muted">Τελευταίες πληρωμές</div>
-        <div id="lastList" class="tiny" style="margin-top:8px; display:grid; gap:6px;"></div>
+        <div class="tiny" id="lastList"></div>
       </section>
 
     </div>
@@ -351,7 +355,7 @@
       <button class="btn" id="btnCSV">Εξαγωγή CSV</button>
       <button class="btn bad" id="btnWipeAll">Διαγραφή όλων</button>
     </div>
-    <div class="tiny">Tip: Chrome ⋮ → <b>Προσθήκη στην αρχική οθόνη</b>.</div>
+    <div class="tiny">Chrome ⋮ → <b>Προσθήκη στην αρχική οθόνη</b>.</div>
   </div>
 </div>
 
@@ -388,10 +392,8 @@
 
     <div class="divider"></div>
 
-    <div class="row">
-      <button class="btn primary" style="flex:1" id="addToTicket">➕ ΠΡΟΣΘΗΚΗ ΣΤΟ TICKET</button>
-    </div>
-    <div class="tiny">Θα μπει στο ενεργό ticket (τραπέζι) που έχεις πάνω.</div>
+    <button class="btn primary" style="width:100%;" id="addToTicket">➕ ΠΡΟΣΘΗΚΗ</button>
+    <div class="tiny">Θα μπει στο ενεργό τραπέζι.</div>
   </div>
 </div>
 
@@ -414,6 +416,11 @@
   function escapeCSV(s){
     s=String(s==null?"":s);
     if(/[,"\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+  function normalizeId(name){
+    var s=name.trim().toLowerCase().replace(/\s+/g,"_");
+    s=s.replace(/[^a-z0-9\u0370-\u03ff_-]/g,"");
     return s;
   }
 
@@ -468,8 +475,7 @@
 
   var EXTRAS={ decaf:{name:"Decaf",price:0.30}, plant:{name:"Φυτικό γάλα",price:0.50} };
 
-  // DB:
-  // day => { tickets: [{id,name,createdAt, lines:[{id,item,category,extras,unit,qty_open,pay_now,time}]}], paid:[{...}] }
+  // DB (same structure as tickets version)
   var LS_KEY="mini_cashier_db_tickets_v1";
   var LS_USERS="mini_cashier_users_v1";
   var LS_USER="mini_cashier_user_v1";
@@ -477,7 +483,6 @@
 
   function loadDB(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {days:{},lastId:0}; }catch(e){ return {days:{},lastId:0}; } }
   function saveDB(db){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
-
   function loadUsers(){
     var fallback=[{id:"user1",name:"Χρήστης 1"},{id:"tablet",name:"Tablet (έκτακτη)"}];
     try{
@@ -489,35 +494,93 @@
     }catch(e){ return fallback; }
   }
   function saveUsers(arr){ localStorage.setItem(LS_USERS, JSON.stringify(arr)); }
-  function normalizeId(name){
-    var s=name.trim().toLowerCase().replace(/\s+/g,"_");
-    s=s.replace(/[^a-z0-9\u0370-\u03ff_-]/g,"");
-    return s;
-  }
 
   var db=loadDB();
+  var USERS=loadUsers();
   var BASE_TODAY=dayKey(new Date());
+  var TODAY="";
+
+  // UI refs
+  var userSel=document.getElementById("userSel");
+  var todayPill=document.getElementById("todayPill");
+  var activeTable=document.getElementById("activeTable");
+  var activeDueEl=document.getElementById("activeDue");
+  var btnNewTicket=document.getElementById("btnNewTicket");
+  var btnCloseTicket=document.getElementById("btnCloseTicket");
+
+  var tabOrder=document.getElementById("tabOrder");
+  var tabTickets=document.getElementById("tabTickets");
+  var orderView=document.getElementById("orderView");
+  var ticketsView=document.getElementById("ticketsView");
+
+  var tablesGrid=document.getElementById("tablesGrid");
+  var detailName=document.getElementById("detailName");
+  var lineListEl=document.getElementById("lineList");
 
   // Settings
   var settingsWrap=document.getElementById("settingsWrap");
   var btnSettings=document.getElementById("btnSettings");
   var btnSettingsClose=document.getElementById("btnSettingsClose");
-  var userNameLabel=document.getElementById("userNameLabel");
-  function openSettings(){
-    if(userNameLabel) userNameLabel.textContent = currentUser().name;
-    settingsWrap.style.display="flex";
-  }
-  function closeSettings(){ settingsWrap.style.display="none"; }
-  btnSettings.onclick=openSettings;
-  btnSettingsClose.onclick=closeSettings;
-  settingsWrap.addEventListener("click", function(e){ if(e.target===settingsWrap) closeSettings(); });
-
-  // Users
-  var userSel=document.getElementById("userSel");
   var userAdd=document.getElementById("userAdd");
   var userRename=document.getElementById("userRename");
   var userDelete=document.getElementById("userDelete");
-  var USERS=loadUsers();
+  var dayKeyEl=document.getElementById("dayKey");
+  var userNameLabel=document.getElementById("userNameLabel");
+
+  btnSettings.onclick=function(){
+    dayKeyEl.textContent=BASE_TODAY;
+    userNameLabel.textContent=currentUser().name;
+    settingsWrap.style.display="flex";
+  };
+  btnSettingsClose.onclick=function(){ settingsWrap.style.display="none"; };
+  settingsWrap.addEventListener("click", function(e){ if(e.target===settingsWrap) settingsWrap.style.display="none"; });
+
+  function currentUser(){
+    var id=userSel.value;
+    return USERS.find(u=>u.id===id) || USERS[0];
+  }
+  function dayUserKey(){ return BASE_TODAY + "__" + currentUser().id; }
+  function ensureDay(){
+    TODAY=dayUserKey();
+    if(!db.days[TODAY]) db.days[TODAY]={tickets:[], paid:[]};
+    if(!db.days[TODAY].tickets) db.days[TODAY].tickets=[];
+    if(!db.days[TODAY].paid) db.days[TODAY].paid=[];
+    if(!db.days[TODAY].tickets.length){
+      // default set of tickets (tables)
+      var defaults = [];
+      for(var i=1;i<=20;i++) defaults.push({name:"T"+i});
+      defaults.push({name:"BAR"});
+      defaults.push({name:"ΕΞΩ"});
+      defaults.forEach(function(d){
+        db.days[TODAY].tickets.push({id: ++db.lastId, name:d.name, createdAt: nowHM(), lines:[]});
+      });
+      saveDB(db);
+    }
+    saveDB(db);
+    todayPill.textContent="Σήμερα: " + BASE_TODAY.split("-").reverse().join("/");
+  }
+
+  function tickets(){ ensureDay(); return db.days[TODAY].tickets; }
+
+  function setActiveTicketId(id){
+    localStorage.setItem(LS_ACTIVE_TICKET+"__"+TODAY, String(id));
+  }
+  function getActiveTicketId(){
+    var key=LS_ACTIVE_TICKET+"__"+TODAY;
+    var id=parseInt(localStorage.getItem(key)||"",10);
+    if(!id || !tickets().some(t=>t.id===id)) return tickets()[0].id;
+    return id;
+  }
+  function activeTicket(){
+    var id=getActiveTicketId();
+    return tickets().find(t=>t.id===id) || tickets()[0];
+  }
+  function ticketDue(t){
+    var s=0; (t.lines||[]).forEach(l=> s += l.qty_open*l.unit); return s;
+  }
+  function ticketOpenCount(t){
+    var c=0; (t.lines||[]).forEach(l=> c += l.qty_open); return c;
+  }
 
   function renderUserSelect(){
     var selected=localStorage.getItem(LS_USER) || (USERS[0] && USERS[0].id);
@@ -527,158 +590,83 @@
       opt.value=u.id; opt.textContent=u.name;
       userSel.appendChild(opt);
     });
-    if(!USERS.some(function(u){return u.id===selected;})) selected=USERS[0].id;
+    if(!USERS.some(u=>u.id===selected)) selected=USERS[0].id;
     userSel.value=selected;
     localStorage.setItem(LS_USER, selected);
   }
-  function currentUser(){
-    var id=userSel.value;
-    var u=USERS.find(function(x){return x.id===id;});
-    return u || {id:id,name:id};
-  }
-
-  var TODAY="";
-  function dayUserKey(){ return BASE_TODAY + "__" + currentUser().id; }
-
-  function ensureDay(){
-    TODAY=dayUserKey();
-    if(!db.days[TODAY]) db.days[TODAY]={tickets:[], paid:[]};
-    if(!db.days[TODAY].tickets) db.days[TODAY].tickets=[];
-    if(!db.days[TODAY].paid) db.days[TODAY].paid=[];
-    saveDB(db);
-
-    document.getElementById("dayKey").textContent=BASE_TODAY;
-    document.getElementById("todayPill").textContent="Σήμερα: " + BASE_TODAY.split("-").reverse().join("/");
-    if(userNameLabel) userNameLabel.textContent = currentUser().name;
-
-    // ensure at least 1 ticket
-    var tickets=db.days[TODAY].tickets;
-    if(!tickets.length){
-      tickets.push({id: ++db.lastId, name:"BAR", createdAt: nowHM(), lines:[]});
-      saveDB(db);
-    }
-  }
-
   userSel.addEventListener("change", function(){
     localStorage.setItem(LS_USER, userSel.value);
-    ensureDay(); renderAll();
+    ensureDay();
+    // keep active ticket stable if possible
+    renderAll();
   });
 
-  userAdd.addEventListener("click", function(){
+  userAdd.onclick=function(){
     var name=prompt("Όνομα υπαλλήλου/χρήστη:");
     if(!name||!name.trim()) return;
     var id=normalizeId(name);
     if(!id){ alert("Δώσε έγκυρο όνομα."); return; }
     var base=id,n=2;
-    while(USERS.some(function(u){return u.id===id;})) id=base+"_"+(n++);
+    while(USERS.some(u=>u.id===id)) id=base+"_"+(n++);
     USERS.push({id:id,name:name.trim()});
     saveUsers(USERS);
-    renderUserSelect(); ensureDay(); renderAll();
-  });
-
-  userRename.addEventListener("click", function(){
+    renderUserSelect();
+    ensureDay();
+    renderAll();
+  };
+  userRename.onclick=function(){
     var cur=currentUser();
     var name=prompt("Νέο όνομα:", cur.name);
     if(!name||!name.trim()) return;
-    var idx=USERS.findIndex(function(u){return u.id===cur.id;});
-    if(idx<0) return;
+    var idx=USERS.findIndex(u=>u.id===cur.id);
     USERS[idx].name=name.trim();
     saveUsers(USERS);
-    renderUserSelect(); ensureDay(); renderAll();
-  });
-
-  userDelete.addEventListener("click", function(){
+    renderUserSelect();
+    renderAll();
+  };
+  userDelete.onclick=function(){
     var cur=currentUser();
     if(USERS.length<=1){ alert("Πρέπει να υπάρχει τουλάχιστον ένας χρήστης."); return; }
     if(!confirm('Να διαγράψω τον χρήστη "'+cur.name+'"; (Δεν σβήνει παλιές εγγραφές)')) return;
-    USERS=USERS.filter(function(u){return u.id!==cur.id;});
+    USERS=USERS.filter(u=>u.id!==cur.id);
     saveUsers(USERS);
-    renderUserSelect(); ensureDay(); renderAll();
-  });
-
-  // Tickets
-  var ticketSel=document.getElementById("ticketSel");
-  var btnNewTicket=document.getElementById("btnNewTicket");
-  var btnCloseTicket=document.getElementById("btnCloseTicket");
-  var activeTicketLabel=document.getElementById("activeTicketLabel");
-  var activeTicketDue=document.getElementById("activeTicketDue");
-  var ticketListEl=document.getElementById("ticketList");
-
-  var ticketDetailCard=document.getElementById("ticketDetailCard");
-  var detailTicketName=document.getElementById("detailTicketName");
-  var lineListEl=document.getElementById("lineList");
-  var btnBackTickets=document.getElementById("btnBackTickets");
-
-  var viewingTicketId=null;
-
-  function tickets(){ ensureDay(); return db.days[TODAY].tickets; }
-
-  function getActiveTicketId(){
-    var key=LS_ACTIVE_TICKET + "__" + TODAY;
-    var id=parseInt(localStorage.getItem(key)||"",10);
-    if(!id) return tickets()[0].id;
-    if(!tickets().some(t=>t.id===id)) return tickets()[0].id;
-    return id;
-  }
-  function setActiveTicketId(id){
-    var key=LS_ACTIVE_TICKET + "__" + TODAY;
-    localStorage.setItem(key, String(id));
-  }
-  function activeTicket(){
-    var id=getActiveTicketId();
-    return tickets().find(t=>t.id===id) || tickets()[0];
-  }
-
-  function ticketDue(t){
-    var sum=0;
-    (t.lines||[]).forEach(l => sum += l.qty_open*l.unit);
-    return sum;
-  }
-  function ticketOpenCount(t){
-    var c=0;
-    (t.lines||[]).forEach(l => c += l.qty_open);
-    return c;
-  }
-
-  function renderTicketSelect(){
-    var ts=tickets();
-    ticketSel.innerHTML="";
-    ts.forEach(function(t){
-      var opt=document.createElement("option");
-      opt.value=String(t.id);
-      opt.textContent=t.name + " ("+ticketOpenCount(t)+")";
-      ticketSel.appendChild(opt);
-    });
-    var a=activeTicket();
-    ticketSel.value=String(a.id);
-  }
-
-  ticketSel.addEventListener("change", function(){
-    setActiveTicketId(parseInt(ticketSel.value,10));
-    renderAll();
-  });
-
-  btnNewTicket.addEventListener("click", function(){
+    renderUserSelect();
     ensureDay();
-    var name=prompt("Όνομα Ticket (π.χ. T12, ΕΞΩ3, BAR):");
+    renderAll();
+  };
+
+  // Tabs
+  function setTab(which){
+    var isOrder = which==="order";
+    tabOrder.classList.toggle("active", isOrder);
+    tabTickets.classList.toggle("active", !isOrder);
+    orderView.style.display = isOrder ? "block" : "none";
+    ticketsView.style.display = isOrder ? "none" : "block";
+    if(!isOrder){
+      renderTicketLines();
+      ticketsView.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  }
+  tabOrder.onclick=function(){ setTab("order"); };
+  tabTickets.onclick=function(){ setTab("tickets"); };
+
+  // Ticket create/close
+  btnNewTicket.onclick=function(){
+    ensureDay();
+    var name=prompt("Όνομα Ticket (π.χ. T21, ΕΞΩ3):");
     if(!name||!name.trim()) return;
     db.days[TODAY].tickets.push({id: ++db.lastId, name:name.trim(), createdAt: nowHM(), lines:[]});
     saveDB(db);
     setActiveTicketId(db.lastId);
     toast("Νέο ticket: "+name.trim());
     renderAll();
-  });
+  };
 
-  btnCloseTicket.addEventListener("click", function(){
+  btnCloseTicket.onclick=function(){
     ensureDay();
     var t=activeTicket();
-    var due=ticketDue(t);
-    if(due>0){
-      alert("Δεν μπορεί να κλείσει. Έχει υπόλοιπο " + euro(due) + ". Πλήρωσε πρώτα τις γραμμές.");
-      return;
-    }
+    if(ticketDue(t)>0){ toast("Έχει υπόλοιπο, δεν κλείνει"); return; }
     if(!confirm('Να κλείσω το ticket "'+t.name+'";')) return;
-    // remove ticket
     db.days[TODAY].tickets = db.days[TODAY].tickets.filter(x=>x.id!==t.id);
     if(!db.days[TODAY].tickets.length){
       db.days[TODAY].tickets.push({id: ++db.lastId, name:"BAR", createdAt: nowHM(), lines:[]});
@@ -687,68 +675,119 @@
     setActiveTicketId(db.days[TODAY].tickets[0].id);
     toast("Έκλεισε ticket");
     renderAll();
-  });
+  };
 
-  function renderTicketsList(){
-    var ts=tickets().slice().sort((a,b)=>ticketDue(b)-ticketDue(a));
-    ticketListEl.innerHTML="";
-
-    var a=activeTicket();
-    activeTicketLabel.textContent = a.name;
-    activeTicketDue.textContent = euro(ticketDue(a));
-
-    if(!ts.length){
-      ticketListEl.innerHTML='<div class="muted">Δεν υπάρχουν tickets.</div>';
-      return;
-    }
+  // Tables grid render
+  function renderTablesGrid(){
+    var ts=tickets();
+    var activeId=getActiveTicketId();
+    tablesGrid.innerHTML="";
 
     ts.forEach(function(t){
-      var div=document.createElement("div");
-      div.className="ticket";
-      div.innerHTML =
-        '<div>' +
-          '<div class="ticketName">'+t.name+'</div>' +
-          '<div class="ticketMeta">Ανοιχτά: '+ticketOpenCount(t)+' — Υπόλοιπο: '+euro(ticketDue(t))+' — άνοιξε: '+t.createdAt+'</div>' +
-        '</div>' +
-        '<div class="ticketBtns">' +
-          '<button class="btn primary miniBtn" data-act="open" data-id="'+t.id+'">Άνοιγμα</button>' +
-          '<button class="btn ghost miniBtn" data-act="set" data-id="'+t.id+'">Ενεργό</button>' +
-        '</div>';
+      var due=ticketDue(t);
+      var btn=document.createElement("div");
+      btn.className="tableBtn"+(t.id===activeId?" active":"")+(due>0?" hasDue":"");
+      btn.innerHTML = '<div>'+t.name+'</div><small>'+ (due>0? euro(due) : "—") +'</small>';
+      btn.onclick=function(){
+        setActiveTicketId(t.id);
+        toast("Ενεργό: "+t.name);
+        renderAll();
+        // go to order tab automatically
+        setTab("order");
+      };
+      tablesGrid.appendChild(btn);
+    });
 
-      div.querySelectorAll("button").forEach(function(b){
-        b.onclick=function(){
-          var act=b.getAttribute("data-act");
-          var id=parseInt(b.getAttribute("data-id"),10);
-          if(act==="set"){ setActiveTicketId(id); toast("Ενεργό ticket"); renderAll(); return; }
-          if(act==="open"){ openTicketDetail(id); return; }
-        };
-      });
+    // update header status
+    var a=activeTicket();
+    activeTable.textContent=a.name;
+    activeDueEl.textContent=euro(ticketDue(a));
+    btnCloseTicket.style.display = ticketDue(a)===0 ? "inline-flex" : "none";
 
-      ticketListEl.appendChild(div);
+    // ticket title in tickets tab
+    detailName.textContent=a.name;
+  }
+
+  // Ticket detail lines
+  function mergeLine(t, item, unit, extras){
+    var exKey=(extras||[]).join("|");
+    return (t.lines||[]).find(function(l){
+      return l.item===item && Math.abs(l.unit-unit)<0.0001 && (l.extras||[]).join("|")===exKey;
     });
   }
 
-  function openTicketDetail(id){
-    viewingTicketId=id;
-    var t=tickets().find(x=>x.id===id);
-    if(!t) return;
-    detailTicketName.textContent=t.name;
-    ticketDetailCard.style.display="block";
-    // scroll into view
-    ticketDetailCard.scrollIntoView({behavior:"smooth", block:"start"});
-    renderTicketLines();
+  function findLine(lineId){
+    var t=activeTicket();
+    var idx=t.lines.findIndex(x=>x.id===lineId);
+    return {t:t, idx:idx, line: idx>=0?t.lines[idx]:null};
   }
-  btnBackTickets.onclick=function(){
-    ticketDetailCard.style.display="none";
-    viewingTicketId=null;
-  };
+
+  function adjustPayNow(lineId, delta){
+    var f=findLine(lineId); if(!f.line) return;
+    var l=f.line;
+    var cur=l.pay_now||1;
+    cur+=delta;
+    cur=Math.max(1, Math.min(cur, l.qty_open));
+    l.pay_now=cur;
+    saveDB(db);
+    renderAll();
+    setTab("tickets");
+  }
+
+  function cancelQty(lineId, qty){
+    var f=findLine(lineId); if(!f.line) return;
+    var l=f.line;
+    var q=Math.min(qty, l.qty_open);
+    l.qty_open -= q;
+    l.pay_now = Math.max(1, Math.min(l.pay_now||1, l.qty_open||1));
+    if(l.qty_open<=0){
+      f.t.lines.splice(f.idx,1);
+    }
+    saveDB(db);
+    toast(qty>=9999 ? "Ακυρώθηκε γραμμή" : ("Ακυρώθηκαν "+q+" τεμ."));
+    renderAll();
+    setTab("tickets");
+  }
+
+  function payPartial(lineId, method){
+    var f=findLine(lineId); if(!f.line) return;
+    var t=f.t, l=f.line;
+    var q=Math.min(l.pay_now||1, l.qty_open);
+    if(q<=0) return;
+
+    l.qty_open -= q;
+    l.pay_now = Math.max(1, Math.min(l.pay_now||1, l.qty_open||1));
+
+    var paidEntry={
+      id: ++db.lastId,
+      ticketId: t.id,
+      ticketName: t.name,
+      date: BASE_TODAY,
+      openTime: l.time,
+      paidTime: nowHM(),
+      category: l.category,
+      item: l.item,
+      qty_paid: q,
+      extras: l.extras,
+      unit: l.unit,
+      total: q*l.unit,
+      method: method
+    };
+    db.days[TODAY].paid.push(paidEntry);
+
+    if(l.qty_open<=0){
+      t.lines.splice(f.idx,1);
+    }
+    saveDB(db);
+    toast("Πληρώθηκαν "+q);
+    renderAll();
+    setTab("tickets");
+  }
 
   function renderTicketLines(){
-    if(!viewingTicketId){ lineListEl.innerHTML=""; return; }
-    var t=tickets().find(x=>x.id===viewingTicketId);
-    if(!t){ lineListEl.innerHTML=""; return; }
-
+    var t=activeTicket();
     lineListEl.innerHTML="";
+
     if(!t.lines || !t.lines.length){
       lineListEl.innerHTML='<div class="muted">Δεν υπάρχουν προϊόντα σε αυτό το ticket.</div>';
       return;
@@ -764,31 +803,38 @@
         '<div class="lineTop">' +
           '<div>' +
             '<div class="lineName">'+l.qty_open+'x '+l.item+ex+'</div>' +
-            '<div class="lineMeta">⏱ '+l.time+' — Μονάδα '+euro(l.unit)+' — Υπόλοιπο '+euro(l.qty_open*l.unit)+'</div>' +
+            '<div class="lineMeta">⏱ '+l.time+' • Μονάδα '+euro(l.unit)+' • Υπόλοιπο '+euro(l.qty_open*l.unit)+'</div>' +
           '</div>' +
+          '<div class="pill" style="min-height:auto;">Τώρα: <b>'+payNow+'</b></div>' +
         '</div>' +
-        '<div class="lineBtns">' +
-          '<div class="qtyNow">' +
-            '<button class="btn miniBtn" data-act="minus" data-id="'+l.id+'">–</button>' +
-            '<span class="muted">Πληρωμή τώρα:</span> <b>'+payNow+'</b>' +
-            '<button class="btn miniBtn" data-act="plus" data-id="'+l.id+'">+</button>' +
-          '</div>' +
-          '<button class="btn ok miniBtn" data-act="cash" data-id="'+l.id+'">💶 Πλήρωσε</button>' +
-          '<button class="btn primary miniBtn" data-act="card" data-id="'+l.id+'">💳 Πλήρωσε</button>' +
-          '<button class="btn warn miniBtn" data-act="gift" data-id="'+l.id+'">🎁 Πλήρωσε</button>' +
-          '<button class="btn bad miniBtn" data-act="cancel1" data-id="'+l.id+'">🗑 Ακύρωση 1</button>' +
-          '<button class="btn bad miniBtn" data-act="cancelAll" data-id="'+l.id+'">🗑 Ακύρωση όλα</button>' +
+
+        '<div class="qtyNow">' +
+          '<button class="btn small" data-act="minus" data-id="'+l.id+'">–</button>' +
+          '<span class="muted">Πόσα πληρώνει τώρα;</span>' +
+          '<b>'+payNow+'</b>' +
+          '<button class="btn small" data-act="plus" data-id="'+l.id+'">+</button>' +
+        '</div>' +
+
+        '<div class="payRow">' +
+          '<button class="btn ok" data-act="cash" data-id="'+l.id+'">💶 CASH</button>' +
+          '<button class="btn primary" data-act="card" data-id="'+l.id+'">💳 CARD</button>' +
+          '<button class="btn warn" data-act="gift" data-id="'+l.id+'">🎁 GIFT</button>' +
+        '</div>' +
+
+        '<div class="dangerRow">' +
+          '<button class="btn bad" data-act="cancel1" data-id="'+l.id+'">🗑 Ακύρωση 1</button>' +
+          '<button class="btn bad" data-act="cancelAll" data-id="'+l.id+'">🗑 Ακύρωση όλα</button>' +
         '</div>';
 
       div.querySelectorAll("button").forEach(function(b){
         b.onclick=function(){
           var act=b.getAttribute("data-act");
-          var lid=parseInt(b.getAttribute("data-id"),10);
-          if(act==="minus") return adjustLinePayNow(t.id, lid, -1);
-          if(act==="plus") return adjustLinePayNow(t.id, lid, +1);
-          if(act==="cancel1") return cancelLineQty(t.id, lid, 1);
-          if(act==="cancelAll") return cancelLineQty(t.id, lid, 9999);
-          payLinePartial(t.id, lid, act);
+          var id=parseInt(b.getAttribute("data-id"),10);
+          if(act==="minus") return adjustPayNow(id, -1);
+          if(act==="plus") return adjustPayNow(id, +1);
+          if(act==="cancel1") return cancelQty(id, 1);
+          if(act==="cancelAll") return cancelQty(id, 9999);
+          payPartial(id, act);
         };
       });
 
@@ -796,89 +842,9 @@
     });
   }
 
-  function findLine(ticketId, lineId){
-    ensureDay();
-    var t=tickets().find(x=>x.id===ticketId);
-    if(!t) return {t:null, idx:-1, line:null};
-    var idx=t.lines.findIndex(x=>x.id===lineId);
-    return {t:t, idx:idx, line: idx>=0?t.lines[idx]:null};
-  }
-
-  function adjustLinePayNow(ticketId, lineId, delta){
-    var f=findLine(ticketId, lineId);
-    if(!f.line) return;
-    var l=f.line;
-    var cur=l.pay_now||1;
-    cur+=delta;
-    cur=Math.max(1, Math.min(cur, l.qty_open));
-    l.pay_now=cur;
-    saveDB(db);
-    renderAll();
-  }
-
-  function cancelLineQty(ticketId, lineId, qty){
-    var f=findLine(ticketId, lineId);
-    if(!f.line) return;
-    var l=f.line;
-    var q=Math.min(qty, l.qty_open);
-    l.qty_open -= q;
-    l.pay_now = Math.max(1, Math.min(l.pay_now||1, l.qty_open||1));
-    if(l.qty_open<=0){
-      f.t.lines.splice(f.idx,1);
-    }
-    saveDB(db);
-    toast(qty>=9999 ? "Ακυρώθηκε γραμμή" : ("Ακυρώθηκαν "+q+" τεμ."));
-    renderAll();
-  }
-
-  function payLinePartial(ticketId, lineId, method){
-    var f=findLine(ticketId, lineId);
-    if(!f.line) return;
-    var l=f.line;
-    var q=Math.min(l.pay_now||1, l.qty_open);
-    if(q<=0) return;
-
-    l.qty_open -= q;
-    l.pay_now = Math.max(1, Math.min(l.pay_now||1, l.qty_open||1));
-
-    var paidEntry={
-      id: ++db.lastId,
-      ticketId: ticketId,
-      ticketName: (f.t && f.t.name) || "",
-      date: BASE_TODAY,
-      openTime: l.time,
-      paidTime: nowHM(),
-      category: l.category,
-      item: l.item,
-      qty_paid: q,
-      extras: l.extras,
-      unit: l.unit,
-      total: q*l.unit,
-      method: method
-    };
-    db.days[TODAY].paid.push(paidEntry);
-
-    if(l.qty_open<=0){
-      f.t.lines.splice(f.idx,1);
-    }
-
-    saveDB(db);
-    toast("Πληρώθηκαν "+q+" τεμ.");
-    renderAll();
-  }
-
-  // Add to ticket (merge same lines in the same ticket)
-  function mergeLine(t, item, unit, extras){
-    var exKey=(extras||[]).join("|");
-    return (t.lines||[]).find(function(l){
-      return l.item===item && Math.abs(l.unit-unit)<0.0001 && (l.extras||[]).join("|")===exKey;
-    });
-  }
-
-  // Categories / Products
+  // Categories & products
   var catsEl=document.getElementById("cats");
   var productsEl=document.getElementById("products");
-  var catTitle=document.getElementById("catTitle");
   var searchEl=document.getElementById("search");
   var activeCat=MENU[0].cat;
 
@@ -886,7 +852,7 @@
     catsEl.innerHTML="";
     MENU.forEach(function(section){
       var b=document.createElement("button");
-      b.className="btn cat"+(section.cat===activeCat?" active":"");
+      b.className="btn small cat"+(section.cat===activeCat?" active":"");
       b.textContent=section.cat;
       b.onclick=function(){ activeCat=section.cat; buildCats(); buildProducts(); };
       catsEl.appendChild(b);
@@ -896,11 +862,10 @@
   function buildProducts(){
     var q=(searchEl.value||"").trim().toLowerCase();
     productsEl.innerHTML="";
-    var section=MENU.find(function(s){return s.cat===activeCat;});
-    catTitle.textContent=activeCat;
+    var section=MENU.find(s=>s.cat===activeCat);
 
-    var items=section.items.map(function(it){return {name:it[0],price:it[1],cat:section.cat};});
-    if(q) items=items.filter(function(x){return x.name.toLowerCase().indexOf(q)>=0;});
+    var items=section.items.map(it=>({name:it[0],price:it[1],cat:section.cat}));
+    if(q) items=items.filter(x=>x.name.toLowerCase().indexOf(q)>=0);
 
     items.forEach(function(item){
       var div=document.createElement("div");
@@ -986,17 +951,17 @@
       });
     }
     saveDB(db);
-    toast("Μπήκε στο "+t.name);
+    toast("Προστέθηκε στο "+t.name);
     closeModal();
+    // After adding, stay in Order tab (faster)
     renderAll();
   };
 
-  // Paid summary
-  var sumTotalEl=document.getElementById("sumTotal");
-  var sumCashEl=document.getElementById("sumCash");
-  var sumCardEl=document.getElementById("sumCard");
-  var sumGiftEl=document.getElementById("sumGift");
-  var lastListEl=document.getElementById("lastList");
+  // Paid summary + last
+  var sumCash=document.getElementById("sumCash");
+  var sumCard=document.getElementById("sumCard");
+  var sumGift=document.getElementById("sumGift");
+  var lastList=document.getElementById("lastList");
 
   function computePaid(){
     ensureDay();
@@ -1007,32 +972,24 @@
       else if(e.method==="card") card+=e.total;
       else if(e.method==="gift") gift+=e.total;
     });
-    return {paid:paid, cash:cash, card:card, gift:gift, total:(cash+card)};
+    return {paid:paid, cash:cash, card:card, gift:gift};
   }
-
-  function renderPaidSummary(){
+  function renderPaid(){
     var c=computePaid();
-    sumTotalEl.textContent=euro(c.total);
-    sumCashEl.textContent=euro(c.cash);
-    sumCardEl.textContent=euro(c.card);
-    sumGiftEl.textContent=euro(c.gift);
+    sumCash.textContent=euro(c.cash);
+    sumCard.textContent=euro(c.card);
+    sumGift.textContent=euro(c.gift);
 
-    lastListEl.innerHTML="";
     var last=c.paid.slice(-6).reverse();
-    if(!last.length){
-      lastListEl.innerHTML='<div class="muted">Δεν υπάρχει πληρωμή ακόμα.</div>';
-      return;
-    }
-    last.forEach(function(e){
+    if(!last.length){ lastList.innerHTML='<div class="muted">Δεν υπάρχει πληρωμή ακόμα.</div>'; return; }
+
+    lastList.innerHTML = last.map(function(e){
       var m=e.method==="cash"?"💶":(e.method==="card"?"💳":"🎁");
-      var ex=(e.extras && e.extras.length) ? (" +"+e.extras.join(", ")) : "";
-      var line=document.createElement("div");
-      line.textContent=m+" "+e.paidTime+" — "+e.ticketName+" — "+e.qty_paid+"x "+e.item+ex+" = "+euro(e.total);
-      lastListEl.appendChild(line);
-    });
+      return '<div>'+m+' '+e.paidTime+' — '+e.ticketName+' — '+e.qty_paid+'x '+e.item+' = '+euro(e.total)+'</div>';
+    }).join("");
   }
 
-  // Undo: remove last paid, restore to that ticket (merge)
+  // Undo / Repeat / CSV / Reset / Wipe / Close day
   document.getElementById("btnUndo").onclick=function(){
     ensureDay();
     var paid=db.days[TODAY].paid;
@@ -1041,7 +998,6 @@
 
     var t=tickets().find(x=>x.id===last.ticketId);
     if(!t){
-      // if ticket no longer exists, create it back
       db.days[TODAY].tickets.push({id:last.ticketId, name:last.ticketName||("T"+last.ticketId), createdAt: nowHM(), lines:[]});
       t=tickets().find(x=>x.id===last.ticketId);
     }
@@ -1051,44 +1007,30 @@
       existing.pay_now = Math.max(1, Math.min(existing.pay_now||1, existing.qty_open));
     }else{
       t.lines.push({
-        id: ++db.lastId,
-        category: last.category,
-        item: last.item,
-        extras: last.extras||[],
-        unit: last.unit,
-        qty_open: last.qty_paid,
-        pay_now: 1,
-        time: nowHM()
+        id: ++db.lastId, category:last.category, item:last.item, extras:last.extras||[],
+        unit:last.unit, qty_open:last.qty_paid, pay_now:1, time: nowHM()
       });
     }
-
     saveDB(db);
-    toast("Αναιρέθηκε πληρωμή");
+    toast("Αναιρέθηκε");
     renderAll();
+    setTab("tickets");
   };
 
-  // Repeat last paid: add as open to active ticket
   document.getElementById("btnRepeat").onclick=function(){
     ensureDay();
     var paid=db.days[TODAY].paid;
     if(!paid.length){ toast("Δεν υπάρχει τελευταία πληρωμή"); return; }
     var last=paid[paid.length-1];
     var t=activeTicket();
-
     var existing = mergeLine(t, last.item, last.unit, last.extras||[]);
     if(existing){
       existing.qty_open += last.qty_paid;
       existing.pay_now = Math.max(1, Math.min(existing.pay_now||1, existing.qty_open));
     }else{
       t.lines.push({
-        id: ++db.lastId,
-        category: last.category,
-        item: last.item,
-        extras: last.extras||[],
-        unit: last.unit,
-        qty_open: last.qty_paid,
-        pay_now: 1,
-        time: nowHM()
+        id: ++db.lastId, category:last.category, item:last.item, extras:last.extras||[],
+        unit:last.unit, qty_open:last.qty_paid, pay_now:1, time: nowHM()
       });
     }
     saveDB(db);
@@ -1096,55 +1038,32 @@
     renderAll();
   };
 
-  // CSV
   document.getElementById("btnCSV").onclick=function(){
     ensureDay();
     var rows=[];
-    // open
     tickets().forEach(function(t){
       (t.lines||[]).forEach(function(l){
         rows.push({
-          status:"open",
-          ticketId:t.id, ticketName:t.name,
-          date: BASE_TODAY,
-          openTime:l.time,
-          paidTime:"",
-          category:l.category,
-          item:l.item,
-          qty:l.qty_open,
-          extras:(l.extras||[]).join(" | "),
-          unit:l.unit.toFixed(2),
-          total:(l.qty_open*l.unit).toFixed(2),
-          method:""
+          status:"open", ticketId:t.id, ticketName:t.name, date: BASE_TODAY, openTime:l.time, paidTime:"",
+          category:l.category, item:l.item, qty:l.qty_open, extras:(l.extras||[]).join(" | "),
+          unit:l.unit.toFixed(2), total:(l.qty_open*l.unit).toFixed(2), method:""
         });
       });
     });
-    // paid
     (db.days[TODAY].paid||[]).forEach(function(p){
       rows.push({
-        status:"paid",
-        ticketId:p.ticketId, ticketName:p.ticketName,
-        date: p.date,
-        openTime:p.openTime,
-        paidTime:p.paidTime,
-        category:p.category,
-        item:p.item,
-        qty:p.qty_paid,
-        extras:(p.extras||[]).join(" | "),
-        unit:p.unit.toFixed(2),
-        total:p.total.toFixed(2),
-        method:p.method
+        status:"paid", ticketId:p.ticketId, ticketName:p.ticketName, date:p.date, openTime:p.openTime, paidTime:p.paidTime,
+        category:p.category, item:p.item, qty:p.qty_paid, extras:(p.extras||[]).join(" | "),
+        unit:p.unit.toFixed(2), total:p.total.toFixed(2), method:p.method
       });
     });
-
     if(!rows.length){ toast("Δεν υπάρχουν εγγραφές"); return; }
 
     var header=["user","date","status","ticketId","ticketName","openTime","paidTime","category","item","qty","extras","unit","total","method"];
     var lines=[header.join(",")];
     rows.forEach(function(r){
       lines.push([
-        currentUser().name,
-        r.date, r.status, r.ticketId, r.ticketName, r.openTime, r.paidTime,
+        currentUser().name, r.date, r.status, r.ticketId, r.ticketName, r.openTime, r.paidTime,
         r.category, r.item, r.qty, r.extras, r.unit, r.total, r.method
       ].map(escapeCSV).join(","));
     });
@@ -1158,87 +1077,152 @@
     toast("Κατέβηκε CSV");
   };
 
-  // Reset day
   document.getElementById("btnResetDay").onclick=function(){
     ensureDay();
-    var uname=currentUser().name;
-    if(!confirm('Θες σίγουρα να καθαρίσεις ΜΟΝΟ τη σημερινή ημέρα για τον χρήστη "'+uname+'";')) return;
-    db.days[TODAY]={tickets:[{id: ++db.lastId, name:"BAR", createdAt: nowHM(), lines:[]}], paid:[]};
+    if(!confirm("Καθαρισμός ημέρας για αυτόν τον χρήστη;")) return;
+    db.days[TODAY]={tickets:[], paid:[]};
     saveDB(db);
-    setActiveTicketId(db.days[TODAY].tickets[0].id);
-    toast("Καθαρίστηκε η ημέρα");
+    ensureDay();
+    setActiveTicketId(tickets()[0].id);
+    toast("Καθαρίστηκε");
     renderAll();
   };
 
-  // Wipe all
   document.getElementById("btnWipeAll").onclick=function(){
-    if(!confirm("ΠΡΟΣΟΧΗ: Θα διαγραφούν ΟΛΑ τα δεδομένα από τη συσκευή. Συνέχεια;")) return;
+    if(!confirm("ΠΡΟΣΟΧΗ: Διαγράφει ΟΛΑ από τη συσκευή. Συνέχεια;")) return;
     localStorage.removeItem(LS_KEY);
     localStorage.removeItem(LS_USERS);
     localStorage.removeItem(LS_USER);
-    localStorage.removeItem(LS_ACTIVE_TICKET+"__"+TODAY);
+    // active ticket keys are per day-user; ok to leave
     location.reload();
   };
 
-  // Close day report
   document.getElementById("btnClose").onclick=function(){
     ensureDay();
-    var paid=computePaid();
-
+    var c=computePaid();
     var openCount=0, openSum=0;
-    tickets().forEach(function(t){
-      (t.lines||[]).forEach(function(l){
-        openCount += l.qty_open;
-        openSum += l.qty_open*l.unit;
-      });
-    });
+    tickets().forEach(function(t){ (t.lines||[]).forEach(function(l){ openCount+=l.qty_open; openSum += l.qty_open*l.unit; }); });
 
-    var wrap=document.createElement("div");
-    wrap.className="modalWrap";
-    wrap.style.display="flex";
-
-    var modal=document.createElement("div");
-    modal.className="modal";
-    modal.innerHTML=
-      '<div class="row" style="align-items:flex-start;">'+
-        '<div><h2>Κλείσιμο Ημέρας – '+BASE_TODAY.split("-").reverse().join("/")+'</h2>'+
-        '<div class="muted">Χρήστης: <b>'+currentUser().name+'</b></div></div>'+
-        '<button class="btn" id="rClose">Κλείσιμο</button>'+
-      '</div>'+
-      '<div class="divider"></div>'+
-      '<div style="display:grid; gap:6px;">'+
-        '<div class="row"><span>Σύνολο (cash+card)</span><b>'+euro(paid.total)+'</b></div>'+
-        '<div class="row"><span>Μετρητά</span><b>'+euro(paid.cash)+'</b></div>'+
-        '<div class="row"><span>Κάρτα</span><b>'+euro(paid.card)+'</b></div>'+
-        '<div class="row"><span>Κερασμένα</span><b>'+euro(paid.gift)+'</b></div>'+
-        '<div class="row"><span>Ανοιχτά (τεμάχια)</span><b>'+openCount+'</b></div>'+
-        '<div class="row"><span>Ανοιχτά (αξία)</span><b>'+euro(openSum)+'</b></div>'+
-      '</div>'+
-      '<div class="divider"></div>'+
-      '<button class="btn primary" id="rCSV" style="width:100%;">Λήψη CSV (open+paid)</button>';
-
-    wrap.appendChild(modal);
-    document.body.appendChild(wrap);
-
-    modal.querySelector("#rClose").onclick=function(){ wrap.remove(); };
-    wrap.addEventListener("click", function(e){ if(e.target===wrap) wrap.remove(); });
-    modal.querySelector("#rCSV").onclick=function(){ document.getElementById("btnCSV").click(); };
+    alert(
+      "Κλείσιμο ημέρας ("+BASE_TODAY.split("-").reverse().join("/")+")\n\n"+
+      "Μετρητά: "+euro(c.cash)+"\n"+
+      "Κάρτα: "+euro(c.card)+"\n"+
+      "Κερασμένα: "+euro(c.gift)+"\n\n"+
+      "Ανοιχτά τεμάχια: "+openCount+"\n"+
+      "Ανοιχτά αξία: "+euro(openSum)
+    );
   };
+
+  // Categories init
+  function buildCats(){
+    var catsEl=document.getElementById("cats");
+    catsEl.innerHTML="";
+    MENU.forEach(function(section){
+      var b=document.createElement("button");
+      b.className="btn small cat"+(section.cat===activeCat?" active":"");
+      b.textContent=section.cat;
+      b.onclick=function(){ activeCat=section.cat; buildCats(); buildProducts(); };
+      catsEl.appendChild(b);
+    });
+  }
+
+  // Modal hooks
+  var modalWrap=document.getElementById("modalWrap");
+  var mTitle=document.getElementById("mTitle");
+  var mPrice=document.getElementById("mPrice");
+  var mFinal=document.getElementById("mFinal");
+  var qtyVal=document.getElementById("qtyVal");
+  var xDecaf=document.getElementById("xDecaf");
+  var xPlant=document.getElementById("xPlant");
+  var addToTicket=document.getElementById("addToTicket");
+  var currentItem=null; var qty=1;
+
+  function calcFinal(base){
+    var extra=0;
+    if(xDecaf.checked) extra+=EXTRAS.decaf.price;
+    if(xPlant.checked) extra+=EXTRAS.plant.price;
+    return (base+extra)*qty;
+  }
+  function openModal(item){
+    currentItem=item; qty=1; xDecaf.checked=false; xPlant.checked=false;
+    mTitle.textContent=item.name;
+    mPrice.textContent="Τιμή: "+euro(item.price)+" (βάση)";
+    qtyVal.textContent="1";
+    mFinal.textContent=euro(calcFinal(item.price));
+    modalWrap.style.display="flex";
+  }
+  function closeModal(){ modalWrap.style.display="none"; currentItem=null; }
+  document.getElementById("mClose").onclick=closeModal;
+  modalWrap.addEventListener("click", function(e){ if(e.target===modalWrap) closeModal(); });
+
+  document.getElementById("qtyMinus").onclick=function(){
+    qty=Math.max(1, qty-1);
+    qtyVal.textContent=String(qty);
+    mFinal.textContent=euro(calcFinal(currentItem.price));
+  };
+  document.getElementById("qtyPlus").onclick=function(){
+    qty=qty+1;
+    qtyVal.textContent=String(qty);
+    mFinal.textContent=euro(calcFinal(currentItem.price));
+  };
+  xDecaf.onchange=function(){ if(currentItem) mFinal.textContent=euro(calcFinal(currentItem.price)); };
+  xPlant.onchange=function(){ if(currentItem) mFinal.textContent=euro(calcFinal(currentItem.price)); };
+
+  addToTicket.onclick=function(){
+    ensureDay();
+    var t=activeTicket();
+    var extras=[], extraTotal=0;
+    if(xDecaf.checked){ extras.push(EXTRAS.decaf.name); extraTotal+=EXTRAS.decaf.price; }
+    if(xPlant.checked){ extras.push(EXTRAS.plant.name); extraTotal+=EXTRAS.plant.price; }
+    var unit=currentItem.price + extraTotal;
+
+    var existing = mergeLine(t, currentItem.name, unit, extras);
+    if(existing){
+      existing.qty_open += qty;
+      existing.pay_now = Math.max(1, Math.min(existing.pay_now||1, existing.qty_open));
+    }else{
+      t.lines.push({ id: ++db.lastId, category: currentItem.cat, item: currentItem.name, extras: extras,
+        unit: unit, qty_open: qty, pay_now: 1, time: nowHM()
+      });
+    }
+    saveDB(db);
+    toast("Μπήκε στο "+t.name);
+    closeModal();
+    renderAll();
+  };
+
+  // Products render (needs openModal in scope)
+  function buildProducts(){
+    var productsEl=document.getElementById("products");
+    var q=(document.getElementById("search").value||"").trim().toLowerCase();
+    productsEl.innerHTML="";
+    var section=MENU.find(s=>s.cat===activeCat);
+    var items=section.items.map(it=>({name:it[0],price:it[1],cat:section.cat}));
+    if(q) items=items.filter(x=>x.name.toLowerCase().indexOf(q)>=0);
+
+    items.forEach(function(item){
+      var div=document.createElement("div");
+      div.className="prod";
+      div.innerHTML='<div><div class="title">'+item.name+'</div><small>'+item.cat+'</small></div><div class="price">'+euro(item.price)+'</div>';
+      div.onclick=function(){ openModal(item); };
+      productsEl.appendChild(div);
+    });
+  }
+  document.getElementById("search").addEventListener("input", buildProducts);
 
   function renderAll(){
     ensureDay();
-    renderUserSelect();
-    renderTicketSelect();
-    renderTicketsList();
-    if(viewingTicketId) renderTicketLines();
+    renderTablesGrid();
     buildCats();
     buildProducts();
-    renderPaidSummary();
+    renderTicketLines();
+    renderPaid();
   }
 
   // INIT
   renderUserSelect();
   ensureDay();
+  setActiveTicketId(getActiveTicketId());
   renderAll();
 
 })();
