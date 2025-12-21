@@ -1,7 +1,7 @@
 // daily-cashier service worker (GitHub Pages)
 // Αν αλλάξεις κάτι στο app, ανέβαζε πάντα το VERSION (π.χ. v1, v2, v3...).
 
-const VERSION = "v3"; // <-- ΑΛΛΑΖΕ ΤΟ κάθε φορά που κάνεις update
+const VERSION = "v4"; // <-- ΑΛΛΑΖΕ ΤΟ κάθε φορά που κάνεις update
 const CACHE_NAME = `daily-cashier-${VERSION}`;
 
 const ASSETS = [
