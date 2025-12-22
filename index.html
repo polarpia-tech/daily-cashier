@@ -9,9 +9,6 @@
   <style>
     :root{
       --bg:#0b0f14;
-      --bg2:#0f1620;
-      --panel:#111b26;
-      --panel2:#0f1822;
       --txt:#e8eef7;
       --muted:#9fb0c6;
       --line:rgba(255,255,255,.08);
@@ -22,9 +19,6 @@
 
       --r:18px;
       --pad:14px;
-
-      --btnH:44px;
-      --btnR:16px;
 
       --safeTop: env(safe-area-inset-top, 0px);
       --safeBot: env(safe-area-inset-bottom, 0px);
@@ -39,117 +33,195 @@
                   radial-gradient(1000px 700px at 90% 20%, rgba(57,217,138,.10), transparent 55%),
                   linear-gradient(180deg, var(--bg), #070a0e);
       color:var(--txt);
-      overflow:hidden; /* το app κάνει scroll μέσα */
+      overflow:hidden;
     }
 
-    a{ color:inherit; }
-
-    /* App shell */
-    .app{
-      height:100%;
-      display:flex;
-      flex-direction:column;
-    }
+    .app{ height:100%; display:flex; flex-direction:column; }
 
     .topbar{
       padding: calc(var(--safeTop) + 10px) var(--pad) 10px;
       border-bottom:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(17,27,38,.75), rgba(11,15,20,.65));
+      background: rgba(11,15,20,.75);
       backdrop-filter: blur(10px);
     }
-
     .toprow{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
+      display:flex; gap:10px;
+      align-items:center; justify-content:space-between;
     }
-
-    .brand{
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-    }
+    .brand{ display:flex; flex-direction:column; min-width:0; }
     .brand .name{
-      font-size:18px;
-      font-weight:750;
-      letter-spacing:.2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      font-size:17px; font-weight:850;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
       max-width:64vw;
     }
-    .brand .sub{
-      margin-top:2px;
-      font-size:12px;
-      color:var(--muted);
-    }
+    .brand .sub{ margin-top:2px; font-size:12px; color:var(--muted); }
 
-    .top-actions{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-shrink:0;
-    }
-
+    .top-actions{ display:flex; gap:8px; align-items:center; flex-shrink:0; }
     .pill{
-      height:38px;
-      padding:0 12px;
+      height:38px; padding:0 10px;
       border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
-      color:var(--txt);
-      display:flex;
-      align-items:center;
-      gap:8px;
+      display:flex; align-items:center; gap:8px;
     }
-
     select, input{
-      font:inherit;
-      color:inherit;
-      background:transparent;
+      font:inherit; color:inherit; background:transparent;
       border:1px solid var(--line);
       border-radius:12px;
       padding:10px 12px;
       outline:none;
     }
-    select{ padding-right:34px; }
-
+    select{ border:none; padding:8px 4px; }
     .iconbtn{
       width:38px;height:38px;
       border-radius:12px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
       color:var(--txt);
-      display:grid;
-      place-items:center;
+      display:grid; place-items:center;
       font-size:18px;
       cursor:pointer;
       -webkit-tap-highlight-color: transparent;
     }
-    .iconbtn:active{ transform: scale(.98); }
 
-    /* Content (scroll area) */
     .content{
       flex:1;
       overflow:auto;
-      padding:12px var(--pad) calc(92px + var(--safeBot));
+      padding:12px var(--pad) calc(84px + var(--safeBot));
     }
 
     .section-title{
-      font-size:14px;
+      font-size:13px;
       color:var(--muted);
       margin:6px 2px 10px;
     }
 
-    /* Buttons */
+    .grid{ display:grid; gap:10px; }
+    .grid.tables{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (min-width: 600px){
+      .grid.tables{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    .tablebtn{
+      min-height:62px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      padding:10px 12px;
+      display:flex; flex-direction:column; justify-content:center; gap:4px;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tablebtn .tname{ font-weight:900; letter-spacing:.3px; }
+    .tablebtn .tmeta{ font-size:12px; color:var(--muted); }
+    .tablebtn.active{
+      border-color: rgba(59,179,255,.55);
+      box-shadow: 0 0 0 3px rgba(59,179,255,.12) inset;
+    }
+    .badge{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+    .dot{ width:8px;height:8px;border-radius:999px; background:rgba(255,255,255,.25); display:inline-block; }
+    .dot.open{ background: var(--warn); }
+    .dot.paid{ background: var(--ok); }
+
+    .list{ display:flex; flex-direction:column; gap:8px; }
+    .row{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(255,255,255,.03);
+      padding:10px 10px;
+      display:flex; gap:10px; align-items:center;
+    }
+    .row .main{ flex:1; min-width:0; }
+    .row .title{ font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .row .sub{ font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .price{ font-weight:950; white-space:nowrap; }
+
+    /* ✅ CHIPS (οριζόντιες κατηγορίες) */
+    .chipsbar{
+      display:flex;
+      gap:8px;
+      overflow:auto;
+      padding:2px 2px 8px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .chipcat{
+      flex:0 0 auto;
+      height:38px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      display:flex; align-items:center;
+      font-weight:850;
+      cursor:pointer;
+      scroll-snap-align:start;
+      -webkit-tap-highlight-color: transparent;
+      white-space:nowrap;
+      max-width:80vw;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .chipcat.on{
+      border-color: rgba(59,179,255,.55);
+      box-shadow: 0 0 0 3px rgba(59,179,255,.12) inset;
+    }
+
+    .qtybox{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .mini{
+      width:34px;height:34px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      display:grid; place-items:center;
+      font-size:18px;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .qnum{ min-width:26px; text-align:center; font-weight:950; }
+
+    .paychips{
+      display:flex; gap:6px; flex-wrap:wrap;
+      justify-content:flex-end;
+      margin-top:6px;
+    }
+    .chip{
+      height:30px; padding:0 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .chip.ok{ border-color: rgba(57,217,138,.55); }
+    .chip.accent{ border-color: rgba(59,179,255,.55); }
+    .chip.warn{ border-color: rgba(255,204,102,.55); }
+
+    .bottombar{
+      position:fixed;
+      left:0; right:0;
+      bottom:0;
+      padding:10px var(--pad) calc(10px + var(--safeBot));
+      border-top:1px solid var(--line);
+      background: rgba(11,15,20,.86);
+      backdrop-filter: blur(10px);
+    }
+    .bbgrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:10px;
+    }
     .btn{
-      height:var(--btnH);
-      border-radius:var(--btnR);
+      height:46px;
+      border-radius:16px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
       color:var(--txt);
-      padding:0 14px;
+      padding:0 12px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -157,9 +229,8 @@
       cursor:pointer;
       -webkit-tap-highlight-color: transparent;
       user-select:none;
-      font-weight:650;
+      font-weight:850;
     }
-    .btn:active{ transform:scale(.99); }
     .btn.primary{
       border-color: rgba(59,179,255,.45);
       box-shadow: 0 0 0 3px rgba(59,179,255,.10) inset;
@@ -172,244 +243,46 @@
       border-color: rgba(255,92,108,.45);
       box-shadow: 0 0 0 3px rgba(255,92,108,.10) inset;
     }
-    .btn.ghost{
-      background:transparent;
-    }
+    .btn.ghost{ background:transparent; }
 
-    .grid{
-      display:grid;
-      gap:10px;
-    }
-    .grid.tables{
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    @media (min-width: 600px){
-      .grid.tables{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    }
-
-    .tablebtn{
-      min-height:62px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      padding:10px 12px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:4px;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .tablebtn .tname{ font-weight:800; letter-spacing:.3px; }
-    .tablebtn .tmeta{ font-size:12px; color:var(--muted); }
-    .tablebtn.active{
-      border-color: rgba(59,179,255,.55);
-      box-shadow: 0 0 0 3px rgba(59,179,255,.12) inset;
-    }
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .dot{
-      width:8px;height:8px;border-radius:999px;
-      background:rgba(255,255,255,.25);
-      display:inline-block;
-    }
-    .dot.open{ background: var(--warn); }
-    .dot.paid{ background: var(--ok); }
-
-    /* Tabs */
-    .tabs{
-      display:flex;
-      gap:8px;
-      margin-top:10px;
-    }
-    .tab{
-      flex:1;
-      height:44px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:750;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .tab.on{
-      border-color: rgba(59,179,255,.55);
-      box-shadow: 0 0 0 3px rgba(59,179,255,.12) inset;
-    }
-
-    /* Products list - “τετράδιο” αίσθηση χωρίς γραμμές */
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .row{
-      border:1px solid var(--line);
-      border-radius:16px;
-      background: rgba(255,255,255,.03);
-      padding:10px 10px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-    .row .main{
-      flex:1;
-      min-width:0;
-    }
-    .row .title{
-      font-weight:800;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .row .sub{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .price{
-      font-weight:900;
-      letter-spacing:.2px;
-      white-space:nowrap;
-    }
-
-    .qtybox{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-shrink:0;
-    }
-    .mini{
-      width:34px;height:34px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      display:grid;
-      place-items:center;
-      font-size:18px;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mini:active{ transform:scale(.98); }
-    .qnum{
-      min-width:26px;
-      text-align:center;
-      font-weight:850;
-    }
-
-    .paychips{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      margin-top:6px;
-    }
-    .chip{
-      height:30px;
-      padding:0 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      font-size:12px;
-      font-weight:800;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
-    }
-    .chip.ok{ border-color: rgba(57,217,138,.55); }
-    .chip.accent{ border-color: rgba(59,179,255,.55); }
-    .chip.warn{ border-color: rgba(255,204,102,.55); }
-    .chip:active{ transform:scale(.99); }
-
-    /* Bottom bar */
-    .bottombar{
-      position:fixed;
-      left:0; right:0;
-      bottom:0;
-      padding:10px var(--pad) calc(10px + var(--safeBot));
-      border-top:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(11,15,20,.10), rgba(11,15,20,.86));
-      backdrop-filter: blur(10px);
-    }
-    .bbgrid{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap:10px;
-    }
-
-    /* Modal */
     .overlay{
-      position:fixed;
-      inset:0;
+      position:fixed; inset:0;
       background:rgba(0,0,0,.55);
       display:none;
-      align-items:flex-end;
-      justify-content:center;
+      align-items:flex-end; justify-content:center;
       padding:16px;
       z-index:50;
     }
     .overlay.on{ display:flex; }
     .modal{
       width:min(680px, 100%);
-      background: linear-gradient(180deg, rgba(17,27,38,.98), rgba(11,15,20,.98));
+      background: rgba(11,15,20,.98);
       border:1px solid var(--line);
       border-radius:22px;
       padding:14px;
       box-shadow: 0 20px 60px rgba(0,0,0,.55);
     }
-    .mhead{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .mtitle{ font-weight:900; font-size:16px; }
+    .mhead{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; }
+    .mtitle{ font-weight:950; font-size:16px; }
     .mclose{
       width:38px;height:38px;
       border-radius:12px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
-      display:grid;
-      place-items:center;
+      display:grid; place-items:center;
       cursor:pointer;
     }
-
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      margin:10px 0;
-    }
+    .field{ display:flex; flex-direction:column; gap:6px; margin:10px 0; }
     .label{ font-size:12px; color:var(--muted); }
-    .row2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    @media (max-width: 420px){
-      .row2{ grid-template-columns: 1fr; }
-      .grid.tables{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-    }
+    .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 420px){ .row2{ grid-template-columns:1fr; } }
 
-    /* Screensaver */
+    .hint{ margin-top:8px; font-size:12px; color:var(--muted); }
+
     .screensaver{
-      position:fixed;
-      inset:0;
+      position:fixed; inset:0;
       display:none;
-      align-items:center;
-      justify-content:center;
+      align-items:center; justify-content:center;
       flex-direction:column;
       gap:10px;
       background: radial-gradient(1200px 700px at 20% 0%, rgba(59,179,255,.14), transparent 55%),
@@ -425,22 +298,13 @@
       border-radius:28px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
-      display:grid;
-      place-items:center;
+      display:grid; place-items:center;
       font-size:44px;
       font-weight:950;
-      letter-spacing:.5px;
     }
     .ss1{ font-size:20px; font-weight:950; }
-    .ss2{ color:var(--muted); font-weight:750; }
+    .ss2{ color:var(--muted); font-weight:800; }
 
-    .hint{
-      margin-top:8px;
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    /* Hide sections */
     [data-view]{ display:none; }
     [data-view].on{ display:block; }
   </style>
@@ -462,16 +326,9 @@
         <button class="iconbtn" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
       </div>
     </div>
-
-    <div class="tabs" style="margin-top:12px">
-      <div class="tab on" id="tabHome">Home</div>
-      <div class="tab" id="tabTables">Τραπέζια</div>
-      <div class="tab" id="tabSummary">Σύνοψη</div>
-    </div>
   </div>
 
   <div class="content">
-    <!-- HOME -->
     <section data-view="home" class="on">
       <div class="section-title">Γρήγορα</div>
       <div class="list">
@@ -486,7 +343,7 @@
         <div class="row" id="homeOpen" style="cursor:pointer">
           <div class="main">
             <div class="title">📄 Ανοιχτά</div>
-            <div class="sub">Όλα τα ανοιχτά τραπέζια/παραγγελίες</div>
+            <div class="sub">Μόνο όσα έχουν απλήρωτο</div>
           </div>
           <div class="price"><span id="openCount">0</span></div>
         </div>
@@ -500,26 +357,23 @@
         </div>
       </div>
 
-      <div class="hint">Tip: Στο Android/Chrome → “Προσθήκη στην αρχική οθόνη” για να ανοίγει σαν app.</div>
+      <div class="hint">
+        Για να μη φαίνεται η μπάρα του Chrome: Chrome → ⋮ → “Προσθήκη στην αρχική οθόνη” και άνοιγμα από το εικονίδιο.
+      </div>
     </section>
 
-    <!-- TABLES -->
     <section data-view="tables">
       <div class="section-title">Διάλεξε τραπέζι</div>
       <div class="grid tables" id="tablesGrid"></div>
     </section>
 
-    <!-- ORDER -->
     <section data-view="order">
       <div class="section-title" id="orderTitle">Τραπέζι: —</div>
 
       <div class="row" style="align-items:flex-start">
         <div class="main">
           <div class="title">Ανοιχτά items</div>
-          <div class="sub">Με “+ / −” αλλάζεις ποσότητα. Με “Μετ/Κάρ/Κερ” πληρώνεις **1 τεμάχιο**.</div>
-          <div class="hint" style="margin:6px 0 0">
-            * Δεν ζητάει PIN για πληρωμή (όπως ζήτησες). PIN ζητάει μόνο για ρυθμίσεις/διαγραφές.
-          </div>
+          <div class="sub">+ / − ποσότητα. Μετ/Κάρ/Κερ πληρώνει 1 τεμ. (με επιβεβαίωση).</div>
         </div>
         <div class="price" id="ticketUnpaid">0,00 €</div>
       </div>
@@ -527,43 +381,38 @@
       <div class="list" id="openItemsList" style="margin-top:10px"></div>
 
       <div class="section-title" style="margin-top:16px">Κατηγορίες</div>
-      <div class="list" id="catList"></div>
+      <div class="chipsbar" id="catChips"></div>
 
-      <div class="section-title" style="margin-top:16px">Προϊόντα</div>
+      <div class="section-title" style="margin-top:12px">Προϊόντα</div>
       <input id="productSearch" placeholder="Αναζήτηση..." style="width:100%; margin:6px 0 10px" />
       <div class="list" id="productList"></div>
     </section>
 
-    <!-- OPEN LIST -->
     <section data-view="open">
-      <div class="section-title">Ανοιχτά τραπέζια</div>
+      <div class="section-title">Ανοιχτά (μόνο απλήρωτα)</div>
       <div class="list" id="openTablesList"></div>
     </section>
 
-    <!-- SUMMARY -->
     <section data-view="summary">
       <div class="section-title">Σύνοψη ημέρας</div>
       <div class="list" id="summaryList"></div>
     </section>
 
-    <!-- FAV -->
     <section data-view="fav">
       <div class="section-title">Top 8 σήμερα</div>
       <div class="list" id="favList"></div>
     </section>
   </div>
 
-  <!-- Bottom bar -->
   <div class="bottombar">
     <div class="bbgrid">
-      <button class="btn primary" id="btnBack">⬅️ Πίσω</button>
-      <button class="btn ok" id="btnUndo">↩️ Αναίρεση</button>
-      <button class="btn bad" id="btnDanger">🗑️ Διαγραφή</button>
+      <button class="btn primary" id="btnLeft">🏠 Home</button>
+      <button class="btn ok" id="btnMid">📌 Τραπέζια</button>
+      <button class="btn" id="btnRight">📊 Σύνοψη</button>
     </div>
   </div>
 </div>
 
-<!-- Modal -->
 <div class="overlay" id="overlay">
   <div class="modal">
     <div class="mhead">
@@ -574,7 +423,6 @@
   </div>
 </div>
 
-<!-- Screensaver -->
 <div class="screensaver" id="screensaver">
   <div class="sslogo" id="ssLogo">☕</div>
   <div class="ss1" id="ssStore">—</div>
@@ -584,7 +432,6 @@
 
 <script src="./app.js"></script>
 <script>
-  // Service worker
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
   }
