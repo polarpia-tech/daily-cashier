@@ -21,7 +21,7 @@
   const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
   const EPS = 0.005;
 
-  const LS_KEY = "mini-cashier-db-v3";
+  const LS_KEY = "mini-cashier-db-v4";
 
   const defaultDB = () => ({
     storeName: "Το Μαγαζί Μου",
@@ -139,7 +139,7 @@
     return day.tickets[key];
   };
 
-  // ✅ Τώρα το ticket κρατά ΜΟΝΟ απλήρωτα (qty = unpaid)
+  // ✅ ticket κρατά μόνο απλήρωτα (qty = unpaid)
   const ticketUnpaidTotal = (ticket) => {
     let unpaid = 0;
     for (const it of ticket.items) unpaid += it.qty * it.price;
@@ -163,27 +163,62 @@
   const payOneUnit = (db, ticket, itemId, method) => {
     const day = getDay(db);
     const it = ticket.items.find(x => x.id === itemId);
-    if (!it) return;
-    if (it.qty <= 0) return;
+    if (!it || it.qty <= 0) return;
 
-    // Undo
-    db.undo = { type:"payOne", table: ticket.table, userId: ticket.userId, itemId, method, price: it.price, when: nowISO() };
+    db.undo = {
+      type:"payOne",
+      table: ticket.table,
+      userId: ticket.userId,
+      itemSnapshot: JSON.parse(JSON.stringify(it)),
+      method,
+      when: nowISO()
+    };
 
-    // stats
     if (method === "cash") day.stats.cash += it.price;
     if (method === "card") day.stats.card += it.price;
     if (method === "comp") day.stats.comp += it.price;
 
-    // remove from unpaid list
     it.qty -= 1;
     if (it.qty <= 0) ticket.items = ticket.items.filter(x => x.id !== itemId);
 
-    // if ticket empty -> delete ticket
     if (ticket.items.length === 0) {
       delete day.tickets[ticketKey(ticket.table, ticket.userId)];
     }
 
     saveDB(db);
+  };
+
+  // ✅ Πληρωμή ΟΛΟΥ του τραπεζιού με 1 κίνηση
+  const payWholeTicket = (db, tableId, userId, method) => {
+    const day = getDay(db);
+    const key = ticketKey(tableId, userId);
+    const t = day.tickets[key];
+    if (!t || !t.items || t.items.length === 0) return false;
+
+    const snapshot = JSON.parse(JSON.stringify(t));
+    let delta = 0;
+
+    for (const it of t.items) {
+      const lineTotal = it.qty * it.price;
+      delta += lineTotal;
+
+      if (method === "cash") day.stats.cash += lineTotal;
+      if (method === "card") day.stats.card += lineTotal;
+      if (method === "comp") day.stats.comp += lineTotal;
+    }
+
+    db.undo = {
+      type: "payAll",
+      table: tableId,
+      userId,
+      method,
+      ticketSnapshot: snapshot,
+      when: nowISO()
+    };
+
+    delete day.tickets[key];
+    saveDB(db);
+    return true;
   };
 
   const undoLast = (db) => {
@@ -195,23 +230,43 @@
       const key = ticketKey(u.table, u.userId);
       let t = day.tickets[key];
       if (!t) {
-        // recreate ticket if it was deleted
         t = { id: uid(), table: u.table, userId: u.userId, openedAt: nowISO(), items: [] };
         day.tickets[key] = t;
       }
-      // find item
-      let it = t.items.find(x => x.id === u.itemId);
+
+      // restore item (add back qty+1)
+      const snap = u.itemSnapshot;
+      let it = t.items.find(x => x.id === snap.id);
       if (!it) {
-        // if item removed, bring it back as qty=1 with price saved; name unknown -> best effort
-        it = { id: u.itemId, productId:"", name:"(Undo item)", cat:"", price: u.price, qty: 0 };
+        it = JSON.parse(JSON.stringify(snap));
+        it.qty = 0;
         t.items.push(it);
       }
       it.qty += 1;
 
+      if (u.method === "cash") day.stats.cash -= snap.price;
+      if (u.method === "card") day.stats.card -= snap.price;
+      if (u.method === "comp") day.stats.comp -= snap.price;
+
+      db.undo = null;
+      saveDB(db);
+      return true;
+    }
+
+    if (u.type === "payAll") {
+      const key = ticketKey(u.table, u.userId);
+      const snapTicket = u.ticketSnapshot;
+
+      // restore ticket
+      day.tickets[key] = JSON.parse(JSON.stringify(snapTicket));
+
       // revert stats
-      if (u.method === "cash") day.stats.cash -= u.price;
-      if (u.method === "card") day.stats.card -= u.price;
-      if (u.method === "comp") day.stats.comp -= u.price;
+      for (const it of snapTicket.items) {
+        const lineTotal = it.qty * it.price;
+        if (u.method === "cash") day.stats.cash -= lineTotal;
+        if (u.method === "card") day.stats.card -= lineTotal;
+        if (u.method === "comp") day.stats.comp -= lineTotal;
+      }
 
       db.undo = null;
       saveDB(db);
@@ -228,7 +283,9 @@
       else t.items = t.items.filter(x => x !== it);
 
       if (t.items.length === 0) delete day.tickets[key];
-      if (day.stats.productQty[u.productId]) day.stats.productQty[u.productId] = Math.max(0, day.stats.productQty[u.productId] - 1);
+      if (day.stats.productQty[u.productId]) {
+        day.stats.productQty[u.productId] = Math.max(0, day.stats.productQty[u.productId] - 1);
+      }
 
       db.undo = null;
       saveDB(db);
@@ -238,19 +295,7 @@
     return false;
   };
 
-  // UI
-  let db = loadDB();
-  ensureDay(db);
-  if (!db.currentUserId) db.currentUserId = db.users[0]?.id || null;
-  saveDB(db);
-
-  let view = "home";
-  let activeTable = null;
-  let activeCategory = CATALOG.cats[0];
-  let searchText = "";
-
-  const currentUser = () => db.users.find(u => u.id === db.currentUserId) || db.users[0];
-
+  // UI helpers
   const escapeHtml = (s) => String(s||"")
     .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
     .replaceAll('"',"&quot;").replaceAll("'","&#039;");
@@ -328,6 +373,19 @@
       onOk?.();
     };
   };
+
+  // state
+  let db = loadDB();
+  ensureDay(db);
+  if (!db.currentUserId) db.currentUserId = db.users[0]?.id || null;
+  saveDB(db);
+
+  let view = "home";
+  let activeTable = null;
+  let activeCategory = CATALOG.cats[0];
+  let searchText = "";
+
+  const currentUser = () => db.users.find(u => u.id === db.currentUserId) || db.users[0];
 
   const setView = (v) => {
     view = v;
@@ -409,6 +467,37 @@
       return;
     }
 
+    // ✅ Πληρωμή ΟΛΟΥ τραπεζιού
+    const payAllRow = document.createElement("div");
+    payAllRow.className = "row";
+    payAllRow.innerHTML = `
+      <div class="main">
+        <div class="title">Πληρωμή όλου τραπεζιού</div>
+        <div class="sub">Κλείνει όλα τα προϊόντα μαζί και καθαρίζει το τραπέζι.</div>
+        <div class="paychips" style="justify-content:flex-start">
+          <span class="chip ok" data-payall="cash">Μετ ΟΛΑ</span>
+          <span class="chip accent" data-payall="card">Κάρ ΟΛΑ</span>
+          <span class="chip warn" data-payall="comp">Κερ ΟΛΑ</span>
+        </div>
+      </div>
+      <div class="price">${fmt(unpaid)}</div>
+    `;
+    payAllRow.querySelectorAll("[data-payall]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const method = btn.getAttribute("data-payall");
+        const methodName = method==="cash" ? "Μετρητά" : method==="card" ? "Κάρτα" : "Κερασμένο";
+        confirmBox("Επιβεβαίωση", `Να πληρωθεί ΟΛΟ το τραπέζι ως ${methodName};`, () => {
+          const ok = payWholeTicket(db, activeTable, db.currentUserId, method);
+          if (!ok) return toast("Δεν υπάρχει κάτι να πληρωθεί.");
+          toast("Το τραπέζι έκλεισε ✅");
+          activeTable = null;
+          setView("tables");
+        });
+      });
+    });
+    list.appendChild(payAllRow);
+
+    // ✅ items
     t.items.forEach(it => {
       const row = document.createElement("div");
       row.className = "row";
@@ -442,6 +531,7 @@
             const key = ticketKey(activeTable, db.currentUserId);
             const day = getDay(db);
             const ticket = day.tickets[key];
+            if (!ticket) return;
             ticket.items = ticket.items.filter(x=>x.id!==it.id);
             if (ticket.items.length === 0) delete day.tickets[key];
             saveDB(db);
@@ -466,13 +556,11 @@
 
             payOneUnit(db, ticket, it.id, method);
 
-            // μετά την πληρωμή ξαναδιάβασε ticket (μπορεί να σβήστηκε)
             const t2 = getTicket(db, activeTable, db.currentUserId);
             const unpaid2 = t2 ? ticketUnpaidTotal(t2) : 0;
 
             renderOpenItems();
 
-            // ✅ Αν έκλεισε (0) → πήγαινε στα τραπέζια
             if (unpaid2 <= EPS) {
               activeTable = null;
               setView("tables");
@@ -567,22 +655,15 @@
     const list = $("summaryList");
     list.innerHTML = "";
 
-    const byUser = {};
-    for (const t of Object.values(day.tickets)) {
-      if (!byUser[t.userId]) byUser[t.userId] = { unpaid:0 };
-      byUser[t.userId].unpaid += ticketUnpaidTotal(t);
-    }
-
     db.users.forEach(u => {
-      const unpaid = byUser[u.id]?.unpaid || 0;
       const row = document.createElement("div");
       row.className = "row";
       row.innerHTML = `
         <div class="main">
           <div class="title">${escapeHtml(u.name)}</div>
-          <div class="sub">Απλήρωτο σε ανοιχτά: ${fmt(unpaid)}</div>
+          <div class="sub">—</div>
         </div>
-        <div class="price"> </div>
+        <div class="price"></div>
       `;
       list.appendChild(row);
     });
@@ -684,12 +765,14 @@
     if (view === "fav") renderFav();
   };
 
+  // navigation
   $("homeNewOrder").addEventListener("click", () => setView("tables"));
   $("homeOpen").addEventListener("click", () => setView("open"));
   $("homeFav").addEventListener("click", () => setView("fav"));
+
   $("btnSettings").addEventListener("click", () => {
     showModal("Ρυθμίσεις", `
-      <div class="field"><div class="label">Απλό mode (θα βάλουμε μετά αναλυτικές ρυθμίσεις)</div></div>
+      <div class="field"><div class="label">Βασικές ρυθμίσεις</div></div>
       <div class="row2" style="margin-top:12px">
         <button class="btn ghost" id="mClose">Κλείσιμο</button>
         <button class="btn" id="mStore">Αλλαγή ονόματος</button>
