@@ -2,439 +2,1939 @@
 <html lang="el">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0b0f14" />
-  <title>Ημερήσιο Ταμείο</title>
-  <link rel="manifest" href="./manifest.webmanifest">
+  <title>Daily Cashier</title>
+
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
   <style>
     :root{
       --bg:#0b0f14;
-      --txt:#e8eef7;
-      --muted:#9fb0c6;
+      --panel:#121923;
+      --panel2:#0f151e;
+      --text:#e9eef7;
+      --muted:#a8b4c7;
       --line:rgba(255,255,255,.08);
-      --accent:#3bb3ff;
-      --ok:#39d98a;
+      --accent:#47b0ff;
+      --ok:#35d07f;
       --warn:#ffcc66;
-      --bad:#ff5c6c;
+      --danger:#ff5b6e;
 
       --r:18px;
       --pad:14px;
 
-      --safeTop: env(safe-area-inset-top, 0px);
-      --safeBot: env(safe-area-inset-bottom, 0px);
+      --btnH:46px;
+      --chipH:40px;
+      --shadow:0 18px 45px rgba(0,0,0,.45);
+      --shadow2:0 10px 26px rgba(0,0,0,.35);
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", sans-serif;
-      background: radial-gradient(1200px 700px at 20% 0%, rgba(59,179,255,.12), transparent 55%),
-                  radial-gradient(1000px 700px at 90% 20%, rgba(57,217,138,.10), transparent 55%),
-                  linear-gradient(180deg, var(--bg), #070a0e);
-      color:var(--txt);
+      background:radial-gradient(1200px 800px at 20% -10%, rgba(71,176,255,.18), transparent 55%),
+                 radial-gradient(1200px 800px at 110% 20%, rgba(53,208,127,.12), transparent 55%),
+                 linear-gradient(180deg, #070a0f 0%, var(--bg) 55%, #070a0f 100%);
+      color:var(--text);
+      font: 16px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       overflow:hidden;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .app{ height:100%; display:flex; flex-direction:column; }
+    /* Fullscreen app container */
+    .app{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      padding: calc(env(safe-area-inset-top) + 10px) 12px calc(env(safe-area-inset-bottom) + 10px);
+      gap:10px;
+    }
 
     .topbar{
-      padding: calc(var(--safeTop) + 10px) var(--pad) 10px;
-      border-bottom:1px solid var(--line);
-      background: rgba(11,15,20,.75);
-      backdrop-filter: blur(10px);
-    }
-    .toprow{
-      display:flex; gap:10px;
-      align-items:center; justify-content:space-between;
-    }
-    .brand{ display:flex; flex-direction:column; min-width:0; }
-    .brand .name{
-      font-size:17px; font-weight:850;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      max-width:64vw;
-    }
-    .brand .sub{ margin-top:2px; font-size:12px; color:var(--muted); }
-
-    .top-actions{ display:flex; gap:8px; align-items:center; flex-shrink:0; }
-    .pill{
-      height:38px; padding:0 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      display:flex; align-items:center; gap:8px;
-    }
-    select, input{
-      font:inherit; color:inherit; background:transparent;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 12px;
-      outline:none;
-    }
-    select{ border:none; padding:8px 4px; }
-    .iconbtn{
-      width:38px;height:38px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      color:var(--txt);
-      display:grid; place-items:center;
-      font-size:18px;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .content{
-      flex:1;
-      overflow:auto;
-      padding:12px var(--pad) calc(84px + var(--safeBot));
-    }
-
-    .section-title{
-      font-size:13px;
-      color:var(--muted);
-      margin:6px 2px 10px;
-    }
-
-    .grid{ display:grid; gap:10px; }
-    .grid.tables{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    @media (min-width: 600px){
-      .grid.tables{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    }
-
-    .tablebtn{
-      min-height:62px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      padding:10px 12px;
-      display:flex; flex-direction:column; justify-content:center; gap:4px;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .tablebtn .tname{ font-weight:900; letter-spacing:.3px; }
-    .tablebtn .tmeta{ font-size:12px; color:var(--muted); }
-    .tablebtn.active{
-      border-color: rgba(59,179,255,.55);
-      box-shadow: 0 0 0 3px rgba(59,179,255,.12) inset;
-    }
-    .badge{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
-    .dot{ width:8px;height:8px;border-radius:999px; background:rgba(255,255,255,.25); display:inline-block; }
-    .dot.open{ background: var(--warn); }
-    .dot.paid{ background: var(--ok); }
-
-    .list{ display:flex; flex-direction:column; gap:8px; }
-    .row{
-      border:1px solid var(--line);
-      border-radius:16px;
-      background: rgba(255,255,255,.03);
-      padding:10px 10px;
-      display:flex; gap:10px; align-items:center;
-    }
-    .row .main{ flex:1; min-width:0; }
-    .row .title{ font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .row .sub{ font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .price{ font-weight:950; white-space:nowrap; }
-
-    /* ✅ CHIPS (οριζόντιες κατηγορίες) */
-    .chipsbar{
       display:flex;
-      gap:8px;
-      overflow:auto;
-      padding:2px 2px 8px;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      min-height: 48px;
     }
-    .chipcat{
-      flex:0 0 auto;
-      height:38px;
-      padding:0 12px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      display:flex; align-items:center;
-      font-weight:850;
-      cursor:pointer;
-      scroll-snap-align:start;
-      -webkit-tap-highlight-color: transparent;
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .brand .shop{
+      font-weight:800;
+      letter-spacing:.2px;
+      font-size:18px;
       white-space:nowrap;
-      max-width:80vw;
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .chipcat.on{
-      border-color: rgba(59,179,255,.55);
-      box-shadow: 0 0 0 3px rgba(59,179,255,.12) inset;
-    }
-
-    .qtybox{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
-    .mini{
-      width:34px;height:34px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      display:grid; place-items:center;
-      font-size:18px;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .qnum{ min-width:26px; text-align:center; font-weight:950; }
-
-    .paychips{
-      display:flex; gap:6px; flex-wrap:wrap;
-      justify-content:flex-end;
-      margin-top:6px;
-    }
-    .chip{
-      height:30px; padding:0 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
+    .brand .sub{
+      color:var(--muted);
       font-size:12px;
-      font-weight:900;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
       white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    .chip.ok{ border-color: rgba(57,217,138,.55); }
-    .chip.accent{ border-color: rgba(59,179,255,.55); }
-    .chip.warn{ border-color: rgba(255,204,102,.55); }
 
-    .bottombar{
-      position:fixed;
-      left:0; right:0;
-      bottom:0;
-      padding:10px var(--pad) calc(10px + var(--safeBot));
-      border-top:1px solid var(--line);
-      background: rgba(11,15,20,.86);
-      backdrop-filter: blur(10px);
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
     }
-    .bbgrid{
+
+    .pill{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      border-radius:999px;
+      height:44px;
+      padding:0 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      box-shadow:var(--shadow2);
+    }
+
+    select, input, button{
+      font: inherit;
+      color: inherit;
+      border:none;
+      outline:none;
+      background:transparent;
+    }
+    select{
+      appearance:none;
+      -webkit-appearance:none;
+      padding-right:18px;
+      cursor:pointer;
+      max-width: 170px;
+    }
+    .caret{
+      width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid rgba(233,238,247,.75);
+      opacity:.8;
+      margin-left:-6px;
+      pointer-events:none;
+    }
+
+    .iconBtn{
+      width:44px;height:44px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
       display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
+      place-items:center;
+      box-shadow:var(--shadow2);
+      cursor:pointer;
+      user-select:none;
+    }
+    .iconBtn:active{transform:translateY(1px)}
+
+    .main{
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
       gap:10px;
     }
-    .btn{
-      height:46px;
-      border-radius:16px;
+
+    /* Views */
+    .view{
+      display:none;
+      flex:1;
+      min-height:0;
+      flex-direction:column;
+      gap:10px;
+    }
+    .view.active{display:flex}
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      color:var(--txt);
-      padding:0 12px;
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .cardHeader{
+      padding:12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.12);
+    }
+    .cardHeader h3{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+    .cardBody{padding:12px 14px}
+
+    /* Buttons */
+    .btnRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      height:var(--btnH);
+      padding:0 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
       display:inline-flex;
       align-items:center;
       justify-content:center;
       gap:8px;
       cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
       user-select:none;
-      font-weight:850;
+      box-shadow:var(--shadow2);
+      min-width: 120px;
     }
-    .btn.primary{
-      border-color: rgba(59,179,255,.45);
-      box-shadow: 0 0 0 3px rgba(59,179,255,.10) inset;
-    }
-    .btn.ok{
-      border-color: rgba(57,217,138,.45);
-      box-shadow: 0 0 0 3px rgba(57,217,138,.10) inset;
-    }
-    .btn.bad{
-      border-color: rgba(255,92,108,.45);
-      box-shadow: 0 0 0 3px rgba(255,92,108,.10) inset;
-    }
-    .btn.ghost{ background:transparent; }
+    .btn:active{transform:translateY(1px)}
+    .btn.small{height:40px; min-width:auto; padding:0 12px; border-radius:12px}
+    .btn.primary{border-color:rgba(71,176,255,.35); box-shadow:0 0 0 2px rgba(71,176,255,.16) inset, var(--shadow2)}
+    .btn.ok{border-color:rgba(53,208,127,.35); box-shadow:0 0 0 2px rgba(53,208,127,.16) inset, var(--shadow2)}
+    .btn.danger{border-color:rgba(255,91,110,.35); box-shadow:0 0 0 2px rgba(255,91,110,.14) inset, var(--shadow2)}
+    .btn.ghost{background:transparent}
+    .btn.full{width:100%}
 
-    .overlay{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.55);
-      display:none;
-      align-items:flex-end; justify-content:center;
-      padding:16px;
-      z-index:50;
+    /* Home tables grid */
+    .tablesGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:10px;
+      padding:12px;
     }
-    .overlay.on{ display:flex; }
-    .modal{
-      width:min(680px, 100%);
-      background: rgba(11,15,20,.98);
-      border:1px solid var(--line);
-      border-radius:22px;
-      padding:14px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+    @media (min-width: 520px){
+      .tablesGrid{grid-template-columns: repeat(4, minmax(0,1fr));}
     }
-    .mhead{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; }
-    .mtitle{ font-weight:950; font-size:16px; }
-    .mclose{
-      width:38px;height:38px;
-      border-radius:12px;
+    .tableBtn{
+      height:78px;
+      border-radius:18px;
+      background:rgba(255,255,255,.06);
       border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      display:grid; place-items:center;
+      box-shadow:var(--shadow2);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:6px;
       cursor:pointer;
+      user-select:none;
+      position:relative;
+      overflow:hidden;
     }
-    .field{ display:flex; flex-direction:column; gap:6px; margin:10px 0; }
-    .label{ font-size:12px; color:var(--muted); }
-    .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 420px){ .row2{ grid-template-columns:1fr; } }
+    .tableBtn .tName{font-weight:800; font-size:18px; letter-spacing:.5px}
+    .tableBtn .tSum{font-size:13px; color:var(--muted)}
+    .tableBtn.open{
+      border-color: rgba(71,176,255,.35);
+      box-shadow: 0 0 0 2px rgba(71,176,255,.16) inset, var(--shadow2);
+    }
+    .tableBtn.open::after{
+      content:"";
+      position:absolute;
+      inset:-60% -60%;
+      background: radial-gradient(circle at 30% 30%, rgba(71,176,255,.18), transparent 45%);
+      pointer-events:none;
+    }
 
-    .hint{ margin-top:8px; font-size:12px; color:var(--muted); }
+    /* Table view layout */
+    .tableTop{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+    }
+    .tableTop .left{
+      display:flex; flex-direction:column; gap:2px;
+      min-width:0;
+    }
+    .tableTop .title{
+      font-weight:800; font-size:16px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .tableTop .meta{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
 
-    .screensaver{
-      position:fixed; inset:0;
-      display:none;
-      align-items:center; justify-content:center;
+    .split{
+      flex:1;
+      min-height:0;
+      display:flex;
       flex-direction:column;
       gap:10px;
-      background: radial-gradient(1200px 700px at 20% 0%, rgba(59,179,255,.14), transparent 55%),
-                  radial-gradient(900px 650px at 80% 20%, rgba(57,217,138,.12), transparent 55%),
-                  linear-gradient(180deg, #070a0e, #05070a);
-      z-index:80;
-      text-align:center;
-      padding:20px;
     }
-    .screensaver.on{ display:flex; }
-    .sslogo{
-      width:120px;height:120px;
-      border-radius:28px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      display:grid; place-items:center;
-      font-size:44px;
-      font-weight:950;
-    }
-    .ss1{ font-size:20px; font-weight:950; }
-    .ss2{ color:var(--muted); font-weight:800; }
 
-    [data-view]{ display:none; }
-    [data-view].on{ display:block; }
+    /* Items list (tefteri) */
+    .itemsWrap{
+      background:rgba(0,0,0,.10);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height: 200px;
+    }
+    .itemsHead{
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.10);
+    }
+    .itemsHead .badge{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .itemsList{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+    }
+
+    .itemRow{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom:1px dashed rgba(255,255,255,.10);
+      align-items:center;
+    }
+    .itemRow:last-child{border-bottom:none}
+    .itemName{
+      font-weight:650;
+      font-size:14px;
+    }
+    .itemSub{
+      margin-top:2px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .tag{
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+    }
+    .tag.cash{border-color:rgba(53,208,127,.32)}
+    .tag.card{border-color:rgba(71,176,255,.32)}
+    .tag.comp{border-color:rgba(255,204,102,.32)}
+
+    .qtyBox{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    .qtyBtn{
+      width:34px;height:34px;
+      border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      user-select:none;
+    }
+    .qtyBtn:active{transform:translateY(1px)}
+    .qtyNum{
+      min-width:26px;
+      text-align:center;
+      font-weight:800;
+    }
+    .price{
+      min-width:78px;
+      text-align:right;
+      font-weight:800;
+    }
+    .moreBtn{
+      width:34px;height:34px;
+      border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    /* Products area */
+    .productsWrap{
+      background:rgba(0,0,0,.08);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      flex:1;
+    }
+    .productsTop{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .chips{
+      display:flex;
+      gap:8px;
+      overflow:auto;
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      scrollbar-width:none;
+    }
+    .chips::-webkit-scrollbar{display:none}
+    .chip{
+      height:var(--chipH);
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip.active{
+      border-color:rgba(71,176,255,.35);
+      box-shadow:0 0 0 2px rgba(71,176,255,.14) inset;
+    }
+
+    .searchRow{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .search{
+      flex:1;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      padding:0 12px;
+    }
+    .prodList{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+    }
+    .prodRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      cursor:pointer;
+      user-select:none;
+    }
+    .prodRow:active{background:rgba(255,255,255,.04)}
+    .prodLeft{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .prodName{
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .prodCat{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .prodPrice{
+      font-weight:900;
+      flex-shrink:0;
+    }
+
+    /* Bottom action bar (always visible in table view) */
+    .bottomBar{
+      display:flex;
+      gap:10px;
+      padding: 10px 0 0;
+      flex-wrap:wrap;
+    }
+    .bottomBar .btn{flex:1; min-width:0}
+    .bottomBar .btn{min-width: 0;}
+    @media (max-width: 360px){
+      .bottomBar{gap:8px}
+      .btn{padding:0 10px}
+    }
+
+    /* Modals */
+    .modalBackdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 14px;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 14px);
+      z-index:50;
+    }
+    .modalBackdrop.show{display:flex}
+    .modal{
+      width:min(560px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modalHead{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .modalHead .ttl{font-weight:900}
+    .modalBody{padding:12px 14px; display:flex; flex-direction:column; gap:10px}
+    .modalFoot{padding:12px 14px; border-top:1px solid var(--line); display:flex; gap:10px}
+    .modalFoot .btn{flex:1}
+
+    .payList{
+      max-height: 46vh;
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0,0,0,.12);
+    }
+    .payRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+    }
+    .payRow:last-child{border-bottom:none}
+    .chk{
+      width:22px;height:22px;
+      border-radius:7px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      display:grid;place-items:center;
+      flex-shrink:0;
+      cursor:pointer;
+    }
+    .chk.on{
+      border-color:rgba(71,176,255,.45);
+      box-shadow:0 0 0 2px rgba(71,176,255,.18) inset;
+    }
+    .chk svg{opacity:.0}
+    .chk.on svg{opacity:1}
+
+    .payMeta{min-width:0; flex:1}
+    .payMeta .n{font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .payMeta .s{color:var(--muted); font-size:12px}
+    .payP{font-weight:900; flex-shrink:0}
+
+    .seg{
+      display:flex;
+      gap:8px;
+    }
+    .seg button{
+      flex:1;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      cursor:pointer;
+      user-select:none;
+    }
+    .seg button.active{
+      border-color:rgba(71,176,255,.35);
+      box-shadow:0 0 0 2px rgba(71,176,255,.14) inset;
+    }
+
+    /* Numeric keypad modal */
+    .pinInput{
+      width:100%;
+      height:48px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      padding:0 12px;
+      letter-spacing: 10px;
+      font-weight:900;
+      text-align:center;
+      font-size:18px;
+    }
+    .pinInput::placeholder{letter-spacing:0}
+    .keypad{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+    }
+    .key{
+      height:52px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      cursor:pointer;
+      user-select:none;
+      font-weight:900;
+      font-size:18px;
+    }
+    .key:active{transform:translateY(1px)}
+    .key.alt{font-size:14px; font-weight:800; color:var(--muted)}
+    .key.danger{border-color:rgba(255,91,110,.35)}
+    .key.ok{border-color:rgba(53,208,127,.35)}
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom: calc(env(safe-area-inset-bottom) + 18px);
+      transform:translateX(-50%);
+      background:rgba(0,0,0,.65);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      box-shadow:var(--shadow2);
+      display:none;
+      z-index:60;
+      max-width:min(520px, calc(100% - 24px));
+      text-align:center;
+      font-size:13px;
+    }
+    .toast.show{display:block}
+
+    /* Screensaver */
+    .screensaver{
+      position:fixed;
+      inset:0;
+      display:none;
+      background: radial-gradient(1200px 800px at 30% 20%, rgba(71,176,255,.12), transparent 55%),
+                  radial-gradient(1200px 800px at 80% 70%, rgba(53,208,127,.10), transparent 55%),
+                  linear-gradient(180deg, #06080d 0%, #0b0f14 60%, #06080d 100%);
+      z-index:80;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      text-align:center;
+    }
+    .screensaver.show{display:flex}
+    .ssCard{
+      width:min(520px, 100%);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      border-radius: 28px;
+      padding: 26px 18px;
+      box-shadow: var(--shadow);
+    }
+    .ssLogo{
+      font-weight:1000;
+      font-size:28px;
+      letter-spacing:.4px;
+      margin:0 0 10px 0;
+    }
+    .ssText{
+      color:var(--muted);
+      margin:0;
+      font-size:14px;
+    }
+    .ssUser{
+      margin-top:14px;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      font-weight:800;
+    }
+
+    /* Hide browser bars as much as possible */
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+      margin-top:-6px;
+    }
   </style>
 </head>
 <body>
-<div class="app">
-  <div class="topbar">
-    <div class="toprow">
+  <div class="app" id="app">
+    <div class="topbar">
       <div class="brand">
-        <div class="name" id="storeName">Ημερήσιο Ταμείο</div>
-        <div class="sub" id="storeSub">Σήμερα: — · Χρήστης: —</div>
+        <div class="shop" id="shopName">Κατάστημα</div>
+        <div class="sub" id="shopSub">Σήμερα: <span id="todayLbl"></span> • Εν υπηρεσία: <span id="userLbl"></span></div>
       </div>
 
       <div class="top-actions">
-        <div class="pill">
-          <span style="opacity:.85">👤</span>
-          <select id="userSelect" aria-label="Χρήστης"></select>
+        <div class="pill" title="Χρήστης">
+          <select id="userSelect"></select>
+          <div class="caret"></div>
         </div>
-        <button class="iconbtn" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
+        <button class="iconBtn" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <!-- HOME -->
+      <section class="view active" id="viewHome">
+        <div class="card">
+          <div class="cardHeader">
+            <h3>Τραπέζια (6) + BAR + ΕΞΩ</h3>
+            <div style="color:var(--muted); font-size:12px">
+              Ανοιχτά: <b id="openCount">0</b> • Πληρωμένα σήμερα: <b id="paidCount">0</b>
+            </div>
+          </div>
+          <div class="tablesGrid" id="tablesGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="cardHeader">
+            <h3>Γρήγορα</h3>
+            <div style="color:var(--muted); font-size:12px">Ασφάλεια από λάθος πάτημα ✓</div>
+          </div>
+          <div class="cardBody">
+            <div class="btnRow">
+              <button class="btn primary" id="btnDaySummary">📊 Σύνοψη Ημέρας</button>
+              <button class="btn" id="btnExportCsv">⬇️ Εξαγωγή CSV</button>
+              <button class="btn danger" id="btnWipeAll">🗑️ Διαγραφή Όλων (σήμερα)</button>
+            </div>
+            <div class="hint">Tip: Chrome → “Προσθήκη στην αρχική οθόνη” (ανοίγει σαν app).</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TABLE -->
+      <section class="view" id="viewTable">
+        <div class="card">
+          <div class="tableTop">
+            <div class="left">
+              <div class="title" id="tblTitle">Τραπέζι</div>
+              <div class="meta" id="tblMeta">Υπόλοιπο: 0,00 €</div>
+            </div>
+            <div class="btnRow" style="margin:0; flex-wrap:nowrap">
+              <button class="btn small ghost" id="btnBackHome">← Τραπέζια</button>
+              <button class="btn small ok" id="btnPay">💳 Πληρωμή</button>
+              <button class="btn small danger" id="btnClearTable">🗑️ Άδειασμα</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="itemsWrap">
+            <div class="itemsHead">
+              <div style="font-weight:900">Ανοιχτά items</div>
+              <div class="badge">Σύνολο: <b id="tblTotal">0,00 €</b></div>
+            </div>
+            <div class="itemsList" id="itemsList"></div>
+          </div>
+
+          <div class="productsWrap">
+            <div class="productsTop">
+              <div style="font-weight:900">Προϊόντα</div>
+              <div style="color:var(--muted); font-size:12px">Πάτα προϊόν → μπαίνει στο τραπέζι</div>
+            </div>
+
+            <div class="chips" id="catChips"></div>
+
+            <div class="searchRow">
+              <input class="search" id="searchInput" type="search" placeholder="Αναζήτηση προϊόντος…" />
+              <button class="btn small" id="btnFavs">⭐ Top 8</button>
+            </div>
+
+            <div class="prodList" id="prodList"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- PAY MODAL -->
+  <div class="modalBackdrop" id="payBackdrop">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="ttl" id="payTitle">Πληρωμή</div>
+        <button class="iconBtn" id="payClose" title="Κλείσιμο">✕</button>
+      </div>
+      <div class="modalBody">
+        <div class="seg" id="payMethodSeg">
+          <button data-m="cash" class="active">Μετρητά</button>
+          <button data-m="card">Κάρτα</button>
+          <button data-m="comp">Κερασμένο</button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; color:var(--muted); font-size:12px">
+          <div>Διάλεξε items για πληρωμή (μερική πληρωμή)</div>
+          <div>Επιλεγμένα: <b id="selSum">0,00 €</b></div>
+        </div>
+
+        <div class="payList" id="payList"></div>
+
+        <div class="btnRow">
+          <button class="btn" id="btnSelectAll">✅ Όλα</button>
+          <button class="btn" id="btnSelectNone">⛔ Κανένα</button>
+        </div>
+
+        <div class="card" style="box-shadow:none">
+          <div class="cardBody" style="display:flex; justify-content:space-between; align-items:center; gap:10px">
+            <div>
+              <div style="font-weight:900">Σύνολο τραπεζιού</div>
+              <div style="color:var(--muted); font-size:12px">Μετρητά/Κάρτα/Κερασμένα ξεχωριστά στη σύνοψη</div>
+            </div>
+            <div style="font-weight:1000; font-size:20px" id="payTableSum">0,00 €</div>
+          </div>
+        </div>
+      </div>
+      <div class="modalFoot">
+        <button class="btn" id="btnPayCancel">Άκυρο</button>
+        <button class="btn ok" id="btnPayConfirm">✅ Επιβεβαίωση Πληρωμής</button>
       </div>
     </div>
   </div>
 
-  <div class="content">
-    <section data-view="home" class="on">
-      <div class="section-title">Γρήγορα</div>
-      <div class="list">
-        <div class="row" id="homeNewOrder" style="cursor:pointer">
-          <div class="main">
-            <div class="title">➕ Νέα παραγγελία</div>
-            <div class="sub">Διάλεξε τραπέζι και γράψε προϊόντα</div>
+  <!-- SETTINGS MODAL -->
+  <div class="modalBackdrop" id="setBackdrop">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="ttl">Ρυθμίσεις</div>
+        <button class="iconBtn" id="setClose" title="Κλείσιμο">✕</button>
+      </div>
+      <div class="modalBody">
+        <div class="card" style="box-shadow:none">
+          <div class="cardBody" style="display:flex; flex-direction:column; gap:10px">
+            <div style="font-weight:900">Όνομα μαγαζιού (μόνο ιδιοκτήτης)</div>
+            <button class="btn primary" id="btnEditShop">✏️ Αλλαγή ονόματος</button>
+            <div style="color:var(--muted); font-size:12px">Για αλλαγή ζητάει PIN ιδιοκτήτη (μόνο αριθμούς).</div>
           </div>
-          <div class="price">→</div>
         </div>
 
-        <div class="row" id="homeOpen" style="cursor:pointer">
-          <div class="main">
-            <div class="title">📄 Ανοιχτά</div>
-            <div class="sub">Μόνο όσα έχουν απλήρωτο</div>
+        <div class="card" style="box-shadow:none">
+          <div class="cardBody" style="display:flex; flex-direction:column; gap:10px">
+            <div style="font-weight:900">Χρήστες</div>
+            <button class="btn" id="btnAddUser">➕ Προσθήκη χρήστη</button>
+            <button class="btn danger" id="btnResetUsers">🧹 Επαναφορά χρηστών</button>
+            <div style="color:var(--muted); font-size:12px">Προαιρετικό PIN ανά χρήστη. Δεν ζητάμε PIN στην πληρωμή (για να μην καθυστερεί).</div>
           </div>
-          <div class="price"><span id="openCount">0</span></div>
         </div>
 
-        <div class="row" id="homeFav" style="cursor:pointer">
-          <div class="main">
-            <div class="title">⭐ Top 8 σήμερα</div>
-            <div class="sub">Τα πιο συχνά προϊόντα σήμερα</div>
+        <div class="card" style="box-shadow:none">
+          <div class="cardBody" style="display:flex; flex-direction:column; gap:10px">
+            <div style="font-weight:900">Αδράνεια / Προστασία οθόνης</div>
+            <div style="color:var(--muted); font-size:12px">
+              40s αδράνεια → επιστροφή στα Τραπέζια. Μετά 12s χωρίς κίνηση → screensaver με “Εν υπηρεσία: χρήστης”.
+            </div>
           </div>
-          <div class="price">→</div>
         </div>
       </div>
-
-      <div class="hint">
-        Για να μη φαίνεται η μπάρα του Chrome: Chrome → ⋮ → “Προσθήκη στην αρχική οθόνη” και άνοιγμα από το εικονίδιο.
+      <div class="modalFoot">
+        <button class="btn full" id="setOk">ΟΚ</button>
       </div>
-    </section>
-
-    <section data-view="tables">
-      <div class="section-title">Διάλεξε τραπέζι</div>
-      <div class="grid tables" id="tablesGrid"></div>
-    </section>
-
-    <section data-view="order">
-      <div class="section-title" id="orderTitle">Τραπέζι: —</div>
-
-      <div class="row" style="align-items:flex-start">
-        <div class="main">
-          <div class="title">Ανοιχτά items</div>
-          <div class="sub">+ / − ποσότητα. Μετ/Κάρ/Κερ πληρώνει 1 τεμ. (με επιβεβαίωση).</div>
-        </div>
-        <div class="price" id="ticketUnpaid">0,00 €</div>
-      </div>
-
-      <div class="list" id="openItemsList" style="margin-top:10px"></div>
-
-      <div class="section-title" style="margin-top:16px">Κατηγορίες</div>
-      <div class="chipsbar" id="catChips"></div>
-
-      <div class="section-title" style="margin-top:12px">Προϊόντα</div>
-      <input id="productSearch" placeholder="Αναζήτηση..." style="width:100%; margin:6px 0 10px" />
-      <div class="list" id="productList"></div>
-    </section>
-
-    <section data-view="open">
-      <div class="section-title">Ανοιχτά (μόνο απλήρωτα)</div>
-      <div class="list" id="openTablesList"></div>
-    </section>
-
-    <section data-view="summary">
-      <div class="section-title">Σύνοψη ημέρας</div>
-      <div class="list" id="summaryList"></div>
-    </section>
-
-    <section data-view="fav">
-      <div class="section-title">Top 8 σήμερα</div>
-      <div class="list" id="favList"></div>
-    </section>
-  </div>
-
-  <div class="bottombar">
-    <div class="bbgrid">
-      <button class="btn primary" id="btnLeft">🏠 Home</button>
-      <button class="btn ok" id="btnMid">📌 Τραπέζια</button>
-      <button class="btn" id="btnRight">📊 Σύνοψη</button>
     </div>
   </div>
-</div>
 
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="mhead">
-      <div class="mtitle" id="modalTitle">—</div>
-      <div class="mclose" id="modalClose">✕</div>
+  <!-- PIN MODAL (numeric keypad) -->
+  <div class="modalBackdrop" id="pinBackdrop">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="ttl" id="pinTitle">PIN</div>
+        <button class="iconBtn" id="pinClose" title="Κλείσιμο">✕</button>
+      </div>
+      <div class="modalBody">
+        <input id="pinInput" class="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="••••" maxlength="6" />
+        <div class="keypad" id="keypad"></div>
+        <div style="color:var(--muted); font-size:12px" id="pinHint"></div>
+      </div>
+      <div class="modalFoot">
+        <button class="btn" id="pinCancel">Άκυρο</button>
+        <button class="btn ok" id="pinOk">ΟΚ</button>
+      </div>
     </div>
-    <div id="modalBody"></div>
   </div>
-</div>
 
-<div class="screensaver" id="screensaver">
-  <div class="sslogo" id="ssLogo">☕</div>
-  <div class="ss1" id="ssStore">—</div>
-  <div class="ss2" id="ssUser">Εν υπηρεσία: —</div>
-  <div class="hint">Πάτα οπουδήποτε για επιστροφή</div>
-</div>
+  <!-- ITEM MENU MODAL -->
+  <div class="modalBackdrop" id="itemBackdrop">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="ttl">Ενέργειες item</div>
+        <button class="iconBtn" id="itemClose" title="Κλείσιμο">✕</button>
+      </div>
+      <div class="modalBody">
+        <div id="itemInfo" style="font-weight:900"></div>
+        <div class="seg" id="itemQuickPay">
+          <button data-m="cash">Μετρητά</button>
+          <button data-m="card">Κάρτα</button>
+          <button data-m="comp">Κερασμένο</button>
+        </div>
+        <button class="btn danger" id="btnRemoveItem">🗑️ Διαγραφή item</button>
+      </div>
+      <div class="modalFoot">
+        <button class="btn full" id="itemOk">ΟΚ</button>
+      </div>
+    </div>
+  </div>
 
-<script src="./app.js"></script>
+  <div class="toast" id="toast"></div>
+
+  <div class="screensaver" id="screensaver">
+    <div class="ssCard">
+      <div class="ssLogo" id="ssLogo">Κατάστημα</div>
+      <p class="ssText">Σε αναμονή…</p>
+      <div class="ssUser" id="ssUser">Εν υπηρεσία: —</div>
+      <p class="ssText" style="margin-top:10px">Άγγιξε την οθόνη για συνέχεια</p>
+    </div>
+  </div>
+
 <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+/* =========================
+   Daily Cashier (simple)
+   - 8 buttons: T1..T6 + BAR + ΕΞΩ
+   - Add items fast, +/- qty
+   - Pay partial with cash/card/comp
+   - Comp appears separately in summary
+   - Idle: 40s -> Home, +12s -> screensaver
+   - Owner-only shop name change via numeric PIN
+   ========================= */
+
+(() => {
+  const LS_KEY = "dc_v1_db";
+  const LS_SESSION = "dc_v1_session";
+  const OWNER_PIN_DEFAULT = "2580"; // άλλαξέ το αν θες (μόνο αριθμοί)
+
+  const TABLES = ["T1","T2","T3","T4","T5","T6","BAR","ΕΞΩ"];
+
+  const CATEGORIES = [
+    { id:"hot",   name:"☕ Καφέδες – Ζεστοί" },
+    { id:"cold",  name:"❄️ Καφέδες – Κρύοι" },
+    { id:"tea",   name:"🫖 Τσάι – Ζεστά Ροφήματα" },
+    { id:"choco", name:"🍫 Σοκολάτες – Γαλακτερά" },
+    { id:"soft",  name:"🥤 Αναψυκτικά – Νερά" },
+    { id:"juice", name:"🍊 Χυμοί – Smoothies" },
+    { id:"snack", name:"🥐 Σνακ – Γλυκά" },
+    { id:"beer",  name:"🍺 Μπύρες" },
+    { id:"wine",  name:"🍷 Κρασιά" },
+    { id:"spirit",name:"🥃 Ποτά" },
+    { id:"cocktail",name:"🍸 Κοκτέιλ" }
+  ];
+
+  // Menu
+  const MENU = [
+    // HOT
+    {cat:"hot", name:"Espresso μονός", price:2.60},
+    {cat:"hot", name:"Espresso διπλός", price:3.20},
+    {cat:"hot", name:"Espresso macchiato", price:2.90},
+    {cat:"hot", name:"Americano", price:3.20},
+    {cat:"hot", name:"Cappuccino", price:3.60},
+    {cat:"hot", name:"Cappuccino διπλός", price:4.20},
+    {cat:"hot", name:"Latte macchiato", price:4.20},
+    {cat:"hot", name:"Flat white", price:4.40},
+    {cat:"hot", name:"Mocha", price:4.50},
+    {cat:"hot", name:"Καφές φίλτρου", price:3.00},
+    {cat:"hot", name:"Decaf (+)", price:0.30},
+
+    // COLD
+    {cat:"cold", name:"Freddo espresso", price:3.80},
+    {cat:"cold", name:"Freddo cappuccino", price:4.20},
+    {cat:"cold", name:"Iced latte", price:4.50},
+    {cat:"cold", name:"Cold brew", price:4.80},
+    {cat:"cold", name:"Frappe", price:3.50},
+
+    // TEA
+    {cat:"tea", name:"Τσάι (μαύρο/πράσινο/βότανα)", price:3.20},
+    {cat:"tea", name:"Τσάι φρούτων", price:3.50},
+    {cat:"tea", name:"Chai latte", price:4.30},
+
+    // CHOCO
+    {cat:"choco", name:"Ζεστή σοκολάτα", price:4.20},
+    {cat:"choco", name:"Κρύα σοκολάτα", price:4.50},
+    {cat:"choco", name:"Λευκή σοκολάτα", price:4.50},
+    {cat:"choco", name:"Κακάο", price:4.00},
+    {cat:"choco", name:"Φυτικό γάλα (+)", price:0.50},
+
+    // SOFT
+    {cat:"soft", name:"Coca-Cola / Zero / Fanta (0,33l)", price:3.40},
+    {cat:"soft", name:"Ice Tea", price:3.60},
+    {cat:"soft", name:"Σόδα / Τόνικ", price:3.20},
+    {cat:"soft", name:"Μεταλλικό νερό (0,33l)", price:2.80},
+    {cat:"soft", name:"Μεταλλικό νερό (0,75l)", price:5.50},
+
+    // JUICE
+    {cat:"juice", name:"Φυσικός χυμός πορτοκάλι", price:4.50},
+    {cat:"juice", name:"Χυμός ανάμεικτος", price:4.80},
+    {cat:"juice", name:"Smoothie φρούτων", price:5.80},
+    {cat:"juice", name:"Milkshake", price:5.50},
+
+    // SNACK
+    {cat:"snack", name:"Κρουασάν σκέτο", price:2.80},
+    {cat:"snack", name:"Κρουασάν σοκολάτα", price:3.20},
+    {cat:"snack", name:"Μάφιν", price:3.50},
+    {cat:"snack", name:"Κέικ (κομμάτι)", price:4.20},
+    {cat:"snack", name:"Cheesecake", price:4.80},
+    {cat:"snack", name:"Μπισκότα", price:2.50},
+    {cat:"snack", name:"Τοστ ζαμπόν-τυρί", price:4.50},
+    {cat:"snack", name:"Τοστ vegetarian", price:4.80},
+
+    // BEER
+    {cat:"beer", name:"Μπύρα βαρελίσια (0,5l)", price:5.20},
+    {cat:"beer", name:"Μπύρα εμφιαλωμένη (0,33l)", price:4.20},
+    {cat:"beer", name:"Weissbier (0,5l)", price:5.50},
+    {cat:"beer", name:"Μπύρα χωρίς αλκοόλ", price:4.20},
+
+    // WINE
+    {cat:"wine", name:"Κρασί ποτήρι", price:5.50},
+    {cat:"wine", name:"Κρασί καράφα (0,5l)", price:12.00},
+    {cat:"wine", name:"Φιάλη κρασί (μέσος όρος)", price:25.00},
+    {cat:"wine", name:"Prosecco ποτήρι", price:6.50},
+
+    // SPIRITS
+    {cat:"spirit", name:"Ουίσκι standard (4cl)", price:8.50},
+    {cat:"spirit", name:"Premium ουίσκι (4cl)", price:10.50},
+    {cat:"spirit", name:"Βότκα (4cl)", price:8.00},
+    {cat:"spirit", name:"Ρούμι (4cl)", price:8.50},
+    {cat:"spirit", name:"Τζιν (4cl)", price:8.50},
+    {cat:"spirit", name:"Ούζο / Τσίπουρο (4cl)", price:7.50},
+    {cat:"spirit", name:"Λικέρ (4cl)", price:7.50},
+
+    // COCKTAILS
+    {cat:"cocktail", name:"Mojito", price:9.50},
+    {cat:"cocktail", name:"Caipirinha", price:9.50},
+    {cat:"cocktail", name:"Margarita", price:10.00},
+    {cat:"cocktail", name:"Aperol Spritz", price:8.50},
+    {cat:"cocktail", name:"Gin Tonic", price:9.00},
+    {cat:"cocktail", name:"Negroni", price:10.50},
+  ];
+
+  // ===== Helpers
+  const € = (n) => (n ?? 0).toLocaleString("el-GR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
+  const todayKey = () => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const da = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  };
+  const niceDate = () => {
+    const d = new Date();
+    return d.toLocaleDateString("el-GR");
+  };
+  const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+
+  function loadDB(){
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      try { return JSON.parse(raw); } catch {}
+    }
+    return {
+      shopName: "Κατάστημα",
+      ownerPin: OWNER_PIN_DEFAULT,
+      users: [
+        { id: uid(), name:"Χρήστης 1", pin:"" },
+        { id: uid(), name:"Χρήστης 2", pin:"" }
+      ],
+      days: {}
+    };
   }
+  function saveDB(db){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+
+  function ensureDay(db){
+    const k = todayKey();
+    if(!db.days[k]){
+      db.days[k] = {
+        tables: {}, // tableName -> { items: [..] }
+        history: [] // payments log
+      };
+      for(const t of TABLES) db.days[k].tables[t] = { items: [] };
+    } else {
+      // ensure all tables exist
+      for(const t of TABLES){
+        if(!db.days[k].tables[t]) db.days[k].tables[t] = { items: [] };
+      }
+    }
+  }
+
+  function getSession(){
+    const raw = localStorage.getItem(LS_SESSION);
+    if(raw){
+      try { return JSON.parse(raw); } catch {}
+    }
+    return { activeUserId: null, authedUsers: {} };
+  }
+  function saveSession(s){ localStorage.setItem(LS_SESSION, JSON.stringify(s)); }
+
+  // ===== State
+  let db = loadDB();
+  ensureDay(db);
+  let session = getSession();
+  if(!session.activeUserId) session.activeUserId = db.users[0]?.id || null;
+  saveSession(session);
+
+  let activeTable = null; // "T1" etc
+  let activeCat = "hot";
+  let showFavs = false;
+  let currentPayMethod = "cash";
+  let paySelection = new Set();
+  let itemMenuId = null;
+
+  // Idle timers
+  const IDLE_HOME_MS = 40000;
+  const IDLE_SAVER_MS = 12000;
+  let idleTimer = null;
+  let saverTimer = null;
+
+  // ===== Elements
+  const elShopName = document.getElementById("shopName");
+  const elTodayLbl = document.getElementById("todayLbl");
+  const elUserLbl = document.getElementById("userLbl");
+  const elUserSelect = document.getElementById("userSelect");
+  const btnSettings = document.getElementById("btnSettings");
+
+  const viewHome = document.getElementById("viewHome");
+  const viewTable = document.getElementById("viewTable");
+
+  const tablesGrid = document.getElementById("tablesGrid");
+  const openCount = document.getElementById("openCount");
+  const paidCount = document.getElementById("paidCount");
+
+  const btnDaySummary = document.getElementById("btnDaySummary");
+  const btnExportCsv = document.getElementById("btnExportCsv");
+  const btnWipeAll = document.getElementById("btnWipeAll");
+
+  const tblTitle = document.getElementById("tblTitle");
+  const tblMeta  = document.getElementById("tblMeta");
+  const tblTotal = document.getElementById("tblTotal");
+  const itemsList = document.getElementById("itemsList");
+
+  const btnBackHome = document.getElementById("btnBackHome");
+  const btnPay = document.getElementById("btnPay");
+  const btnClearTable = document.getElementById("btnClearTable");
+
+  const catChips = document.getElementById("catChips");
+  const searchInput = document.getElementById("searchInput");
+  const btnFavs = document.getElementById("btnFavs");
+  const prodList = document.getElementById("prodList");
+
+  const toastEl = document.getElementById("toast");
+
+  // Pay modal
+  const payBackdrop = document.getElementById("payBackdrop");
+  const payClose = document.getElementById("payClose");
+  const payTitle = document.getElementById("payTitle");
+  const payMethodSeg = document.getElementById("payMethodSeg");
+  const payList = document.getElementById("payList");
+  const selSum = document.getElementById("selSum");
+  const payTableSum = document.getElementById("payTableSum");
+  const btnSelectAll = document.getElementById("btnSelectAll");
+  const btnSelectNone = document.getElementById("btnSelectNone");
+  const btnPayCancel = document.getElementById("btnPayCancel");
+  const btnPayConfirm = document.getElementById("btnPayConfirm");
+
+  // Settings modal
+  const setBackdrop = document.getElementById("setBackdrop");
+  const setClose = document.getElementById("setClose");
+  const setOk = document.getElementById("setOk");
+  const btnEditShop = document.getElementById("btnEditShop");
+  const btnAddUser = document.getElementById("btnAddUser");
+  const btnResetUsers = document.getElementById("btnResetUsers");
+
+  // PIN modal
+  const pinBackdrop = document.getElementById("pinBackdrop");
+  const pinTitle = document.getElementById("pinTitle");
+  const pinHint  = document.getElementById("pinHint");
+  const pinInput = document.getElementById("pinInput");
+  const keypad   = document.getElementById("keypad");
+  const pinClose = document.getElementById("pinClose");
+  const pinCancel= document.getElementById("pinCancel");
+  const pinOk    = document.getElementById("pinOk");
+
+  // Item menu
+  const itemBackdrop = document.getElementById("itemBackdrop");
+  const itemClose = document.getElementById("itemClose");
+  const itemOk = document.getElementById("itemOk");
+  const itemInfo = document.getElementById("itemInfo");
+  const itemQuickPay = document.getElementById("itemQuickPay");
+  const btnRemoveItem = document.getElementById("btnRemoveItem");
+
+  // Screensaver
+  const screensaver = document.getElementById("screensaver");
+  const ssLogo = document.getElementById("ssLogo");
+  const ssUser = document.getElementById("ssUser");
+
+  // ===== UI util
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(() => toastEl.classList.remove("show"), 1400);
+  }
+
+  function showView(which){
+    viewHome.classList.toggle("active", which==="home");
+    viewTable.classList.toggle("active", which==="table");
+  }
+
+  function currentUser(){
+    return db.users.find(u => u.id === session.activeUserId) || db.users[0];
+  }
+
+  function updateHeader(){
+    elShopName.textContent = db.shopName;
+    elTodayLbl.textContent = niceDate();
+    elUserLbl.textContent = currentUser()?.name || "—";
+    ssLogo.textContent = db.shopName;
+    ssUser.textContent = "Εν υπηρεσία: " + (currentUser()?.name || "—");
+  }
+
+  function rebuildUserSelect(){
+    elUserSelect.innerHTML = "";
+    for(const u of db.users){
+      const opt = document.createElement("option");
+      opt.value = u.id;
+      opt.textContent = u.name;
+      elUserSelect.appendChild(opt);
+    }
+    elUserSelect.value = session.activeUserId;
+  }
+
+  function day(){
+    ensureDay(db);
+    return db.days[todayKey()];
+  }
+
+  function tableData(tName){
+    return day().tables[tName];
+  }
+
+  function tableUnpaidItems(tName){
+    return tableData(tName).items.filter(it => !it.paid);
+  }
+
+  function tableTotal(tName){
+    return tableUnpaidItems(tName).reduce((s,it)=>s + it.price*it.qty, 0);
+  }
+
+  function totalOpenTables(){
+    let c = 0;
+    for(const t of TABLES){
+      if(tableTotal(t) > 0) c++;
+    }
+    return c;
+  }
+
+  function paidTodayCount(){
+    return day().history.filter(h => h.type==="pay").length;
+  }
+
+  function renderHome(){
+    updateHeader();
+    openCount.textContent = totalOpenTables();
+    paidCount.textContent = paidTodayCount();
+
+    tablesGrid.innerHTML = "";
+    for(const t of TABLES){
+      const sum = tableTotal(t);
+      const btn = document.createElement("button");
+      btn.className = "tableBtn" + (sum>0 ? " open" : "");
+      btn.innerHTML = `
+        <div class="tName">${t}</div>
+        <div class="tSum">${sum>0 ? €(sum) : "—"}</div>
+      `;
+      btn.addEventListener("click", () => openTable(t));
+      tablesGrid.appendChild(btn);
+    }
+  }
+
+  function openTable(tName){
+    activeTable = tName;
+    showFavs = false;
+    activeCat = activeCat || "hot";
+    paySelection.clear();
+    renderTable();
+    showView("table");
+    toast(`Άνοιξε ${tName}`);
+  }
+
+  function renderTable(){
+    updateHeader();
+    if(!activeTable) return;
+
+    const total = tableTotal(activeTable);
+    tblTitle.textContent = `Τραπέζι: ${activeTable}`;
+    tblMeta.textContent = `Υπόλοιπο: ${€(total)} • Ανοιχτά items: ${tableUnpaidItems(activeTable).length}`;
+    tblTotal.textContent = €(total);
+
+    // Items list
+    const unpaid = tableUnpaidItems(activeTable);
+    itemsList.innerHTML = "";
+    if(unpaid.length === 0){
+      const empty = document.createElement("div");
+      empty.style.padding = "14px";
+      empty.style.color = "var(--muted)";
+      empty.textContent = "Δεν υπάρχουν ανοιχτά items. Πάτησε προϊόν για να προσθέσεις.";
+      itemsList.appendChild(empty);
+    } else {
+      for(const it of unpaid){
+        const row = document.createElement("div");
+        row.className = "itemRow";
+        const catName = CATEGORIES.find(c=>c.id===it.cat)?.name || it.cat;
+
+        row.innerHTML = `
+          <div>
+            <div class="itemName">${escapeHtml(it.name)}</div>
+            <div class="itemSub">
+              <span class="tag">${escapeHtml(catName)}</span>
+              <span class="tag">€${it.price.toFixed(2)}</span>
+              <span class="tag">Χρήστης: ${escapeHtml(it.userName)}</span>
+            </div>
+          </div>
+          <div class="qtyBox">
+            <div class="qtyBtn" data-act="dec" title="Μείωση">−</div>
+            <div class="qtyNum">${it.qty}</div>
+            <div class="qtyBtn" data-act="inc" title="Αύξηση">+</div>
+            <div class="price">${€(it.price*it.qty)}</div>
+            <div class="moreBtn" data-act="more" title="Μενού">⋯</div>
+          </div>
+        `;
+
+        row.querySelector('[data-act="dec"]').addEventListener("click", () => changeQty(it.id, -1));
+        row.querySelector('[data-act="inc"]').addEventListener("click", () => changeQty(it.id, +1));
+        row.querySelector('[data-act="more"]').addEventListener("click", () => openItemMenu(it.id));
+
+        itemsList.appendChild(row);
+      }
+    }
+
+    // Categories chips (horizontal)
+    catChips.innerHTML = "";
+    const allChips = [
+      {id:"__favs", name:"⭐ Top 8"},
+      ...CATEGORIES
+    ];
+    for(const c of allChips){
+      const ch = document.createElement("div");
+      ch.className = "chip" + ((showFavs && c.id==="__favs") || (!showFavs && c.id===activeCat) ? " active" : "");
+      ch.textContent = c.name;
+      ch.addEventListener("click", () => {
+        if(c.id==="__favs"){ showFavs=true; }
+        else { showFavs=false; activeCat=c.id; }
+        renderProducts();
+      });
+      catChips.appendChild(ch);
+    }
+
+    renderProducts();
+  }
+
+  function renderProducts(){
+    const q = (searchInput.value || "").trim().toLowerCase();
+
+    let list = MENU.slice();
+    if(showFavs){
+      list = getTop8Today();
+    } else {
+      list = list.filter(p => p.cat === activeCat);
+    }
+    if(q){
+      list = MENU.filter(p => p.name.toLowerCase().includes(q));
+    }
+
+    prodList.innerHTML = "";
+    for(const p of list){
+      const row = document.createElement("div");
+      row.className = "prodRow";
+      const catName = CATEGORIES.find(c=>c.id===p.cat)?.name || p.cat;
+      row.innerHTML = `
+        <div class="prodLeft">
+          <div class="prodName">${escapeHtml(p.name)}</div>
+          <div class="prodCat">${escapeHtml(catName)}</div>
+        </div>
+        <div class="prodPrice">${€(p.price)}</div>
+      `;
+      row.addEventListener("click", () => addItemToTable(p));
+      prodList.appendChild(row);
+    }
+
+    if(list.length === 0){
+      const empty = document.createElement("div");
+      empty.style.padding = "14px";
+      empty.style.color = "var(--muted)";
+      empty.textContent = "Δεν βρέθηκαν προϊόντα.";
+      prodList.appendChild(empty);
+    }
+  }
+
+  function addItemToTable(p){
+    if(!activeTable){
+      toast("Διάλεξε τραπέζι πρώτα");
+      return;
+    }
+    const u = currentUser();
+    const it = {
+      id: uid(),
+      name: p.name,
+      cat: p.cat,
+      price: +p.price,
+      qty: 1,
+      userId: u.id,
+      userName: u.name,
+      createdAt: Date.now(),
+      paid: false,
+      paidMethod: null
+    };
+    tableData(activeTable).items.push(it);
+
+    // Track counts for Top 8
+    const d = day();
+    d._counts = d._counts || {};
+    d._counts[p.name] = (d._counts[p.name]||0) + 1;
+
+    saveDB(db);
+    toast(`+ ${p.name}`);
+    renderTable();
+  }
+
+  function changeQty(itemId, delta){
+    const t = tableData(activeTable);
+    const it = t.items.find(x => x.id === itemId);
+    if(!it || it.paid) return;
+
+    it.qty += delta;
+    if(it.qty <= 0){
+      // confirm to delete
+      if(confirm("Να διαγραφεί αυτό το item;")){
+        t.items = t.items.filter(x => x.id !== itemId);
+      } else {
+        it.qty = 1;
+      }
+    }
+    saveDB(db);
+    renderTable();
+  }
+
+  function openPayModal(){
+    if(!activeTable) return;
+
+    const unpaid = tableUnpaidItems(activeTable);
+    if(unpaid.length === 0){
+      toast("Δεν υπάρχουν ανοιχτά items.");
+      return;
+    }
+
+    paySelection = new Set(unpaid.map(x => x.id)); // default all selected
+    currentPayMethod = "cash";
+    payTitle.textContent = `Πληρωμή • ${activeTable}`;
+    payTableSum.textContent = €(tableTotal(activeTable));
+
+    // seg
+    [...payMethodSeg.querySelectorAll("button")].forEach(b => {
+      b.classList.toggle("active", b.dataset.m === currentPayMethod);
+    });
+
+    renderPayList();
+    payBackdrop.classList.add("show");
+  }
+
+  function renderPayList(){
+    const unpaid = tableUnpaidItems(activeTable);
+    payList.innerHTML = "";
+    let s = 0;
+
+    for(const it of unpaid){
+      const row = document.createElement("div");
+      row.className = "payRow";
+
+      const on = paySelection.has(it.id);
+      if(on) s += it.price*it.qty;
+
+      row.innerHTML = `
+        <div class="chk ${on ? "on":""}" data-id="${it.id}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="payMeta">
+          <div class="n">${escapeHtml(it.name)} ×${it.qty}</div>
+          <div class="s">Χρήστης: ${escapeHtml(it.userName)}</div>
+        </div>
+        <div class="payP">${€(it.price*it.qty)}</div>
+      `;
+
+      row.querySelector(".chk").addEventListener("click", () => {
+        const id = it.id;
+        if(paySelection.has(id)) paySelection.delete(id);
+        else paySelection.add(id);
+        renderPayList();
+      });
+
+      payList.appendChild(row);
+    }
+
+    selSum.textContent = €(s);
+  }
+
+  function confirmPay(){
+    const unpaid = tableUnpaidItems(activeTable);
+    const toPay = unpaid.filter(it => paySelection.has(it.id));
+    if(toPay.length === 0){
+      toast("Διάλεξε τουλάχιστον 1 item.");
+      return;
+    }
+
+    const sum = toPay.reduce((s,it)=>s + it.price*it.qty, 0);
+    const methodLabel = currentPayMethod==="cash" ? "Μετρητά" : currentPayMethod==="card" ? "Κάρτα" : "Κερασμένο";
+
+    if(!confirm(`Επιβεβαίωση: ${methodLabel} για ${toPay.length} item(s) • ${€(sum)} ;`)) return;
+
+    // mark paid
+    const t = tableData(activeTable);
+    for(const it of t.items){
+      if(paySelection.has(it.id) && !it.paid){
+        it.paid = true;
+        it.paidMethod = currentPayMethod;
+        it.paidAt = Date.now();
+      }
+    }
+
+    // log
+    day().history.push({
+      id: uid(),
+      type:"pay",
+      table: activeTable,
+      method: currentPayMethod,
+      amount: sum,
+      count: toPay.length,
+      user: currentUser()?.name || "",
+      at: Date.now()
+    });
+
+    saveDB(db);
+    payBackdrop.classList.remove("show");
+
+    // if table fully paid -> auto back home
+    if(tableTotal(activeTable) <= 0.0001){
+      toast("Ολοκληρώθηκε. Επιστροφή στα τραπέζια.");
+      activeTable = null;
+      showView("home");
+      renderHome();
+      return;
+    }
+    toast("Καταχωρήθηκε πληρωμή.");
+    renderTable();
+  }
+
+  function clearTable(){
+    if(!activeTable) return;
+    const unpaid = tableUnpaidItems(activeTable);
+    if(unpaid.length === 0){
+      toast("Ήδη άδειο.");
+      return;
+    }
+    if(!confirm("ΠΡΟΣΟΧΗ: Να αδειάσει το τραπέζι (διαγραφή όλων των ανοιχτών items);")) return;
+    if(!confirm("ΤΕΛΙΚΗ ΕΠΙΒΕΒΑΙΩΣΗ: Είσαι σίγουρος;")) return;
+
+    const t = tableData(activeTable);
+    t.items = t.items.filter(it => it.paid); // keep paid records
+    saveDB(db);
+    toast("Άδειασμα ολοκληρώθηκε.");
+    renderTable();
+  }
+
+  // Item menu (quick pay for a single item OR delete)
+  function openItemMenu(itemId){
+    const it = tableUnpaidItems(activeTable).find(x=>x.id===itemId);
+    if(!it) return;
+    itemMenuId = itemId;
+    itemInfo.textContent = `${it.name} ×${it.qty} • ${€(it.price*it.qty)}`;
+
+    [...itemQuickPay.querySelectorAll("button")].forEach(b=>{
+      b.classList.remove("active");
+      b.onclick = () => {
+        const m = b.dataset.m;
+        const label = m==="cash"?"Μετρητά":m==="card"?"Κάρτα":"Κερασμένο";
+        if(confirm(`Να πληρωθεί αυτό το item ως ${label};`)){
+          // pay single item
+          currentPayMethod = m;
+          paySelection = new Set([itemId]);
+          confirmPay();
+          itemBackdrop.classList.remove("show");
+        }
+      };
+    });
+
+    itemBackdrop.classList.add("show");
+  }
+
+  function removeItem(itemId){
+    const t = tableData(activeTable);
+    const it = t.items.find(x=>x.id===itemId);
+    if(!it || it.paid) return;
+    if(!confirm("Να διαγραφεί αυτό το item;")) return;
+    t.items = t.items.filter(x => x.id !== itemId);
+    saveDB(db);
+    toast("Διαγράφηκε.");
+    renderTable();
+  }
+
+  // Summary / Export / Wipe
+  function daySummaryText(){
+    const d = day();
+    const rows = d.history.filter(h=>h.type==="pay");
+    let cash=0, card=0, comp=0, cnt=0;
+    for(const r of rows){
+      cnt += r.count || 0;
+      if(r.method==="cash") cash += r.amount;
+      else if(r.method==="card") card += r.amount;
+      else comp += r.amount;
+    }
+    const total = cash+card+comp;
+
+    return [
+      `Σύνοψη ημέρας (${niceDate()})`,
+      `---------------------------`,
+      `Μετρητά:   ${€(cash)}`,
+      `Κάρτα:     ${€(card)}`,
+      `Κερασμένα: ${€(comp)}`,
+      `---------------------------`,
+      `Σύνολο:    ${€(total)}`,
+      ``,
+      `Πληρωμένα items: ${cnt}`,
+      `Γεγονότα πληρωμών: ${rows.length}`
+    ].join("\n");
+  }
+
+  function showDaySummary(){
+    alert(daySummaryText());
+  }
+
+  function exportCsv(){
+    const d = day();
+    const lines = [];
+    lines.push(["date","time","table","method","amount","items","user"].join(","));
+    for(const h of d.history.filter(x=>x.type==="pay")){
+      const dt = new Date(h.at);
+      const date = dt.toLocaleDateString("el-GR");
+      const time = dt.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"});
+      lines.push([
+        qcsv(date),
+        qcsv(time),
+        qcsv(h.table),
+        qcsv(h.method),
+        qcsv((h.amount||0).toFixed(2)),
+        qcsv(String(h.count||0)),
+        qcsv(h.user||"")
+      ].join(","));
+    }
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `daily-cashier-${todayKey()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("Έγινε εξαγωγή CSV.");
+  }
+  function qcsv(s){ return `"${String(s).replaceAll('"','""')}"`; }
+
+  function wipeAllToday(){
+    if(!confirm("ΠΡΟΣΟΧΗ: Διαγραφή ΟΛΩΝ των δεδομένων της σημερινής ημέρας;")) return;
+    if(!confirm("ΤΕΛΙΚΗ ΕΠΙΒΕΒΑΙΩΣΗ: Είσαι 100% σίγουρος;")) return;
+
+    db.days[todayKey()] = { tables:{}, history:[] };
+    for(const t of TABLES) db.days[todayKey()].tables[t] = { items: [] };
+    saveDB(db);
+
+    activeTable = null;
+    showView("home");
+    renderHome();
+    toast("Καθαρίστηκε η ημέρα.");
+  }
+
+  // Top 8
+  function getTop8Today(){
+    const d = day();
+    const counts = d._counts || {};
+    // if not present, compute from items history (fallback)
+    if(Object.keys(counts).length === 0){
+      for(const t of TABLES){
+        for(const it of d.tables[t].items){
+          counts[it.name] = (counts[it.name]||0) + (it.qty||1);
+        }
+      }
+    }
+    const topNames = Object.entries(counts)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,8)
+      .map(x=>x[0]);
+
+    const res = [];
+    for(const name of topNames){
+      const p = MENU.find(m=>m.name===name);
+      if(p) res.push(p);
+    }
+    return res.length ? res : MENU.slice(0,8);
+  }
+
+  // ===== Settings + PIN
+  let pinMode = null; // "ownerShop", "addUser", "resetUsers"
+  let pinResolve = null;
+
+  function openPin(title, hint){
+    pinTitle.textContent = title;
+    pinHint.textContent = hint || "";
+    pinInput.value = "";
+    pinBackdrop.classList.add("show");
+    buildKeypad();
+    setTimeout(()=>pinInput.focus(), 50);
+    return new Promise((resolve) => { pinResolve = resolve; });
+  }
+  function closePin(result){
+    pinBackdrop.classList.remove("show");
+    const r = pinResolve;
+    pinResolve = null;
+    if(r) r(result);
+  }
+
+  function buildKeypad(){
+    keypad.innerHTML = "";
+    const keys = ["1","2","3","4","5","6","7","8","9","⌫","0","OK"];
+    for(const k of keys){
+      const b = document.createElement("button");
+      b.className = "key" + (k==="⌫" ? " alt danger" : k==="OK" ? " ok" : "");
+      b.type = "button";
+      b.textContent = k;
+      b.addEventListener("click", () => {
+        if(k==="⌫"){
+          pinInput.value = pinInput.value.slice(0,-1);
+        } else if(k==="OK"){
+          closePin(pinInput.value);
+        } else {
+          if(pinInput.value.length < 6) pinInput.value += k;
+        }
+      });
+      keypad.appendChild(b);
+    }
+  }
+
+  async function ownerGuard(){
+    const entered = await openPin("PIN Ιδιοκτήτη", "Μόνο αριθμοί (εμφανίζεται αριθμητικό πληκτρολόγιο).");
+    if(entered === null) return false;
+    if((entered||"").trim() !== (db.ownerPin||OWNER_PIN_DEFAULT)){
+      toast("Λάθος PIN.");
+      return false;
+    }
+    return true;
+  }
+
+  async function editShopName(){
+    if(!(await ownerGuard())) return;
+    const name = prompt("Δώσε νέο όνομα μαγαζιού:", db.shopName);
+    if(!name) return;
+    db.shopName = name.trim().slice(0,40);
+    saveDB(db);
+    updateHeader();
+    toast("Αποθηκεύτηκε.");
+  }
+
+  async function addUser(){
+    if(!(await ownerGuard())) return;
+    const name = prompt("Όνομα νέου χρήστη:", "");
+    if(!name) return;
+    const pin = prompt("PIN χρήστη (προαιρετικό, μόνο αριθμοί):", "") || "";
+    db.users.push({ id: uid(), name: name.trim().slice(0,24), pin: pin.replace(/\D/g,"").slice(0,6) });
+    saveDB(db);
+    rebuildUserSelect();
+    updateHeader();
+    toast("Προστέθηκε χρήστης.");
+  }
+
+  async function resetUsers(){
+    if(!(await ownerGuard())) return;
+    if(!confirm("Επαναφορά χρηστών σε 2 default;")) return;
+    db.users = [
+      { id: uid(), name:"Χρήστης 1", pin:"" },
+      { id: uid(), name:"Χρήστης 2", pin:"" }
+    ];
+    session.activeUserId = db.users[0].id;
+    session.authedUsers = {};
+    saveSession(session);
+    saveDB(db);
+    rebuildUserSelect();
+    updateHeader();
+    toast("Έγινε επαναφορά.");
+  }
+
+  async function onUserChange(newId){
+    const u = db.users.find(x=>x.id===newId);
+    if(!u) return;
+
+    // If user has PIN, require once per session on this device
+    if(u.pin && !session.authedUsers?.[u.id]){
+      const entered = await openPin("PIN Χρήστη", `Χρήστης: ${u.name}`);
+      if((entered||"").trim() !== u.pin){
+        toast("Λάθος PIN χρήστη.");
+        elUserSelect.value = session.activeUserId;
+        closePin(null);
+        return;
+      }
+      session.authedUsers[u.id] = true;
+      saveSession(session);
+    }
+
+    session.activeUserId = u.id;
+    saveSession(session);
+    updateHeader();
+    toast(`Εν υπηρεσία: ${u.name}`);
+  }
+
+  // ===== Event wiring
+  btnBackHome.addEventListener("click", () => {
+    activeTable = null;
+    showView("home");
+    renderHome();
+  });
+
+  btnPay.addEventListener("click", openPayModal);
+  btnClearTable.addEventListener("click", clearTable);
+
+  payClose.addEventListener("click", () => payBackdrop.classList.remove("show"));
+  btnPayCancel.addEventListener("click", () => payBackdrop.classList.remove("show"));
+  btnPayConfirm.addEventListener("click", confirmPay);
+
+  payMethodSeg.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-m]");
+    if(!b) return;
+    currentPayMethod = b.dataset.m;
+    [...payMethodSeg.querySelectorAll("button")].forEach(x => x.classList.toggle("active", x===b));
+  });
+
+  btnSelectAll.addEventListener("click", () => {
+    for(const it of tableUnpaidItems(activeTable)) paySelection.add(it.id);
+    renderPayList();
+  });
+  btnSelectNone.addEventListener("click", () => {
+    paySelection.clear();
+    renderPayList();
+  });
+
+  btnSettings.addEventListener("click", () => setBackdrop.classList.add("show"));
+  setClose.addEventListener("click", () => setBackdrop.classList.remove("show"));
+  setOk.addEventListener("click", () => setBackdrop.classList.remove("show"));
+
+  btnEditShop.addEventListener("click", editShopName);
+  btnAddUser.addEventListener("click", addUser);
+  btnResetUsers.addEventListener("click", resetUsers);
+
+  pinClose.addEventListener("click", () => closePin(null));
+  pinCancel.addEventListener("click", () => closePin(null));
+  pinOk.addEventListener("click", () => closePin(pinInput.value));
+
+  itemClose.addEventListener("click", () => itemBackdrop.classList.remove("show"));
+  itemOk.addEventListener("click", () => itemBackdrop.classList.remove("show"));
+  btnRemoveItem.addEventListener("click", () => {
+    if(itemMenuId) removeItem(itemMenuId);
+    itemBackdrop.classList.remove("show");
+  });
+
+  btnDaySummary.addEventListener("click", showDaySummary);
+  btnExportCsv.addEventListener("click", exportCsv);
+  btnWipeAll.addEventListener("click", wipeAllToday);
+
+  btnFavs.addEventListener("click", () => {
+    showFavs = !showFavs;
+    renderProducts();
+  });
+
+  searchInput.addEventListener("input", () => renderProducts());
+
+  elUserSelect.addEventListener("change", (e) => onUserChange(e.target.value));
+
+  // ===== Idle / screensaver
+  function resetIdle(){
+    clearTimeout(idleTimer);
+    clearTimeout(saverTimer);
+
+    // if screensaver active, hide
+    if(screensaver.classList.contains("show")){
+      screensaver.classList.remove("show");
+    }
+
+    idleTimer = setTimeout(() => {
+      // go home
+      activeTable = null;
+      showView("home");
+      renderHome();
+
+      saverTimer = setTimeout(() => {
+        screensaver.classList.add("show");
+      }, IDLE_SAVER_MS);
+    }, IDLE_HOME_MS);
+  }
+
+  ["click","touchstart","keydown","scroll"].forEach(ev => {
+    window.addEventListener(ev, resetIdle, {passive:true});
+  });
+  screensaver.addEventListener("click", resetIdle);
+
+  // ===== Safety: prevent background scroll weirdness in mobile
+  document.addEventListener("gesturestart", (e) => e.preventDefault(), {passive:false});
+
+  // ===== Utilities
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (m)=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  // ===== Init
+  function init(){
+    ensureDay(db);
+    updateHeader();
+    rebuildUserSelect();
+    renderHome();
+    resetIdle();
+
+    // PWA: register service worker
+    if("serviceWorker" in navigator){
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(()=>{});
+      });
+    }
+  }
+
+  init();
+})();
 </script>
 </body>
 </html>
