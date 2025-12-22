@@ -1,561 +1,593 @@
 <!doctype html>
 <html lang="el">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-  <meta name="theme-color" content="#0b0f14"/>
-  <title>Daily Cashier</title>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Ημερήσιο Ταμείο</title>
+  <link rel="manifest" href="./manifest.webmanifest">
   <style>
     :root{
       --bg:#0b0f14;
-      --panel:#0f1520;
-      --text:#e9eef7;
-      --muted:#9fb0c7;
-      --line:rgba(255,255,255,.10);
-      --line2:rgba(255,255,255,.06);
-      --accent:#3aa2ff;
-      --ok:#24d18d;
-      --warn:#ffb020;
-      --danger:#ff5b6e;
-      --r:14px;
-      --tap:44px;
+      --bg2:#0f1620;
+      --panel:#111b26;
+      --panel2:#0f1822;
+      --txt:#e8eef7;
+      --muted:#9fb0c6;
+      --line:rgba(255,255,255,.08);
+      --accent:#3bb3ff;
+      --ok:#39d98a;
+      --warn:#ffcc66;
+      --bad:#ff5c6c;
+
+      --r:18px;
+      --pad:14px;
+
+      --btnH:44px;
+      --btnR:16px;
+
+      --safeTop: env(safe-area-inset-top, 0px);
+      --safeBot: env(safe-area-inset-bottom, 0px);
     }
-    html,body{height:100%; width:100%; margin:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; overflow-x:hidden;}
-    *{box-sizing:border-box; min-width:0;}
-    button,input,select{font:inherit; color:inherit;}
-    button{touch-action:manipulation;}
-    .app{min-height:100%; display:flex; flex-direction:column;}
-    .main{flex:1; padding:12px 12px calc(12px + env(safe-area-inset-bottom));}
 
-    /* Views */
-    .view{display:none;}
-    .view.show{display:block;}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", sans-serif;
+      background: radial-gradient(1200px 700px at 20% 0%, rgba(59,179,255,.12), transparent 55%),
+                  radial-gradient(1000px 700px at 90% 20%, rgba(57,217,138,.10), transparent 55%),
+                  linear-gradient(180deg, var(--bg), #070a0e);
+      color:var(--txt);
+      overflow:hidden; /* το app κάνει scroll μέσα */
+    }
 
-    /* Headers per-view */
-    .vhead{
-      position:sticky; top:0; z-index:1000;
-      padding:10px 12px 8px;
-      margin:-12px -12px 12px;
-      background:rgba(11,15,20,.92);
-      border-bottom:1px solid var(--line2);
+    a{ color:inherit; }
+
+    /* App shell */
+    .app{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .topbar{
+      padding: calc(var(--safeTop) + 10px) var(--pad) 10px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17,27,38,.75), rgba(11,15,20,.65));
       backdrop-filter: blur(10px);
     }
-    .hrow{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-    .title{font-weight:1000; font-size:18px; line-height:1.1; word-break:break-word;}
-    .sub{color:var(--muted); font-size:12.5px; line-height:1.25; white-space:pre-line;}
-    .iconbtn{
-      width:40px; height:40px; border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      display:grid; place-items:center;
-      cursor:pointer;
-    }
-    .btn{
-      height:44px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      padding:0 14px;
-      font-weight:900;
-      cursor:pointer;
-      display:inline-flex; align-items:center; gap:8px;
-      white-space:nowrap;
-    }
-    .btn.primary{border-color:rgba(58,162,255,.55);}
-    .btn.ok{border-color:rgba(36,209,141,.55);}
-    .btn.danger{border-color:rgba(255,91,110,.55);}
 
-    .select{
-      height:40px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      padding:0 12px;
-      max-width:54vw;
-    }
-
-    /* Big actions (Home) */
-    .big{
-      width:100%;
-      height:58px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 14px;
-      cursor:pointer;
-      font-weight:1000;
-    }
-    .big .meta{color:var(--muted); font-weight:800; font-size:13px;}
-
-    /* Table grid */
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:10px;
-    }
-    @media (min-width:520px){
-      .grid{grid-template-columns:repeat(3,minmax(0,1fr));}
-    }
-    .tcard{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      border-radius:16px;
-      padding:12px;
-      cursor:pointer;
-      min-height:78px;
-      display:flex; flex-direction:column; justify-content:space-between;
-    }
-    .tname{font-weight:1000; font-size:18px;}
-    .tmeta{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px;}
-    .badge{
-      display:inline-flex; align-items:center; justify-content:center;
-      padding:0 10px; height:22px; border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      font-size:12px; font-weight:900;
-      white-space:nowrap;
-    }
-    .openDot{
-      width:10px;height:10px;border-radius:999px;
-      background:rgba(255,255,255,.18);
-      border:1px solid rgba(255,255,255,.18);
-    }
-    .openDot.on{background:rgba(36,209,141,.85); border-color:rgba(36,209,141,.65);}
-
-    /* Ticket layout */
-    .sectionTitle{color:var(--muted); font-size:12.5px; margin:12px 2px 8px;}
-    .list{border-top:1px solid var(--line2);}
-    .row{
-      width:100%;
-      padding:10px 4px;
+    .toprow{
       display:flex;
+      gap:10px;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      border-bottom:1px solid var(--line2);
     }
-    .leftcol{display:flex; flex-direction:column; gap:4px; min-width:0;}
-    .rname{font-weight:1000; line-height:1.15; word-break:break-word;}
-    .rsub{color:var(--muted); font-size:12.5px; line-height:1.2;}
-    .ctrls{display:flex; align-items:center; gap:8px; flex:0 0 auto;}
 
-    .qty{
-      display:flex; align-items:center; gap:6px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:4px;
-      background:rgba(255,255,255,.02);
+    .brand{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
     }
-    .qbtn{
-      width:28px; height:28px; border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      display:grid; place-items:center;
-      cursor:pointer;
-      font-weight:1000;
-      font-size:16px;
+    .brand .name{
+      font-size:18px;
+      font-weight:750;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:64vw;
     }
-    .qval{min-width:20px; text-align:center; font-weight:1000; font-size:13px;}
+    .brand .sub{
+      margin-top:2px;
+      font-size:12px;
+      color:var(--muted);
+    }
 
-    .payicons{display:flex; align-items:center; gap:6px;}
-    .pbtn{
-      width:28px; height:28px;
+    .top-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-shrink:0;
+    }
+
+    .pill{
+      height:38px;
+      padding:0 12px;
       border-radius:999px;
       border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      display:grid; place-items:center;
+      background:rgba(255,255,255,.04);
+      color:var(--txt);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    select, input{
+      font:inherit;
+      color:inherit;
+      background:transparent;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      outline:none;
+    }
+    select{ padding-right:34px; }
+
+    .iconbtn{
+      width:38px;height:38px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--txt);
+      display:grid;
+      place-items:center;
+      font-size:18px;
       cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .iconbtn:active{ transform: scale(.98); }
+
+    /* Content (scroll area) */
+    .content{
+      flex:1;
+      overflow:auto;
+      padding:12px var(--pad) calc(92px + var(--safeBot));
+    }
+
+    .section-title{
       font-size:14px;
+      color:var(--muted);
+      margin:6px 2px 10px;
     }
-    .pbtn.cash{border-color:rgba(36,209,141,.55);}
-    .pbtn.card{border-color:rgba(58,162,255,.55);}
-    .pbtn.free{border-color:rgba(255,176,32,.55);}
 
-    /* Chips */
-    .chips{
-      display:flex; flex-wrap:wrap; gap:8px;
-      padding:4px 2px 2px;
+    /* Buttons */
+    .btn{
+      height:var(--btnH);
+      border-radius:var(--btnR);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--txt);
+      padding:0 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      font-weight:650;
+    }
+    .btn:active{ transform:scale(.99); }
+    .btn.primary{
+      border-color: rgba(59,179,255,.45);
+      box-shadow: 0 0 0 3px rgba(59,179,255,.10) inset;
+    }
+    .btn.ok{
+      border-color: rgba(57,217,138,.45);
+      box-shadow: 0 0 0 3px rgba(57,217,138,.10) inset;
+    }
+    .btn.bad{
+      border-color: rgba(255,92,108,.45);
+      box-shadow: 0 0 0 3px rgba(255,92,108,.10) inset;
+    }
+    .btn.ghost{
+      background:transparent;
+    }
+
+    .grid{
+      display:grid;
+      gap:10px;
+    }
+    .grid.tables{
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (min-width: 600px){
+      .grid.tables{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    .tablebtn{
+      min-height:62px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      padding:10px 12px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:4px;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tablebtn .tname{ font-weight:800; letter-spacing:.3px; }
+    .tablebtn .tmeta{ font-size:12px; color:var(--muted); }
+    .tablebtn.active{
+      border-color: rgba(59,179,255,.55);
+      box-shadow: 0 0 0 3px rgba(59,179,255,.12) inset;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:rgba(255,255,255,.25);
+      display:inline-block;
+    }
+    .dot.open{ background: var(--warn); }
+    .dot.paid{ background: var(--ok); }
+
+    /* Tabs */
+    .tabs{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+    }
+    .tab{
+      flex:1;
+      height:44px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:750;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab.on{
+      border-color: rgba(59,179,255,.55);
+      box-shadow: 0 0 0 3px rgba(59,179,255,.12) inset;
+    }
+
+    /* Products list - “τετράδιο” αίσθηση χωρίς γραμμές */
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .row{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(255,255,255,.03);
+      padding:10px 10px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .row .main{
+      flex:1;
+      min-width:0;
+    }
+    .row .title{
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .row .sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .price{
+      font-weight:900;
+      letter-spacing:.2px;
+      white-space:nowrap;
+    }
+
+    .qtybox{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
+    }
+    .mini{
+      width:34px;height:34px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      display:grid;
+      place-items:center;
+      font-size:18px;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mini:active{ transform:scale(.98); }
+    .qnum{
+      min-width:26px;
+      text-align:center;
+      font-weight:850;
+    }
+
+    .paychips{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      margin-top:6px;
     }
     .chip{
+      height:30px;
+      padding:0 10px;
+      border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
-      border-radius:999px;
-      padding:8px 10px;
-      font-weight:900;
-      font-size:12.5px;
+      font-size:12px;
+      font-weight:800;
       cursor:pointer;
-      max-width:100%;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
     }
+    .chip.ok{ border-color: rgba(57,217,138,.55); }
+    .chip.accent{ border-color: rgba(59,179,255,.55); }
+    .chip.warn{ border-color: rgba(255,204,102,.55); }
+    .chip:active{ transform:scale(.99); }
 
-    /* Search */
-    .search{
-      width:100%;
-      height:44px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      padding:0 14px;
-      outline:none;
-    }
-
-    /* Ticket bottom actions (only in Ticket) */
-    .ticketbar{
-      position:fixed; left:0; right:0; bottom:0; z-index:1200;
-      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-      background:linear-gradient(180deg, transparent, rgba(11,15,20,.78) 22%, rgba(11,15,20,.96));
-      border-top:1px solid var(--line2);
+    /* Bottom bar */
+    .bottombar{
+      position:fixed;
+      left:0; right:0;
+      bottom:0;
+      padding:10px var(--pad) calc(10px + var(--safeBot));
+      border-top:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(11,15,20,.10), rgba(11,15,20,.86));
       backdrop-filter: blur(10px);
-      display:none;
     }
-    .ticketbar.show{display:block;}
-    .twrap{
+    .bbgrid{
       display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-columns: repeat(3, minmax(0,1fr));
       gap:10px;
     }
-    .tbtn{
-      height:46px; border-radius:16px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      cursor:pointer;
-      font-weight:1000;
-      width:100%;
-      display:flex; align-items:center; justify-content:center;
-      gap:8px;
-      white-space:nowrap;
-      font-size:14px;
-    }
-    .tbtn.danger{border-color:rgba(255,91,110,.55);}
-    .tbtn.primary{border-color:rgba(58,162,255,.55);}
 
-    /* Overlays */
+    /* Modal */
     .overlay{
-      position:fixed; inset:0; z-index:3000;
-      background:rgba(0,0,0,.55);
-      backdrop-filter: blur(4px);
-      display:none;
-      padding:14px 12px;
-    }
-    .overlay.show{display:flex; align-items:flex-end; justify-content:center;}
-    .sheet{
-      width:calc(100vw - 24px);
-      max-width:900px;
-      max-height:86vh;
-      overflow:auto;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(15,20,29,.92);
-      padding:12px;
-      box-shadow:0 30px 120px rgba(0,0,0,.65);
-    }
-    .sheethead{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-    .sheettitle{font-weight:1000; font-size:16px;}
-    .hr{height:1px; background:var(--line2); margin:10px 0;}
-    .sheetbtnrow{display:flex; gap:10px; flex-wrap:wrap;}
-    .sheetbtn{
-      height:42px; border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      padding:0 14px;
-      cursor:pointer;
-      font-weight:1000;
-    }
-    .sheetbtn.danger{border-color:rgba(255,91,110,.55);}
-    .sheetbtn.ok{border-color:rgba(36,209,141,.55);}
-    .sheetbtn.primary{border-color:rgba(58,162,255,.55);}
-
-    /* Toast */
-    .toast{
       position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:calc(18px + env(safe-area-inset-bottom));
-      z-index:5000;
-      background:rgba(20,28,40,.92);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      padding:10px 12px;
+      inset:0;
+      background:rgba(0,0,0,.55);
       display:none;
-      max-width:calc(100vw - 24px);
+      align-items:flex-end;
+      justify-content:center;
+      padding:16px;
+      z-index:50;
     }
-    .toast.show{display:block;}
-    .toast .t{font-weight:1000;}
-    .toast .s{color:var(--muted); font-size:12.5px; margin-top:4px; line-height:1.2;}
-
-    /* PIN Modal */
-    .pinBox{
-      width:calc(100vw - 24px);
-      max-width:420px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(15,20,29,.96);
-      padding:14px;
-      box-shadow:0 30px 120px rgba(0,0,0,.65);
-    }
-    .pinTitle{font-weight:1000; font-size:16px;}
-    .pinSub{color:var(--muted); font-size:12.5px; margin-top:6px; white-space:pre-line;}
-    .pinInput{
-      margin-top:12px;
-      width:100%;
-      height:52px;
-      border-radius:14px;
+    .overlay.on{ display:flex; }
+    .modal{
+      width:min(680px, 100%);
+      background: linear-gradient(180deg, rgba(17,27,38,.98), rgba(11,15,20,.98));
       border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      padding:0 14px;
-      outline:none;
-      font-size:22px;
-      letter-spacing:10px;
-      text-align:center;
+      border-radius:22px;
+      padding:14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+    }
+    .mhead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .mtitle{ font-weight:900; font-size:16px; }
+    .mclose{
+      width:38px;height:38px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin:10px 0;
+    }
+    .label{ font-size:12px; color:var(--muted); }
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 420px){
+      .row2{ grid-template-columns: 1fr; }
+      .grid.tables{ grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
 
     /* Screensaver */
     .screensaver{
-      position:fixed; inset:0; z-index:9999;
+      position:fixed;
+      inset:0;
       display:none;
-      background:#000;
-      color:#fff;
-      padding:24px;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:10px;
+      background: radial-gradient(1200px 700px at 20% 0%, rgba(59,179,255,.14), transparent 55%),
+                  radial-gradient(900px 650px at 80% 20%, rgba(57,217,138,.12), transparent 55%),
+                  linear-gradient(180deg, #070a0e, #05070a);
+      z-index:80;
+      text-align:center;
+      padding:20px;
     }
-    .screensaver.show{display:flex; align-items:center; justify-content:center;}
-    .ssCenter{text-align:center; max-width:92vw;}
-    .ssLogo{
-      font-weight:1000;
-      font-size:40px;
-      letter-spacing:.8px;
-      line-height:1.1;
-      word-break:break-word;
+    .screensaver.on{ display:flex; }
+    .sslogo{
+      width:120px;height:120px;
+      border-radius:28px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      display:grid;
+      place-items:center;
+      font-size:44px;
+      font-weight:950;
+      letter-spacing:.5px;
     }
-    .ssUser{
-      margin-top:16px;
-      font-size:16px;
-      opacity:.85;
-      letter-spacing:.2px;
+    .ss1{ font-size:20px; font-weight:950; }
+    .ss2{ color:var(--muted); font-weight:750; }
+
+    .hint{
+      margin-top:8px;
+      font-size:12px;
+      color:var(--muted);
     }
-    .ssHint{
-      margin-top:26px;
-      font-size:12.5px;
-      opacity:.55;
-    }
+
+    /* Hide sections */
+    [data-view]{ display:none; }
+    [data-view].on{ display:block; }
   </style>
 </head>
-
 <body>
 <div class="app">
-  <div class="main">
+  <div class="topbar">
+    <div class="toprow">
+      <div class="brand">
+        <div class="name" id="storeName">Ημερήσιο Ταμείο</div>
+        <div class="sub" id="storeSub">Σήμερα: — · Χρήστης: —</div>
+      </div>
 
+      <div class="top-actions">
+        <div class="pill">
+          <span style="opacity:.85">👤</span>
+          <select id="userSelect" aria-label="Χρήστης"></select>
+        </div>
+        <button class="iconbtn" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
+      </div>
+    </div>
+
+    <div class="tabs" style="margin-top:12px">
+      <div class="tab on" id="tabHome">Home</div>
+      <div class="tab" id="tabTables">Τραπέζια</div>
+      <div class="tab" id="tabSummary">Σύνοψη</div>
+    </div>
+  </div>
+
+  <div class="content">
     <!-- HOME -->
-    <div id="viewHome" class="view show">
-      <div class="vhead">
-        <div class="hrow">
-          <div style="min-width:0;">
-            <div class="title" id="shopName">—</div>
-            <div class="sub" id="homeSub">—</div>
+    <section data-view="home" class="on">
+      <div class="section-title">Γρήγορα</div>
+      <div class="list">
+        <div class="row" id="homeNewOrder" style="cursor:pointer">
+          <div class="main">
+            <div class="title">➕ Νέα παραγγελία</div>
+            <div class="sub">Διάλεξε τραπέζι και γράψε προϊόντα</div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <select id="userSelect" class="select"></select>
-            <button class="iconbtn" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
+          <div class="price">→</div>
+        </div>
+
+        <div class="row" id="homeOpen" style="cursor:pointer">
+          <div class="main">
+            <div class="title">📄 Ανοιχτά</div>
+            <div class="sub">Όλα τα ανοιχτά τραπέζια/παραγγελίες</div>
           </div>
+          <div class="price"><span id="openCount">0</span></div>
+        </div>
+
+        <div class="row" id="homeFav" style="cursor:pointer">
+          <div class="main">
+            <div class="title">⭐ Top 8 σήμερα</div>
+            <div class="sub">Τα πιο συχνά προϊόντα σήμερα</div>
+          </div>
+          <div class="price">→</div>
         </div>
       </div>
 
-      <button class="big" id="btnNewOrder"><span>➕ Νέα Παραγγελία</span><span class="meta">Διάλεξε τραπέζι</span></button>
-      <div style="height:10px;"></div>
-      <button class="big" id="btnOpenOrders"><span>📄 Ανοιχτά</span><span class="meta" id="openCountMeta">0</span></button>
-      <div style="height:10px;"></div>
-      <button class="big" id="btnSummaryHome"><span>📊 Σύνοψη</span><span class="meta">Ημέρας</span></button>
-
-      <div style="height:12px;"></div>
-      <div class="sub" id="homeStats">—</div>
-    </div>
+      <div class="hint">Tip: Στο Android/Chrome → “Προσθήκη στην αρχική οθόνη” για να ανοίγει σαν app.</div>
+    </section>
 
     <!-- TABLES -->
-    <div id="viewTables" class="view">
-      <div class="vhead">
-        <div class="hrow">
-          <button class="btn" id="btnBackHome">← Home</button>
-          <div style="min-width:0;">
-            <div class="title">Τραπέζια</div>
-            <div class="sub" id="tablesSub">—</div>
+    <section data-view="tables">
+      <div class="section-title">Διάλεξε τραπέζι</div>
+      <div class="grid tables" id="tablesGrid"></div>
+    </section>
+
+    <!-- ORDER -->
+    <section data-view="order">
+      <div class="section-title" id="orderTitle">Τραπέζι: —</div>
+
+      <div class="row" style="align-items:flex-start">
+        <div class="main">
+          <div class="title">Ανοιχτά items</div>
+          <div class="sub">Με “+ / −” αλλάζεις ποσότητα. Με “Μετ/Κάρ/Κερ” πληρώνεις **1 τεμάχιο**.</div>
+          <div class="hint" style="margin:6px 0 0">
+            * Δεν ζητάει PIN για πληρωμή (όπως ζήτησες). PIN ζητάει μόνο για ρυθμίσεις/διαγραφές.
           </div>
-          <button class="btn primary" id="btnToggleTables">Μόνο ανοιχτά</button>
         </div>
+        <div class="price" id="ticketUnpaid">0,00 €</div>
       </div>
 
-      <div id="tablesGrid" class="grid"></div>
-    </div>
+      <div class="list" id="openItemsList" style="margin-top:10px"></div>
 
-    <!-- TICKET -->
-    <div id="viewTicket" class="view">
-      <div class="vhead">
-        <div class="hrow">
-          <button class="btn" id="btnBackTables">← Τραπέζια</button>
-          <div style="min-width:0;">
-            <div class="title" id="ticketTitle">—</div>
-            <div class="sub" id="ticketSub">—</div>
-          </div>
-          <button class="btn ok" id="btnPay">Πληρωμή</button>
-        </div>
-      </div>
+      <div class="section-title" style="margin-top:16px">Κατηγορίες</div>
+      <div class="list" id="catList"></div>
 
-      <div class="sectionTitle" id="openTitle">Ανοιχτά items</div>
-      <div id="openItemsList" class="list"></div>
+      <div class="section-title" style="margin-top:16px">Προϊόντα</div>
+      <input id="productSearch" placeholder="Αναζήτηση..." style="width:100%; margin:6px 0 10px" />
+      <div class="list" id="productList"></div>
+    </section>
 
-      <div class="sectionTitle">Top 8 σήμερα</div>
-      <div class="chips" id="top8Row"></div>
+    <!-- OPEN LIST -->
+    <section data-view="open">
+      <div class="section-title">Ανοιχτά τραπέζια</div>
+      <div class="list" id="openTablesList"></div>
+    </section>
 
-      <div class="sectionTitle">Κατηγορίες</div>
-      <div class="chips" id="catChips"></div>
+    <!-- SUMMARY -->
+    <section data-view="summary">
+      <div class="section-title">Σύνοψη ημέρας</div>
+      <div class="list" id="summaryList"></div>
+    </section>
 
-      <div style="height:8px;"></div>
-      <input id="prodSearch" class="search" placeholder="🔎 Αναζήτηση προϊόντος..." />
-
-      <div class="sectionTitle" id="prodTitle">Προϊόντα</div>
-      <div id="productsList" class="list"></div>
-    </div>
+    <!-- FAV -->
+    <section data-view="fav">
+      <div class="section-title">Top 8 σήμερα</div>
+      <div class="list" id="favList"></div>
+    </section>
   </div>
 
-  <!-- Ticket-only bottom bar -->
-  <div class="ticketbar" id="ticketBar">
-    <div class="twrap">
-      <button class="tbtn" id="btnUndo">↩ Undo</button>
-      <button class="tbtn primary" id="btnCSV">CSV</button>
-      <button class="tbtn danger" id="btnWipe">Διαγραφή</button>
+  <!-- Bottom bar -->
+  <div class="bottombar">
+    <div class="bbgrid">
+      <button class="btn primary" id="btnBack">⬅️ Πίσω</button>
+      <button class="btn ok" id="btnUndo">↩️ Αναίρεση</button>
+      <button class="btn bad" id="btnDanger">🗑️ Διαγραφή</button>
     </div>
   </div>
 </div>
 
-<!-- Settings overlay -->
-<div class="overlay" id="settingsOv">
-  <div class="sheet">
-    <div class="sheethead">
-      <div class="sheettitle">⚙️ Ρυθμίσεις</div>
-      <button class="sheetbtn" id="btnCloseSettings">Κλείσιμο</button>
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="mhead">
+      <div class="mtitle" id="modalTitle">—</div>
+      <div class="mclose" id="modalClose">✕</div>
     </div>
-    <div class="hr"></div>
-    <div class="sub" id="settingsSub">—</div>
-    <div class="hr"></div>
-    <div class="sheetbtnrow">
-      <button class="sheetbtn" id="btnAddUser">+ Χρήστης</button>
-      <button class="sheetbtn" id="btnRenameUser">✏️ Μετονομασία</button>
-      <button class="sheetbtn" id="btnSetPin">🔒 PIN χρήστη</button>
-      <button class="sheetbtn" id="btnShopName">🏷 Όνομα μαγαζιού</button>
-      <button class="sheetbtn danger" id="btnDelUser">🗑 Διαγραφή χρήστη</button>
-    </div>
-  </div>
-</div>
-
-<!-- Summary overlay -->
-<div class="overlay" id="summaryOv">
-  <div class="sheet">
-    <div class="sheethead">
-      <div class="sheettitle">📊 Σύνοψη ημέρας</div>
-      <button class="sheetbtn" id="btnCloseSummary">Κλείσιμο</button>
-    </div>
-    <div class="hr"></div>
-    <div class="sub" id="summaryText">—</div>
-    <div class="hr"></div>
-    <div class="sub" style="margin-bottom:6px;">Top προϊόντα</div>
-    <div id="topList"></div>
-    <div class="hr"></div>
-    <div class="sub" style="margin-bottom:6px;">Ανά χρήστη (πάτα για λεπτομέρειες)</div>
-    <div id="userSumList"></div>
-  </div>
-</div>
-
-<!-- User details overlay -->
-<div class="overlay" id="userOv">
-  <div class="sheet">
-    <div class="sheethead">
-      <div class="sheettitle" id="userTitle">—</div>
-      <button class="sheetbtn" id="btnCloseUser">Κλείσιμο</button>
-    </div>
-    <div class="hr"></div>
-    <div class="sub" id="userSub">—</div>
-    <div class="hr"></div>
-    <div id="userBody"></div>
-  </div>
-</div>
-
-<!-- Pay overlay -->
-<div class="overlay" id="payOv">
-  <div class="sheet">
-    <div class="sheethead">
-      <div class="sheettitle" id="payTitle">Πληρωμή</div>
-      <button class="sheetbtn" id="btnClosePay">Κλείσιμο</button>
-    </div>
-    <div class="hr"></div>
-    <div class="sub">Επίλεξε items (split) και μετά τρόπο πληρωμής.</div>
-    <div class="hr"></div>
-    <div id="payList"></div>
-    <div class="hr"></div>
-    <div class="sub" id="payTotal">Τελικό: 0,00 €</div>
-    <div style="height:10px;"></div>
-    <div class="sheetbtnrow">
-      <button class="sheetbtn ok" id="btnPayCash">💶 Μετρητά</button>
-      <button class="sheetbtn primary" id="btnPayCard">💳 Κάρτα</button>
-      <button class="sheetbtn" style="border-color:rgba(255,176,32,.55)" id="btnPayFree">🎁 Κερασμένα</button>
-      <button class="sheetbtn" id="btnSelAll">Επίλεξε όλα</button>
-    </div>
-  </div>
-</div>
-
-<!-- QuickPay overlay -->
-<div class="overlay" id="qpayOv">
-  <div class="sheet">
-    <div class="sheethead">
-      <div class="sheettitle" id="qpayTitle">—</div>
-      <button class="sheetbtn" id="btnCloseQPay">Κλείσιμο</button>
-    </div>
-    <div class="hr"></div>
-    <div class="sub" id="qpaySub">—</div>
-    <div class="hr"></div>
-    <div class="sheetbtnrow" id="qpayBtns"></div>
-  </div>
-</div>
-
-<!-- PIN Overlay -->
-<div class="overlay" id="pinOv" style="align-items:center;">
-  <div class="pinBox">
-    <div class="sheethead">
-      <div class="pinTitle" id="pinTitle">PIN</div>
-      <button class="sheetbtn" id="pinCancel">Άκυρο</button>
-    </div>
-    <div class="pinSub" id="pinSub">—</div>
-    <input
-      class="pinInput"
-      id="pinInput"
-      type="password"
-      inputmode="numeric"
-      pattern="[0-9]*"
-      maxlength="4"
-      autocomplete="one-time-code"
-      placeholder="••••"
-    />
-    <div class="hr"></div>
-    <div class="sheetbtnrow" style="justify-content:flex-end;">
-      <button class="sheetbtn primary" id="pinOk">ΟΚ</button>
-    </div>
+    <div id="modalBody"></div>
   </div>
 </div>
 
 <!-- Screensaver -->
-<div class="screensaver" id="ss">
-  <div class="ssCenter">
-    <div class="ssLogo" id="ssLogo">—</div>
-    <div class="ssUser" id="ssUser">—</div>
-    <div class="ssHint">Πάτησε οπουδήποτε για επιστροφή</div>
-  </div>
+<div class="screensaver" id="screensaver">
+  <div class="sslogo" id="ssLogo">☕</div>
+  <div class="ss1" id="ssStore">—</div>
+  <div class="ss2" id="ssUser">Εν υπηρεσία: —</div>
+  <div class="hint">Πάτα οπουδήποτε για επιστροφή</div>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast">
-  <div class="t" id="toastT">—</div>
-  <div class="s" id="toastS">—</div>
-</div>
-
-<script src="./app.js?v=1"></script>
-<script defer src="./app.js?v=999"></script>
+<script src="./app.js"></script>
+<script>
+  // Service worker
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+  }
+</script>
 </body>
 </html>
