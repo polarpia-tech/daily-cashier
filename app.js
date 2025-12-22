@@ -633,4 +633,494 @@
     users.forEach(x => {
       const row = document.createElement("div");
       row.className = "row";
-      row.style.cursor = "pointer
+      row.style.cursor = "pointer";
+      row.innerHTML = `
+        <div class="main">
+          <div class="title">${x.u.name}</div>
+          <div class="sub">Μετ: ${fmt(x.cash)} · Κάρ: ${fmt(x.card)} · Κερ: ${fmt(x.comp)} · Απλήρωτο: ${fmt(x.unpaid)}</div>
+        </div>
+        <div class="price">${fmt(x.cash + x.card)}</div>
+      `;
+      row.addEventListener("click", () => {
+        // αναλυτικά για χρήστη
+        showUserBreakdown(x.u.id);
+      });
+      list.appendChild(row);
+    });
+
+    // Γενικό σύνολο
+    const totalRow = document.createElement("div");
+    totalRow.className = "row";
+    totalRow.innerHTML = `
+      <div class="main">
+        <div class="title">Σύνολο ημέρας</div>
+        <div class="sub">Μετ: ${fmt(day.stats.cash)} · Κάρ: ${fmt(day.stats.card)} · Κερ: ${fmt(day.stats.comp)}</div>
+      </div>
+      <div class="price">${fmt(day.stats.cash + day.stats.card)}</div>
+    `;
+    list.appendChild(totalRow);
+  };
+
+  const renderFav = () => {
+    const day = getDay(db);
+    const list = $("favList");
+    list.innerHTML = "";
+
+    const pairs = Object.entries(day.stats.productQty || {})
+      .map(([pid, qty]) => ({ pid, qty }))
+      .sort((a,b)=> b.qty - a.qty)
+      .slice(0, 8);
+
+    if (pairs.length === 0) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<div class="main"><div class="title">Δεν υπάρχουν δεδομένα ακόμα</div><div class="sub">Χτύπα προϊόντα για να εμφανιστούν τα Top 8.</div></div>`;
+      list.appendChild(row);
+      return;
+    }
+
+    pairs.forEach((p, idx) => {
+      const prod = CATALOG.products.find(x=>x.id===p.pid);
+      const name = prod?.name || p.pid;
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `
+        <div class="main">
+          <div class="title">${idx+1}. ${name}</div>
+          <div class="sub">Ποσότητα σήμερα: ${p.qty}</div>
+        </div>
+        <div class="price">${p.qty}×</div>
+      `;
+      list.appendChild(row);
+    });
+  };
+
+  const render = () => {
+    renderTop();
+
+    if (view === "home") renderHome();
+    if (view === "tables") renderTables();
+    if (view === "order") {
+      renderCategories();
+      renderOpenItems();
+      renderProducts();
+    }
+    if (view === "open") renderOpen();
+    if (view === "summary") renderSummary();
+    if (view === "fav") renderFav();
+  };
+
+  // ---------------------------
+  // Modal / Toast
+  // ---------------------------
+  const overlay = $("overlay");
+  const modalTitle = $("modalTitle");
+  const modalBody = $("modalBody");
+
+  const closeModal = () => overlay.classList.remove("on");
+
+  $("modalClose").addEventListener("click", closeModal);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
+
+  const showModal = (title, bodyHTML) => {
+    modalTitle.textContent = title;
+    modalBody.innerHTML = bodyHTML;
+    overlay.classList.add("on");
+  };
+
+  let toastTimer = null;
+  const toast = (msg) => {
+    clearTimeout(toastTimer);
+    // μικρό “toast” σαν alert, χωρίς να χαλάει UI
+    const id = "miniToast";
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement("div");
+      el.id = id;
+      el.style.position = "fixed";
+      el.style.left = "50%";
+      el.style.bottom = "92px";
+      el.style.transform = "translateX(-50%)";
+      el.style.padding = "10px 14px";
+      el.style.borderRadius = "14px";
+      el.style.background = "rgba(0,0,0,.65)";
+      el.style.border = "1px solid rgba(255,255,255,.12)";
+      el.style.color = "white";
+      el.style.fontWeight = "750";
+      el.style.zIndex = "99";
+      el.style.maxWidth = "92vw";
+      el.style.textAlign = "center";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.display = "block";
+    toastTimer = setTimeout(() => { el.style.display = "none"; }, 1600);
+  };
+
+  const confirmBox = (title, text, onYes) => {
+    showModal(title, `
+      <div class="field">
+        <div class="label">${text}</div>
+      </div>
+      <div class="row2" style="margin-top:12px">
+        <button class="btn ghost" id="mNo">Άκυρο</button>
+        <button class="btn ok" id="mYes">Ναι</button>
+      </div>
+    `);
+    $("mNo").onclick = closeModal;
+    $("mYes").onclick = () => { closeModal(); onYes?.(); };
+  };
+
+  // ---------------------------
+  // Settings (owner only)
+  // ---------------------------
+  const askPin = (title, label, correctPin, onOk) => {
+    showModal(title, `
+      <div class="field">
+        <div class="label">${label}</div>
+        <input id="pinIn" inputmode="numeric" pattern="[0-9]*" type="password" placeholder="PIN" />
+      </div>
+      <div class="row2">
+        <button class="btn ghost" id="pCancel">Άκυρο</button>
+        <button class="btn primary" id="pOk">ΟΚ</button>
+      </div>
+    `);
+    $("pinIn").focus();
+    $("pCancel").onclick = closeModal;
+    $("pOk").onclick = () => {
+      const v = $("pinIn").value.trim();
+      if (v !== String(correctPin)) return toast("Λάθος PIN");
+      closeModal();
+      onOk?.();
+    };
+  };
+
+  const openSettings = () => {
+    const u = currentUser();
+    showModal("Ρυθμίσεις", `
+      <div class="field">
+        <div class="label">Χρήστες (όνομα + PIN)</div>
+        <div class="hint">PIN ζητάμε μόνο για ρυθμίσεις/διαγραφές, όχι για πληρωμή.</div>
+      </div>
+
+      <div class="list" style="margin-top:8px">
+        ${db.users.map(x=>`
+          <div class="row">
+            <div class="main">
+              <div class="title">${x.name}</div>
+              <div class="sub">PIN: ••••</div>
+            </div>
+            <button class="btn" data-edit="${x.id}">✏️</button>
+            <button class="btn bad" data-del="${x.id}">🗑️</button>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="row2" style="margin-top:12px">
+        <button class="btn primary" id="addUser">➕ Νέος χρήστης</button>
+        <button class="btn" id="editStore">🏪 Όνομα μαγαζιού</button>
+      </div>
+
+      <div class="row2" style="margin-top:10px">
+        <button class="btn" id="editOwnerPin">🔒 Owner PIN</button>
+        <button class="btn bad" id="wipeToday">🧨 Καθαρισμός σήμερα</button>
+      </div>
+
+      <div class="hint">Προσοχή: Ο “Καθαρισμός σήμερα” σβήνει τα σημερινά δεδομένα όλων.</div>
+    `);
+
+    // wire
+    document.querySelectorAll("[data-edit]").forEach(b=>{
+      b.addEventListener("click", () => {
+        const id = b.getAttribute("data-edit");
+        const user = db.users.find(x=>x.id===id);
+        askPin("PIN χρήστη", "Βάλε PIN χρήστη για αλλαγές", user.pin, () => {
+          showModal("Επεξεργασία χρήστη", `
+            <div class="field">
+              <div class="label">Όνομα</div>
+              <input id="uName" value="${escapeHtml(user.name)}" />
+            </div>
+            <div class="field">
+              <div class="label">PIN (μόνο αριθμοί)</div>
+              <input id="uPin" inputmode="numeric" pattern="[0-9]*" type="password" value="${escapeHtml(user.pin)}" />
+            </div>
+            <div class="row2">
+              <button class="btn ghost" id="uCancel">Άκυρο</button>
+              <button class="btn ok" id="uSave">Αποθήκευση</button>
+            </div>
+          `);
+          $("uCancel").onclick = closeModal;
+          $("uSave").onclick = () => {
+            user.name = $("uName").value.trim() || user.name;
+            user.pin = ($("uPin").value.trim() || user.pin).replace(/\D/g,"");
+            saveDB(db);
+            closeModal();
+            render();
+          };
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-del]").forEach(b=>{
+      b.addEventListener("click", () => {
+        const id = b.getAttribute("data-del");
+        if (db.users.length <= 1) return toast("Πρέπει να υπάρχει τουλάχιστον 1 χρήστης.");
+        askPin("Owner PIN", "Βάλε Owner PIN για διαγραφή χρήστη", db.ownerPin, () => {
+          const user = db.users.find(x=>x.id===id);
+          confirmBox("Διαγραφή χρήστη", `Να διαγραφεί ο χρήστης “${user?.name}”;`, () => {
+            db.users = db.users.filter(x=>x.id!==id);
+            if (!db.users.find(x=>x.id===db.currentUserId)) db.currentUserId = db.users[0].id;
+            saveDB(db);
+            closeModal();
+            render();
+          });
+        });
+      });
+    });
+
+    $("addUser").onclick = () => {
+      askPin("Owner PIN", "Βάλε Owner PIN για να προσθέσεις χρήστη", db.ownerPin, () => {
+        showModal("Νέος χρήστης", `
+          <div class="field">
+            <div class="label">Όνομα</div>
+            <input id="nName" placeholder="π.χ. Μαρία" />
+          </div>
+          <div class="field">
+            <div class="label">PIN (μόνο αριθμοί)</div>
+            <input id="nPin" inputmode="numeric" pattern="[0-9]*" type="password" placeholder="π.χ. 1234" />
+          </div>
+          <div class="row2">
+            <button class="btn ghost" id="nCancel">Άκυρο</button>
+            <button class="btn ok" id="nSave">Προσθήκη</button>
+          </div>
+        `);
+        $("nCancel").onclick = closeModal;
+        $("nSave").onclick = () => {
+          const name = $("nName").value.trim();
+          const pin = ($("nPin").value.trim() || "").replace(/\D/g,"");
+          if (!name) return toast("Βάλε όνομα");
+          if (!pin) return toast("Βάλε PIN");
+          db.users.push({ id: uid(), name, pin });
+          saveDB(db);
+          closeModal();
+          render();
+        };
+      });
+    };
+
+    $("editStore").onclick = () => {
+      askPin("Owner PIN", "Μόνο ο ιδιοκτήτης αλλάζει όνομα μαγαζιού", db.ownerPin, () => {
+        showModal("Όνομα μαγαζιού", `
+          <div class="field">
+            <div class="label">Όνομα (φαίνεται πάνω και στο screensaver)</div>
+            <input id="sName" value="${escapeHtml(db.storeName)}" />
+          </div>
+          <div class="row2">
+            <button class="btn ghost" id="sCancel">Άκυρο</button>
+            <button class="btn ok" id="sSave">Αποθήκευση</button>
+          </div>
+        `);
+        $("sCancel").onclick = closeModal;
+        $("sSave").onclick = () => {
+          db.storeName = $("sName").value.trim() || db.storeName;
+          saveDB(db);
+          closeModal();
+          render();
+        };
+      });
+    };
+
+    $("editOwnerPin").onclick = () => {
+      askPin("Owner PIN", "Βάλε το τωρινό Owner PIN", db.ownerPin, () => {
+        showModal("Αλλαγή Owner PIN", `
+          <div class="field">
+            <div class="label">Νέο Owner PIN (μόνο αριθμοί)</div>
+            <input id="opNew" inputmode="numeric" pattern="[0-9]*" type="password" placeholder="Νέο PIN" />
+          </div>
+          <div class="row2">
+            <button class="btn ghost" id="opCancel">Άκυρο</button>
+            <button class="btn ok" id="opSave">Αποθήκευση</button>
+          </div>
+        `);
+        $("opCancel").onclick = closeModal;
+        $("opSave").onclick = () => {
+          const v = ($("opNew").value.trim() || "").replace(/\D/g,"");
+          if (!v) return toast("Βάλε νέο PIN");
+          db.ownerPin = v;
+          saveDB(db);
+          closeModal();
+          render();
+        };
+      });
+    };
+
+    $("wipeToday").onclick = () => {
+      askPin("Owner PIN", "Βάλε Owner PIN για καθαρισμό σημερινής ημέρας", db.ownerPin, () => {
+        confirmBox("Καθαρισμός ημέρας", "Να διαγραφούν ΟΛΑ τα σημερινά δεδομένα;", () => {
+          const k = todayKey();
+          db.days[k] = { tickets:{}, stats:{ productQty:{}, cash:0, card:0, comp:0 } };
+          db.undo = null;
+          saveDB(db);
+          closeModal();
+          activeTable = null;
+          setView("home");
+        });
+      });
+    };
+  };
+
+  const showUserBreakdown = (userId) => {
+    const day = getDay(db);
+    const uname = db.users.find(u=>u.id===userId)?.name || "—";
+    const tickets = Object.values(day.tickets).filter(t=>t.userId===userId);
+
+    let html = `<div class="field"><div class="label">Αναλυτικά για: <b>${escapeHtml(uname)}</b></div></div>`;
+    if (tickets.length === 0) {
+      html += `<div class="row"><div class="main"><div class="title">Δεν υπάρχουν tickets</div></div></div>`;
+      return showModal("Ανάλυση χρήστη", html);
+    }
+
+    tickets.forEach(t => {
+      const totals = ticketTotals(t);
+      html += `
+        <div class="row" style="align-items:flex-start">
+          <div class="main">
+            <div class="title">${t.table}</div>
+            <div class="sub">Μετ: ${fmt(totals.cash)} · Κάρ: ${fmt(totals.card)} · Κερ: ${fmt(totals.comp)} · Απλήρωτο: ${fmt(totals.unpaid)}</div>
+            <div class="hint" style="margin-top:6px">${t.items.map(i => `${escapeHtml(i.name)} (${i.qty})`).join(" · ")}</div>
+          </div>
+          <div class="price">${fmt(totals.cash + totals.card)}</div>
+        </div>
+      `;
+    });
+
+    showModal("Ανάλυση χρήστη", html);
+  };
+
+  const escapeHtml = (s) => String(s||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+  // ---------------------------
+  // Navigation / buttons
+  // ---------------------------
+  $("tabHome").addEventListener("click", () => setView("home"));
+  $("tabTables").addEventListener("click", () => setView("tables"));
+  $("tabSummary").addEventListener("click", () => setView("summary"));
+
+  $("homeNewOrder").addEventListener("click", () => setView("tables"));
+  $("homeOpen").addEventListener("click", () => setView("open"));
+  $("homeFav").addEventListener("click", () => setView("fav"));
+
+  $("btnSettings").addEventListener("click", () => openSettings());
+
+  $("userSelect").addEventListener("change", () => {
+    db.currentUserId = $("userSelect").value;
+    saveDB(db);
+    activeTable = null;
+    setView("home");
+  });
+
+  $("productSearch").addEventListener("input", () => {
+    searchText = $("productSearch").value || "";
+    renderProducts();
+  });
+
+  $("btnBack").addEventListener("click", () => {
+    if (screensaverOn()) return hideScreensaver();
+
+    if (view === "order") return setView("tables");
+    if (view === "tables") return setView("home");
+    if (view === "open") return setView("home");
+    if (view === "fav") return setView("home");
+    if (view === "summary") return setView("home");
+    setView("home");
+  });
+
+  $("btnUndo").addEventListener("click", () => {
+    const ok = undoLast(db);
+    if (ok) {
+      toast("Έγινε αναίρεση.");
+      render();
+    } else {
+      toast("Δεν υπάρχει κάτι για αναίρεση.");
+    }
+  });
+
+  $("btnDanger").addEventListener("click", () => {
+    // “ασφαλής διαγραφή”: ζητά Owner PIN
+    if (view === "order" && activeTable) {
+      const key = currentTicketKey();
+      if (!key) return;
+      askPin("Owner PIN", "Διαγραφή ticket μόνο με Owner PIN", db.ownerPin, () => {
+        confirmBox("Διαγραφή ticket", `Να διαγραφεί το ticket για τραπέζι ${activeTable};`, () => {
+          deleteTicketConfirm(db, key);
+          activeTable = null;
+          setView("tables");
+        });
+      });
+      return;
+    }
+
+    // γενικό: τίποτα
+    toast("Διαγραφή: Μπες σε τραπέζι για να διαγράψεις ticket.");
+  });
+
+  // ---------------------------
+  // Idle → Home → Screensaver
+  // ---------------------------
+  const IDLE_HOME_MS = 35000;     // 30–40 sec
+  const IDLE_SAVER_MS = 15000;    // μετά από home, 15 sec → screensaver
+  let lastTouch = Date.now();
+  let idleTimer = null;
+  let saverTimer = null;
+
+  const resetIdle = () => {
+    lastTouch = Date.now();
+    if (screensaverOn()) hideScreensaver();
+    scheduleIdle();
+  };
+
+  const scheduleIdle = () => {
+    clearTimeout(idleTimer);
+    clearTimeout(saverTimer);
+
+    idleTimer = setTimeout(() => {
+      // πήγαινε home
+      activeTable = null;
+      setView("home");
+
+      // μετά από λίγα δευτερόλεπτα χωρίς καμία κίνηση → screensaver
+      saverTimer = setTimeout(() => {
+        showScreensaver();
+      }, IDLE_SAVER_MS);
+
+    }, IDLE_HOME_MS);
+  };
+
+  const screensaver = $("screensaver");
+  const screensaverOn = () => screensaver.classList.contains("on");
+
+  const showScreensaver = () => {
+    $("ssStore").textContent = db.storeName || "Το Μαγαζί Μου";
+    $("ssUser").textContent = `Εν υπηρεσία: ${currentUser()?.name || "—"}`;
+    screensaver.classList.add("on");
+  };
+  const hideScreensaver = () => screensaver.classList.remove("on");
+
+  ["click","touchstart","keydown","scroll"].forEach(evt => {
+    window.addEventListener(evt, resetIdle, { passive:true });
+  });
+  screensaver.addEventListener("click", resetIdle);
+  screensaver.addEventListener("touchstart", resetIdle, { passive:true });
+
+  // ---------------------------
+  // Start
+  // ---------------------------
+  scheduleIdle();
+  render();
+
+})();
