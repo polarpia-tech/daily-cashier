@@ -19,7 +19,7 @@
       --tap:44px;
       --r:20px;
     }
-    html, body{ width:100%; max-width:100%; overflow-x:hidden; }
+    html, body{ width:100%; max-width:100%; overflow-x:hidden; height:100%; }
     *{ box-sizing:border-box; min-width:0; }
     body{
       margin:0;
@@ -29,6 +29,7 @@
       -webkit-font-smoothing:antialiased;
       overflow-x:hidden;
       position:relative;
+      min-height:100%;
     }
     body::before{
       content:"";
@@ -43,13 +44,19 @@
     button,input,select{ font:inherit; color:inherit; max-width:100%; }
     button{ touch-action:manipulation; }
 
+    /* ✅ FULL WIDTH: no max-width on mobile */
     .wrap{
-      max-width:720px;
-      margin:0 auto;
-      padding:14px 14px 120px;
       width:100%;
+      max-width:100%;
+      margin:0;
+      padding:10px 10px 120px;
       overflow-x:hidden;
     }
+    /* ✅ On larger screens, keep it pleasant */
+    @media(min-width:900px){
+      .wrap{ max-width:900px; margin:0 auto; padding:14px 14px 120px; }
+    }
+
     .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .between{ justify-content:space-between; }
     .title{ font-size:22px; font-weight:900; line-height:1.1; }
@@ -155,56 +162,64 @@
 
     .lines{ display:flex; flex-direction:column; gap:10px; }
     .lines.scrollBox{
-      max-height:260px;
+      max-height:280px;
       overflow:auto;
       padding-right:2px;
     }
 
+    /* ✅ tighter line layout (more space for name) */
     .line{
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
       border-radius:16px;
-      padding:12px;
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding:10px;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:10px;
+      align-items:center;
     }
-    .line .n{ font-weight:900; line-height:1.2; }
-    .line .m{ color:var(--muted); font-size:12.5px; margin-top:6px; line-height:1.25; }
+    .lineLeft .n{ font-weight:900; line-height:1.2; }
+    .lineLeft .m{ color:var(--muted); font-size:12.5px; margin-top:6px; line-height:1.25; }
+    .lineRight{
+      display:flex; gap:8px; align-items:center;
+    }
 
+    /* ✅ smaller +/- and icons */
     .qtyBox{
       display:flex; align-items:center; gap:6px;
       border:1px solid var(--line);
       border-radius:999px;
-      padding:6px;
+      padding:4px;
       background:rgba(255,255,255,.02);
       flex:0 0 auto;
     }
     .qbtn{
-      width:34px; height:34px;
+      width:30px; height:30px;
       border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
       cursor:pointer;
       display:grid; place-items:center;
       font-weight:900;
+      font-size:16px;
     }
     .qval{
-      min-width:28px;
+      min-width:24px;
       text-align:center;
       font-weight:900;
+      font-size:14px;
     }
 
-    .payIcons{
-      display:flex; align-items:center; gap:6px;
-      flex:0 0 auto;
-    }
+    .payIcons{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
     .picon{
-      width:36px; height:36px;
+      width:30px; height:30px;
       border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
       cursor:pointer;
       display:grid; place-items:center;
       font-weight:900;
+      font-size:15px;
     }
     .picon.ok{ border-color:rgba(36,209,141,.55); }
     .picon.primary{ border-color:rgba(58,162,255,.55); }
@@ -216,9 +231,7 @@
       gap:10px;
       width:100%;
     }
-    @media(min-width:520px){
-      .quickGrid{ grid-template-columns:repeat(4,minmax(0,1fr)); }
-    }
+    @media(min-width:520px){ .quickGrid{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
     .qCard{
       height:62px;
       border-radius:18px;
@@ -231,6 +244,7 @@
       font-weight:900;
       text-align:left;
       line-height:1.2;
+      position:relative;
     }
     .qCard .price{ color:var(--muted); font-size:13px; font-weight:800; margin-top:6px; }
 
@@ -259,6 +273,7 @@
       box-shadow:0 0 0 3px rgba(58,162,255,.12) inset;
     }
 
+    /* ✅ products: add +/- inside tile */
     .prodGrid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
@@ -266,26 +281,47 @@
       width:100%;
     }
     @media(min-width:520px){ .prodGrid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
-    .pBtn{
-      height:68px;
-      border-radius:18px;
-      padding:10px 12px;
+    .pTile{
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
-      cursor:pointer;
-      display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
+      border-radius:18px;
+      padding:10px;
+      position:relative;
       overflow:hidden;
-      font-weight:900;
-      text-align:left;
-      line-height:1.2;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:8px;
+      align-items:center;
+      min-height:74px;
     }
-    .pBtn .price{ color:var(--muted); font-size:13px; font-weight:800; margin-top:6px; }
+    .pName{ font-weight:900; line-height:1.2; }
+    .pPrice{ color:var(--muted); font-size:13px; font-weight:800; margin-top:6px; }
+    .pCtrls{ display:flex; flex-direction:column; gap:6px; align-items:center; }
+    .pSmall{
+      width:30px;height:30px;border-radius:999px;
+      border:1px solid var(--line); background:rgba(255,255,255,.03);
+      display:grid; place-items:center; cursor:pointer;
+      font-weight:900; font-size:16px;
+    }
+    .pQty{
+      font-weight:900; font-size:13px;
+      min-width:26px; text-align:center;
+      color:var(--text);
+      opacity:.9;
+    }
+    .pAddTap{
+      position:absolute; inset:0;
+      background:transparent;
+      border:none;
+      cursor:pointer;
+    }
+    .pAddTap:active{ background:rgba(255,255,255,.03); }
 
     .bottom{
       position:fixed; left:0; right:0; bottom:0;
       width:100%;
       max-width:100%;
-      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      padding:10px 10px calc(10px + env(safe-area-inset-bottom));
       background:linear-gradient(180deg, transparent, rgba(11,15,20,.70) 25%, rgba(11,15,20,.94));
       backdrop-filter: blur(10px);
       border-top:1px solid rgba(255,255,255,.06);
@@ -293,12 +329,13 @@
       overflow:hidden;
     }
     .bottom .inner{
-      max-width:720px;
-      margin:0 auto;
+      width:100%;
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:10px;
-      width:100%;
+    }
+    @media(min-width:900px){
+      .bottom .inner{ max-width:900px; margin:0 auto; }
     }
 
     .overlay{
@@ -307,13 +344,13 @@
       backdrop-filter: blur(4px);
       display:none;
       z-index:2000;
-      padding:18px 12px;
+      padding:18px 10px;
       overflow:hidden;
     }
     .overlay.show{ display:flex; align-items:flex-end; justify-content:center; }
     .sheet{
-      width:min(860px, calc(100vw - 24px));
-      max-width:100%;
+      width:calc(100vw - 20px);
+      max-width:900px;
       border-radius:22px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(15,20,29,.92);
@@ -332,7 +369,7 @@
       background:rgba(255,255,255,.03);
       cursor:pointer;
     }
-    .payLine input{ width:22px; height:22px; accent-color:var(--accent); flex:0 0 auto; }
+    .payLine input{ width:20px; height:20px; accent-color:var(--accent); flex:0 0 auto; }
     .payLine .left{ display:flex; align-items:center; gap:10px; min-width:0; }
     .payLine .t{ font-weight:900; line-height:1.15; word-break:break-word; }
     .payLine .s{ color:var(--muted); font-size:13px; margin-top:4px; line-height:1.2; }
@@ -350,7 +387,7 @@
       box-shadow:0 18px 60px rgba(0,0,0,.45);
       z-index:4000;
       display:none;
-      max-width:min(680px, calc(100vw - 24px));
+      max-width:calc(100vw - 20px);
     }
     .toast.show{ display:block; }
     .toast .t{ font-weight:900; }
@@ -384,7 +421,6 @@
     </div>
 
     <div class="card" style="margin-top:12px;">
-
       <!-- HOME -->
       <div id="viewHome" class="view show">
         <div class="card2">
@@ -429,7 +465,7 @@
 
         <div class="card2">
           <div style="font-weight:900;">Επιλογή τραπεζιού</div>
-          <div class="sub muted">Λίστα, όχι grid — πιο “χαρτί”.</div>
+          <div class="sub muted">Λίστα για ταχύτητα.</div>
         </div>
 
         <div style="height:10px;"></div>
@@ -478,7 +514,7 @@
           <div class="row between">
             <div>
               <div style="font-weight:900;">Γρήγορα (Top 8 σήμερα)</div>
-              <div class="sub muted">Τα πιο συχνά προϊόντα της ημέρας.</div>
+              <div class="sub muted">Tap για +1</div>
             </div>
             <button class="pill small" id="btnClearQuick">Reset</button>
           </div>
@@ -498,7 +534,6 @@
 
         <div style="height:140px;"></div>
       </div>
-
     </div>
   </div>
 
@@ -542,7 +577,7 @@
         </div>
 
         <div class="sub muted" style="margin-top:10px;">
-          Το <b>🏷 Όνομα μαγαζιού</b> αλλάζει μόνο με <b>Admin PIN</b> (μόνο εσύ).
+          Το <b>🏷 Όνομα μαγαζιού</b> αλλάζει μόνο με <b>Admin PIN</b>.
         </div>
       </div>
     </div>
@@ -674,7 +709,7 @@
 
 <script>
 /* ===================== STORAGE KEYS ===================== */
-const LS_KEY = "mini_cashier_db_v8";
+const LS_KEY = "mini_cashier_db_v9"; // bump to force fresh storage format
 const LS_USERS = "mini_cashier_users_v4";
 const LS_ACTIVE_USER = "mini_cashier_active_user_v4";
 const LS_FAVS = "mini_cashier_favs_v3";
@@ -798,13 +833,8 @@ function getActiveUser(){
   const id = getActiveUserId();
   return users.find(u=>u.id===id) || users[0];
 }
-
-/* PIN rules:
-   - ΔΕΝ ζητάμε PIN για πληρωμή (για να μην καθυστερεί).
-   - PIN μόνο για αλλαγή χρήστη (αν έχει) + διαγραφή user + admin αλλαγές.
-*/
 async function requireUserPinIfExists(user, reason){
-  if(!user.pinHash) return true; // if no pin, allow
+  if(!user.pinHash) return true;
   const pin = prompt(`PIN απαιτείται (${reason}).\nΓράψε 4-ψήφιο PIN:`);
   if(!pin) return false;
   if(!isValidPin(pin)) { alert("Άκυρο PIN."); return false; }
@@ -1009,7 +1039,6 @@ function groupOpenByNameAndPrice(lines){
     if(!map.has(key)) map.set(key, { name:l.name, price:l.price, ids:[], by:lastByFor(lines,l.name,l.price), lastAt:lastAtFor(lines,l.name,l.price) });
     map.get(key).ids.push(l.id);
   }
-  // keep stable order: last added first
   return [...map.values()].sort((a,b)=>b.lastAt-a.lastAt);
 }
 function lastAtFor(lines,name,price){
@@ -1157,12 +1186,7 @@ function openQuickPay(table, name, price, ids, method){
   const row = $("quickPayQtyRow");
   row.innerHTML = "";
   const max = ids.length;
-  const options = [];
-  if(max <= 6){
-    for(let i=1;i<=max;i++) options.push(i);
-  } else {
-    options.push(1,2,3,4,5, max);
-  }
+  const options = max<=8 ? Array.from({length:max},(_,i)=>i+1) : [1,2,3,4,5,max];
 
   for(const n of options){
     const b = document.createElement("button");
@@ -1173,7 +1197,6 @@ function openQuickPay(table, name, price, ids, method){
   }
   showOverlay("quickPayOverlay", true);
 }
-
 function quickPayCommit(qty){
   const table = quickPayState.table;
   const ids = quickPayState.ids.slice(0, qty);
@@ -1182,7 +1205,7 @@ function quickPayCommit(qty){
   doPaymentOnIds(table, ids, method, /*fromQuick=*/true);
 
   showOverlay("quickPayOverlay", false);
-  toast("✅ Πληρώθηκε", `${qty} × ${quickPayState.name} (${method})`);
+  toast("✅ Πληρώθηκε", `${qty} × ${quickPayState.name}`);
   renderAll();
 }
 
@@ -1211,21 +1234,23 @@ function renderTicketLines(){
     const div = document.createElement("div");
     div.className = "line";
     div.innerHTML = `
-      <div style="min-width:0;">
+      <div class="lineLeft">
         <div class="n">${g.name}</div>
-        <div class="m">${qty} × ${fmt(g.price)} = <b>${fmt(total)}</b> • ${g.by || ""}</div>
+        <div class="m">${qty} × ${fmt(g.price)} = <b>${fmt(total)}</b></div>
       </div>
 
-      <div class="qtyBox" title="Ποσότητα">
-        <button class="qbtn" data-act="minus">−</button>
-        <div class="qval">${qty}</div>
-        <button class="qbtn" data-act="plus">+</button>
-      </div>
+      <div class="lineRight">
+        <div class="qtyBox" title="Ποσότητα">
+          <button class="qbtn" data-act="minus">−</button>
+          <div class="qval">${qty}</div>
+          <button class="qbtn" data-act="plus">+</button>
+        </div>
 
-      <div class="payIcons" title="Γρήγορη πληρωμή">
-        <button class="picon ok" data-pay="cash">💶</button>
-        <button class="picon primary" data-pay="card">💳</button>
-        <button class="picon warn" data-pay="free">🎁</button>
+        <div class="payIcons" title="Πληρωμή προϊόντος">
+          <button class="picon ok" data-pay="cash">💶</button>
+          <button class="picon primary" data-pay="card">💳</button>
+          <button class="picon warn" data-pay="free">🎁</button>
+        </div>
       </div>
     `;
 
@@ -1242,7 +1267,6 @@ function renderTicketLines(){
       renderAll();
     };
 
-    // quick pay buttons: if qty==1 -> direct; else overlay
     div.querySelector('[data-pay="cash"]').onclick = (e)=>{ e.stopPropagation(); quickPayHandle(t,g,"cash"); };
     div.querySelector('[data-pay="card"]').onclick = (e)=>{ e.stopPropagation(); quickPayHandle(t,g,"card"); };
     div.querySelector('[data-pay="free"]').onclick = (e)=>{ e.stopPropagation(); quickPayHandle(t,g,"free"); };
@@ -1252,12 +1276,10 @@ function renderTicketLines(){
 }
 
 function quickPayHandle(table, group, method){
-  // no PIN here (fast)
   const ids = group.ids.slice();
   if(ids.length === 1){
-    // direct payment
     doPaymentOnIds(table, ids, method, /*fromQuick=*/true);
-    toast("✅ Πληρώθηκε", `${group.name} (${method})`);
+    toast("✅ Πληρώθηκε", `${group.name}`);
     renderAll();
     return;
   }
@@ -1274,7 +1296,6 @@ function renderQuick(){
     b.className = "qCard";
     b.innerHTML = `<div>${p.name}</div><div class="price">${fmt(p.price)}</div>`;
     b.onclick = ()=>{
-      // add as unit (so grouping works)
       addOneUnit(p.name, p.price);
       vibrate(18);
       renderAll();
@@ -1303,13 +1324,21 @@ function renderCategories(){
     };
     row.appendChild(b);
   }
-
   const label = cats.find(x=>x.id===active)?.label || "";
   $("catHint").textContent = `Ενεργή: ${label}`;
 }
 
+/* ✅ product tile with +/- */
 function renderProductGrid(){
   const db = ensureDB();
+  const t = db.days[TODAY].meta.activeTable;
+  const lines = getLines(db,t);
+  const open = unpaidLines(lines);
+  const qtyMap = {};
+  for(const l of open){
+    qtyMap[l.name] = (qtyMap[l.name]||0) + 1;
+  }
+
   const active = db.days[TODAY].meta.activeCat || "coffee";
   const allowed = cats.find(x=>x.id===active)?.allowed || [];
   const list = products.filter(p=>allowed.includes(p.cat));
@@ -1318,15 +1347,42 @@ function renderProductGrid(){
   grid.innerHTML = "";
 
   for(const p of list){
-    const b = document.createElement("button");
-    b.className = "pBtn";
-    b.innerHTML = `<div>${p.name}</div><div class="price">${fmt(p.price)}</div>`;
-    b.onclick = ()=>{
+    const qty = qtyMap[p.name] || 0;
+    const tile = document.createElement("div");
+    tile.className = "pTile";
+    tile.innerHTML = `
+      <button class="pAddTap" title="Tap για +1"></button>
+      <div>
+        <div class="pName">${p.name}</div>
+        <div class="pPrice">${fmt(p.price)}</div>
+      </div>
+      <div class="pCtrls">
+        <button class="pSmall" data-act="plus">+</button>
+        <div class="pQty">${qty}</div>
+        <button class="pSmall" data-act="minus">−</button>
+      </div>
+    `;
+
+    // tap anywhere adds +1 (fast)
+    tile.querySelector(".pAddTap").onclick = ()=>{
       addOneUnit(p.name, p.price);
       vibrate(18);
       renderAll();
     };
-    grid.appendChild(b);
+    tile.querySelector('[data-act="plus"]').onclick = (e)=>{
+      e.stopPropagation();
+      addOneUnit(p.name, p.price);
+      vibrate(18);
+      renderAll();
+    };
+    tile.querySelector('[data-act="minus"]').onclick = (e)=>{
+      e.stopPropagation();
+      removeOneUnit(p.name, p.price);
+      vibrate([12,25,12]);
+      renderAll();
+    };
+
+    grid.appendChild(tile);
   }
 }
 
@@ -1354,7 +1410,7 @@ function renderSearch(){
     div.className = "line";
     div.style.cursor="pointer";
     div.innerHTML = `
-      <div style="min-width:0;">
+      <div class="lineLeft">
         <div class="n">${p.name}</div>
         <div class="m">${p.group}</div>
       </div>
@@ -1445,7 +1501,6 @@ function doPaymentOnIds(table, ids, method, fromQuick=false){
   const now=Date.now();
   const user=getActiveUser().name;
 
-  // compute total for these ids that are unpaid
   let total=0;
   const realIds=[];
   for(const l of lines){
@@ -1474,8 +1529,6 @@ function doPaymentOnIds(table, ids, method, fromQuick=false){
 
   save(LS_KEY, db);
 
-  // If pay came from main pay sheet, we will go home (requirement).
-  // If fromQuick, we remain in ticket (fast workflow) BUT if table now empty -> go home.
   const remaining = unpaidLines(getLines(db, table)).length;
   if(!fromQuick){
     showOverlay("payOverlay", false);
@@ -1495,8 +1548,8 @@ function doPayment(method){
   if(selected.length===0){ alert("Διάλεξε items."); return; }
   const ids = selected.map(x=>x.id);
 
-  doPaymentOnIds(t, ids, method, /*fromQuick=*/false);
-  toast("✅ Πληρωμή ολοκληρώθηκε", `${t} — ${fmt(selected.reduce((s,x)=>s+x.price,0))}`);
+  doPaymentOnIds(t, ids, method, false);
+  toast("✅ Πληρωμή", `${t} — ${fmt(selected.reduce((s,x)=>s+x.price,0))}`);
   renderAll();
 }
 
