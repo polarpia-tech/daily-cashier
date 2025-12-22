@@ -1,4 +1,4 @@
-const CACHE = "daily-cashier-cache-v6";
+const CACHE = "simple-cashier-cache-v7";
 const ASSETS = [
   "./",
   "./index.html",
