@@ -18,21 +18,20 @@
       --warn:#ffb020;
       --danger:#ff5b6e;
 
-      --r:18px;
       --tap:44px;
     }
     *{box-sizing:border-box;}
     html,body{height:100%;}
     body{
       margin:0;
-      background: var(--bg);
+      background:var(--bg);
       color:var(--text);
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
       -webkit-font-smoothing:antialiased;
       overflow-x:hidden;
       position:relative;
     }
-    /* ✅ Ενιαίος background (σταθερός) */
+    /* ενιαίος background */
     body::before{
       content:"";
       position:fixed;
@@ -49,8 +48,8 @@
     .wrap{max-width:980px;margin:0 auto;padding:14px 14px 130px;}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .between{justify-content:space-between;}
-    .title{font-size:26px;font-weight:900; line-height:1.15;}
-    .sub{color:var(--muted);font-size:13px;margin-top:4px; line-height:1.25;}
+    .title{font-size:26px;font-weight:900;line-height:1.15;}
+    .sub{color:var(--muted);font-size:13px;margin-top:4px;line-height:1.25;}
 
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
@@ -69,7 +68,6 @@
     .pill{
       height:var(--tap);
       border-radius:999px;
-      /* ✅ περισσότερος “αέρας” */
       padding:0 16px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
@@ -107,7 +105,6 @@
       justify-content:center;align-items:center;
       gap:6px;
       font-weight:900;
-      /* ✅ padding για να μην ακουμπάνε */
       padding:8px 12px;
     }
     .tBtn .amt{font-size:13px;color:var(--muted);font-weight:800;}
@@ -131,15 +128,14 @@
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
       border-radius:16px;
-      /* ✅ λίγο παραπάνω padding */
       padding:12px 12px;
       display:flex;
       justify-content:space-between;
       gap:10px;
       align-items:center;
     }
-    .line .n{font-weight:900; line-height:1.2;}
-    .line .m{color:var(--muted);font-size:12.5px;margin-top:6px; line-height:1.25;}
+    .line .n{font-weight:900;line-height:1.2;}
+    .line .m{color:var(--muted);font-size:12.5px;margin-top:6px;line-height:1.25;}
     .line .r{display:flex;align-items:center;gap:10px;}
     .x{
       width:40px;height:40px;
@@ -151,13 +147,18 @@
       font-weight:900;
     }
 
-    /* Products grid (fast tap) */
+    /* ✅ σταθερό ύψος για ανοιχτά items ώστε τα προϊόντα να μην “σπρώχνονται” */
+    #ticketLines{
+      max-height:220px;   /* άλλαξέ το αν θέλεις λίγο πιο μεγάλο/μικρό */
+      overflow:auto;
+      padding-right:2px;
+    }
+
     .prodGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
     @media(min-width:520px){ .prodGrid{grid-template-columns:repeat(3,1fr);} }
     .pBtn{
       height:68px;
       border-radius:18px;
-      /* ✅ padding για να μην ακουμπάνε */
       padding:10px 12px;
       display:flex;
       flex-direction:column;
@@ -171,7 +172,6 @@
     .pBtn .price{color:var(--muted);font-size:13px;font-weight:800;}
     .pBtn:active{transform:scale(.99);}
 
-    /* Bottom tabs inside Ticket screen */
     .ticketBottom{
       position:fixed; left:0; right:0; bottom:0;
       padding:10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -190,7 +190,6 @@
       font-weight:900;
       font-size:13px;
       display:flex;align-items:center;justify-content:center;
-      /* ✅ padding */
       padding:0 10px;
       text-align:center;
       line-height:1.1;
@@ -200,7 +199,6 @@
       box-shadow:0 0 0 3px rgba(58,162,255,.12) inset;
     }
 
-    /* Modal */
     .overlay{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -211,7 +209,7 @@
     }
     .overlay.show{display:flex; align-items:flex-end; justify-content:center;}
     .sheet{
-      width:min(720px, 100%);
+      width:min(780px, 100%);
       border-radius:22px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(15,20,29,.92);
@@ -228,13 +226,12 @@
     }
     .payLine input{width:22px;height:22px;accent-color:var(--accent);}
     .payLine .left{display:flex;align-items:center;gap:10px;}
-    .payLine .t{font-weight:900; line-height:1.15;}
-    .payLine .s{color:var(--muted);font-size:13px;margin-top:4px; line-height:1.2;}
+    .payLine .t{font-weight:900;line-height:1.15;}
+    .payLine .s{color:var(--muted);font-size:13px;margin-top:4px;line-height:1.2;}
     .payLine .right{font-weight:900;}
 
     .hr{height:1px;background:var(--line);margin:12px 0;}
 
-    /* footer global */
     .bottomGlobal{
       position:fixed; left:0; right:0; bottom:0;
       padding:10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -247,7 +244,19 @@
       max-width:980px;margin:0 auto;
       display:grid;grid-template-columns:1fr 1fr;gap:10px;
     }
-    .note{max-width:980px;margin:8px auto 0;color:var(--muted);font-size:12.5px; line-height:1.2;}
+    .note{max-width:980px;margin:8px auto 0;color:var(--muted);font-size:12.5px;line-height:1.2;}
+
+    .tinyTable{width:100%; border-collapse:separate; border-spacing:0 8px;}
+    .tinyTable td{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      padding:10px 10px;
+      border-radius:14px;
+      vertical-align:top;
+      font-size:13px;
+      line-height:1.25;
+    }
+    .muted{color:var(--muted);}
   </style>
 </head>
 
@@ -255,15 +264,14 @@
   <div class="wrap">
     <div class="row between">
       <div>
-        <!-- ✅ Όνομα μαγαζιού -->
-        <div class="title" id="shopName">Το Μαγαζί</div>
+        <div class="title" id="shopName">—</div>
         <div class="sub" id="todayText">Σήμερα: —</div>
       </div>
       <button class="btnIcon" id="btnSettings" title="Ρυθμίσεις">⚙</button>
     </div>
 
     <div class="card" style="margin-top:12px;">
-      <!-- VIEW: TABLES -->
+      <!-- TABLES -->
       <div id="viewTables" class="view show">
         <div class="row between">
           <select id="userSelect" class="pill" style="flex:1; min-width:180px;"></select>
@@ -272,28 +280,29 @@
 
         <div class="hr"></div>
 
-        <!-- ✅ Σύνοψη ημέρας -->
+        <!-- Κεντρικό μενού “καθαρό” (μόνο totals) -->
         <div class="card2">
-          <div style="font-weight:900;">Σύνοψη ημέρας</div>
-          <div class="sub" id="daySummary">—</div>
-          <div style="height:8px;"></div>
-          <div class="pill small" id="sumMini">Μετρητά: 0,00 € • Κάρτα: 0,00 € • Κερασμένα: 0,00 €</div>
+          <div class="row between">
+            <div>
+              <div style="font-weight:900;">Σήμερα</div>
+              <div class="sub" id="miniSummary">—</div>
+            </div>
+            <div class="pill small" id="sumMini">Μετρητά: 0,00 € • Κάρτα: 0,00 € • Κερασμένα: 0,00 €</div>
+          </div>
         </div>
 
-        <div style="height:10px;"></div>
+        <div style="height:12px;"></div>
 
-        <div class="row between">
-          <div>
-            <div style="font-weight:900;">Τραπέζια</div>
-            <div class="sub">Πάτα τραπέζι για να ανοίξεις ticket.</div>
-          </div>
+        <div>
+          <div style="font-weight:900;">Τραπέζια</div>
+          <div class="sub">Πάτα τραπέζι για να ανοίξεις ticket.</div>
         </div>
 
         <div style="height:10px;"></div>
         <div id="tableGrid" class="gridTables"></div>
       </div>
 
-      <!-- VIEW: TICKETS LIST -->
+      <!-- TICKETS LIST -->
       <div id="viewTickets" class="view">
         <div class="row between">
           <button class="pill small" id="btnBackTables1">← Πίσω</button>
@@ -304,7 +313,7 @@
         <div class="sub" id="ticketsEmpty" style="display:none;margin-top:10px;">— Δεν υπάρχουν ανοιχτά tickets.</div>
       </div>
 
-      <!-- VIEW: TICKET -->
+      <!-- TICKET -->
       <div id="viewTicket" class="view">
         <div class="ticketHeader">
           <div class="row between">
@@ -313,23 +322,23 @@
               <button class="pill warn small" id="btnPay">Πληρωμή</button>
             </div>
           </div>
-          <div class="ticketHeader line2" id="ticketInfo" style="background:transparent;border:0;backdrop-filter:none;padding:0;">
-            Τραπέζι: — • Υπόλοιπο: 0,00 €
-          </div>
+          <div class="line2" id="ticketInfo">Τραπέζι: — • Υπόλοιπο: 0,00 €</div>
         </div>
 
         <div class="card2" style="margin-top:12px;">
-          <div style="font-weight:900;">Ανοιχτά items</div>
-          <div class="sub">Πάτα ✕ για ακύρωση γραμμής.</div>
+          <div class="row between">
+            <div>
+              <div style="font-weight:900;">Ανοιχτά items</div>
+              <div class="sub">Scroll εδώ (όχι στην οθόνη) ώστε τα προϊόντα να μένουν ορατά.</div>
+            </div>
+            <button class="pill small" id="btnOpenSearch">Αναζήτηση</button>
+          </div>
           <div style="height:10px;"></div>
           <div id="ticketLines" class="lines"></div>
         </div>
 
         <div class="card2" style="margin-top:12px;">
-          <div class="row between">
-            <div style="font-weight:900;">Γρήγορα προϊόντα</div>
-            <button class="pill small" id="btnOpenSearch">Αναζήτηση</button>
-          </div>
+          <div style="font-weight:900;">Γρήγορα προϊόντα</div>
           <div class="sub" id="prodHint">Διάλεξε tab κάτω (Favorites/Καφέ/Σνακ/Ποτά).</div>
           <div style="height:10px;"></div>
           <div id="prodGrid" class="prodGrid"></div>
@@ -350,7 +359,7 @@
     </div>
   </div>
 
-  <!-- Global bottom bar (Tables/Tickets views) -->
+  <!-- Global bottom bar -->
   <div class="bottomGlobal" id="bottomGlobal">
     <div class="inner">
       <button class="pill block" id="btnCSV">Εξαγωγή CSV</button>
@@ -359,11 +368,11 @@
     <div class="note">Chrome ⋮ → <b>Προσθήκη στην αρχική οθόνη</b>.</div>
   </div>
 
-  <!-- Settings -->
+  <!-- Settings (εδώ πάει η πλήρης σύνοψη ημέρας) -->
   <div class="overlay" id="overlay">
     <div class="sheet">
       <div class="sheetHead">
-        <div style="font-weight:900; font-size:18px;">Ρυθμίσεις</div>
+        <div style="font-weight:900; font-size:18px;">Ρυθμίσεις & Σύνοψη</div>
         <button class="pill small" id="btnCloseSheet">Κλείσιμο</button>
       </div>
 
@@ -381,17 +390,6 @@
 
         <div class="hr"></div>
 
-        <!-- ✅ Όνομα μαγαζιού -->
-        <div style="font-weight:900;">Όνομα μαγαζιού</div>
-        <div class="sub">Αλλάζει μόνο την εμφάνιση.</div>
-        <div style="height:8px;"></div>
-        <input id="shopInput" class="pill block" placeholder="π.χ. Cafe Athens" style="text-align:left;justify-content:flex-start;"/>
-
-        <div style="height:10px;"></div>
-        <button class="pill primary block" id="btnSaveShop">Αποθήκευση ονόματος</button>
-
-        <div class="hr"></div>
-
         <div class="row" style="gap:8px;flex-wrap:wrap;">
           <button class="pill small" id="btnAddUser">+ Χρήστης</button>
           <button class="pill small" id="btnRenameUser">✎ Μετονομασία</button>
@@ -401,8 +399,22 @@
       </div>
 
       <div class="card2" style="margin-top:12px;">
-        <div style="font-weight:900;">Ασφάλεια</div>
-        <div class="sub">Confirm σε “Κερασμένα” και σε μεγάλες πληρωμές.</div>
+        <div style="font-weight:900;">Σύνοψη ημέρας</div>
+        <div class="sub" id="daySummaryFull">—</div>
+
+        <div class="hr"></div>
+
+        <div style="font-weight:900;">Top 5 προϊόντα σήμερα</div>
+        <div class="sub muted">Με βάση τα items που καταχωρήθηκαν σήμερα.</div>
+        <div style="height:8px;"></div>
+        <table class="tinyTable" id="topProductsTable"></table>
+
+        <div class="hr"></div>
+
+        <div style="font-weight:900;">Σύνοψη ανά χρήστη</div>
+        <div class="sub muted">Με βάση τις πληρωμές (cash/card/free).</div>
+        <div style="height:8px;"></div>
+        <table class="tinyTable" id="userSummaryTable"></table>
       </div>
     </div>
   </div>
@@ -454,12 +466,14 @@
   </div>
 
 <script>
+/* ============ LOCKED SHOP NAME ============ */
+const SHOP_NAME = "Το Μαγαζί"; // <-- άλλαξε εδώ ΜΟΝΟ εσύ στον κώδικα. Από UI δεν αλλάζει.
+
 /* ============ CONFIG ============ */
-const LS_KEY = "mini_cashier_db_v4"; // ίδια λογική με πριν
+const LS_KEY = "mini_cashier_db_v4";
 const LS_USERS = "mini_cashier_users_v2";
 const LS_ACTIVE_USER = "mini_cashier_active_user_v2";
 const LS_FAVS = "mini_cashier_favs_v1";
-const LS_SHOP = "mini_cashier_shop_v1";
 
 const TODAY = new Date().toISOString().slice(0,10);
 const CONFIRM_MIN_TOTAL = 15;
@@ -568,14 +582,6 @@ async function sha256Hex(str){
 }
 function isValidPin(pin){ return /^\d{4}$/.test(pin); }
 
-/* shop name */
-function loadShopName(){
-  return localStorage.getItem(LS_SHOP) || "Το Μαγαζί";
-}
-function setShopName(name){
-  localStorage.setItem(LS_SHOP, name);
-}
-
 /* users */
 function ensureUsers(){
   let users = load(LS_USERS, null);
@@ -669,8 +675,63 @@ function getFavoritesList(){
   return favProducts.slice(0,FAV_COUNT);
 }
 
+/* ====== NEW: Day analytics ====== */
+function calcDayStats(db){
+  const day = db.days[TODAY];
+
+  let openTables=0, openItems=0, paidItems=0;
+  let totalItems=0;
+
+  const prodCounts = {}; // name -> count
+  for(const t of tables){
+    const lines = getLines(db,t);
+    const open = unpaidLines(lines).length;
+    const paid = paidLines(lines).length;
+    if(open>0) openTables++;
+    openItems += open;
+    paidItems += paid;
+    totalItems += lines.length;
+
+    for(const l of lines){
+      prodCounts[l.name] = (prodCounts[l.name]||0)+1;
+    }
+  }
+
+  const paymentsCount = day.payments.length;
+  const paidTotal = day.payments.reduce((s,p)=>s+p.total,0);
+  const sums = sumByMethod(day.payments);
+
+  return { openTables, openItems, paidItems, totalItems, paymentsCount, paidTotal, sums, prodCounts };
+}
+
+function getTopProducts(prodCounts, limit=5){
+  return Object.entries(prodCounts)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,limit)
+    .map(([name,count])=>({name,count}));
+}
+
+function calcUserPaymentSummary(db){
+  const day = db.days[TODAY];
+  const users = ensureUsers();
+  const map = {}; // userName -> {cash,card,free,count}
+  for(const u of users){
+    map[u.name] = { cash:0, card:0, free:0, count:0 };
+  }
+  for(const p of day.payments){
+    if(!map[p.user]) map[p.user] = { cash:0, card:0, free:0, count:0 };
+    map[p.user][p.method] += p.total;
+    map[p.user].count += 1;
+  }
+  // sort by total desc
+  const arr = Object.entries(map).map(([name,v])=>({
+    name, ...v, total: v.cash+v.card+v.free
+  })).sort((a,b)=>b.total-a.total);
+  return arr;
+}
+
 /* app state */
-let view = "tables"; // tables | tickets | ticket
+let view = "tables";
 let activeTab = "fav";
 const payState = { ids:new Set() };
 
@@ -679,7 +740,6 @@ function showView(v){
   $("viewTables").classList.toggle("show", v==="tables");
   $("viewTickets").classList.toggle("show", v==="tickets");
   $("viewTicket").classList.toggle("show", v==="ticket");
-
   $("ticketBottom").style.display = (v==="ticket") ? "block" : "none";
   $("bottomGlobal").style.display = (v==="ticket") ? "none" : "block";
 }
@@ -687,40 +747,13 @@ function showView(v){
 /* render */
 function renderTop(){
   $("todayText").textContent = "Σήμερα: " + TODAY.split("-").reverse().join("/");
-  $("shopName").textContent = loadShopName();
-  $("shopInput").value = loadShopName();
+  $("shopName").textContent = SHOP_NAME;
 
   const users = ensureUsers();
   $("userSelect").innerHTML = users.map(u=>`<option value="${u.id}">${u.name}</option>`).join("");
   $("userSelect").value = getActiveUserId();
   $("dayLabel").textContent = TODAY.split("-").reverse().join("/");
   $("userLabel").textContent = getActiveUser().name;
-}
-
-function calcDayStats(db){
-  const day = db.days[TODAY];
-  let openTables=0, openItems=0, paidItems=0;
-  for(const t of tables){
-    const lines = getLines(db,t);
-    const open = unpaidLines(lines).length;
-    const paid = paidLines(lines).length;
-    if(open>0) openTables++;
-    openItems += open;
-    paidItems += paid;
-  }
-  const paymentsCount = day.payments.length;
-  const paidTotal = day.payments.reduce((s,p)=>s+p.total,0);
-  return { openTables, openItems, paidItems, paymentsCount, paidTotal };
-}
-
-function renderSums(){
-  const db = ensureDB();
-  const sums = sumByMethod(db.days[TODAY].payments);
-  $("sumMini").textContent = `Μετρητά: ${fmt(sums.cash)} • Κάρτα: ${fmt(sums.card)} • Κερασμένα: ${fmt(sums.free)}`;
-
-  const st = calcDayStats(db);
-  $("daySummary").textContent =
-    `Ανοιχτά τραπέζια: ${st.openTables} • Ανοιχτά items: ${st.openItems} • Πληρωμένα items: ${st.paidItems} • Πληρωμές: ${st.paymentsCount} • Σύνολο εισπράξεων: ${fmt(st.paidTotal)}`;
 }
 
 function renderTables(){
@@ -743,6 +776,50 @@ function renderTables(){
   }
 }
 
+function renderMiniSummary(){
+  const db = ensureDB();
+  const st = calcDayStats(db);
+  $("miniSummary").textContent =
+    `Ανοιχτά τραπέζια: ${st.openTables} • Ανοιχτά items: ${st.openItems} • Πληρωμές: ${st.paymentsCount} • Σύνολο: ${fmt(st.paidTotal)}`;
+  $("sumMini").textContent =
+    `Μετρητά: ${fmt(st.sums.cash)} • Κάρτα: ${fmt(st.sums.card)} • Κερασμένα: ${fmt(st.sums.free)}`;
+
+  // Full summary in settings
+  $("daySummaryFull").textContent =
+    `Ανοιχτά τραπέζια: ${st.openTables} • Ανοιχτά items: ${st.openItems} • Πληρωμένα items: ${st.paidItems} • Σύνολο items: ${st.totalItems} • Πληρωμές: ${st.paymentsCount} • Σύνολο εισπράξεων: ${fmt(st.paidTotal)}`
+    + `\n(Μετρητά: ${fmt(st.sums.cash)} • Κάρτα: ${fmt(st.sums.card)} • Κερασμένα: ${fmt(st.sums.free)})`;
+
+  // Top products
+  const top = getTopProducts(st.prodCounts, 5);
+  const t = $("topProductsTable");
+  t.innerHTML = "";
+  if(top.length===0){
+    t.innerHTML = `<tr><td class="muted">— Δεν υπάρχουν καταχωρήσεις ακόμα σήμερα.</td></tr>`;
+  }else{
+    for(const it of top){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td><b>${it.name}</b><div class="muted">Τεμάχια: ${it.count}</div></td>`;
+      t.appendChild(tr);
+    }
+  }
+
+  // Per user summary
+  const us = calcUserPaymentSummary(db);
+  const ut = $("userSummaryTable");
+  ut.innerHTML = "";
+  for(const u of us){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <b>${u.name}</b>
+        <div class="muted">Πληρωμές: ${u.count}</div>
+        <div class="muted">Μετρητά: ${fmt(u.cash)} • Κάρτα: ${fmt(u.card)} • Κερασμένα: ${fmt(u.free)}</div>
+        <div class="muted">Σύνολο: ${fmt(u.total)}</div>
+      </td>`;
+    ut.appendChild(tr);
+  }
+}
+
 function renderTicketsList(){
   const db = ensureDB();
   const list = $("ticketsList");
@@ -760,9 +837,7 @@ function renderTicketsList(){
         <div class="n">${it.t}</div>
         <div class="m">Πάτα για πληρωμή / split</div>
       </div>
-      <div class="r">
-        <div style="font-weight:900;">${fmt(it.open)}</div>
-      </div>
+      <div class="r"><div style="font-weight:900;">${fmt(it.open)}</div></div>
     `;
     div.onclick = ()=>{
       const db2 = ensureDB();
@@ -997,7 +1072,7 @@ async function doPayment(method){
   db.days[TODAY].undone = [];
   save(LS_KEY, db);
 
-  /* ✅ αλλαγή #1: μετά την πληρωμή -> πίσω στα τραπέζια */
+  // μετά την πληρωμή -> πίσω στα τραπέζια
   showOverlay("payOverlay", false);
   showView("tables");
   renderAll();
@@ -1039,7 +1114,6 @@ async function wipeAll(){
   localStorage.removeItem(LS_USERS);
   localStorage.removeItem(LS_ACTIVE_USER);
   localStorage.removeItem(LS_FAVS);
-  localStorage.removeItem(LS_SHOP);
   location.reload();
 }
 
@@ -1108,7 +1182,7 @@ async function changeUserWithPin(newId){
 /* main render */
 function renderAll(){
   renderTop();
-  renderSums();
+  renderMiniSummary();
   renderTables();
   renderTicketsList();
   renderTicketHeader();
@@ -1143,14 +1217,6 @@ $("btnSetPin").onclick = setPin;
 $("btnDeleteUser").onclick = deleteUser;
 
 $("userSelect").onchange = (e)=> changeUserWithPin(e.target.value);
-
-/* save shop name */
-$("btnSaveShop").onclick = ()=>{
-  const name = $("shopInput").value.trim();
-  setShopName(name || "Το Μαγαζί");
-  renderTop();
-  alert("Αποθηκεύτηκε.");
-};
 
 /* ticket bottom tabs */
 document.querySelectorAll(".tabBtn").forEach(b=>{
