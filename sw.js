@@ -1,9 +1,10 @@
-const CACHE = "simple-cashier-cache-v999";
+const CACHE = "mini-cashier-cache-v1";
+
 const ASSETS = [
   "./",
   "./index.html",
+  "./app.js",
   "./manifest.webmanifest",
-  "./sw.js",
 ];
 
 self.addEventListener("install", (event) => {
@@ -24,25 +25,25 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-  const url = new URL(req.url);
 
-  if (req.mode === "navigate") {
+  // Network-first για index.html (ώστε να βλέπεις αλλαγές πιο γρήγορα)
+  if (req.mode === "navigate" || (req.url && req.url.endsWith("/index.html"))) {
     event.respondWith(
-      caches.match("./index.html").then((cached) => cached || fetch("./index.html"))
+      fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put("./index.html", copy));
+        return res;
+      }).catch(() => caches.match("./index.html"))
     );
     return;
   }
 
-  if (url.origin === location.origin) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req).then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
-          return res;
-        });
-      })
-    );
-  }
+  // Cache-first για assets
+  event.respondWith(
+    caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(req, copy));
+      return res;
+    }).catch(() => cached))
+  );
 });
