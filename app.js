@@ -21,7 +21,7 @@
   const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
   const EPS = 0.005;
 
-  const LS_KEY = "mini-cashier-db-v4";
+  const LS_KEY = "mini-cashier-db-v5";
 
   const defaultDB = () => ({
     storeName: "Το Μαγαζί Μου",
@@ -48,6 +48,9 @@
       if (!Array.isArray(db.tables) || db.tables.length === 0) db.tables = defaultDB().tables;
       if (!db.days) db.days = {};
       if (!("undo" in db)) db.undo = null;
+      // per-user quick qty selection
+      if (!db.ui) db.ui = {};
+      if (!db.ui.payQtyByItem) db.ui.payQtyByItem = {};
       return db;
     } catch {
       return defaultDB();
@@ -139,7 +142,7 @@
     return day.tickets[key];
   };
 
-  // ✅ ticket κρατά μόνο απλήρωτα (qty = unpaid)
+  // ticket κρατά μόνο απλήρωτα
   const ticketUnpaidTotal = (ticket) => {
     let unpaid = 0;
     for (const it of ticket.items) unpaid += it.qty * it.price;
@@ -159,26 +162,29 @@
     });
   };
 
-  // ✅ Πληρωμή 1 τεμ: μειώνει qty, αν 0 → σβήνει γραμμή, αν άδειο ticket → σβήνει ticket
-  const payOneUnit = (db, ticket, itemId, method) => {
+  const payNUnits = (db, ticket, itemId, method, n) => {
     const day = getDay(db);
     const it = ticket.items.find(x => x.id === itemId);
-    if (!it || it.qty <= 0) return;
+    if (!it) return false;
+    const nn = Math.max(1, Math.min(Number(n || 1), it.qty));
+    if (nn <= 0) return false;
 
     db.undo = {
-      type:"payOne",
+      type:"payN",
       table: ticket.table,
       userId: ticket.userId,
       itemSnapshot: JSON.parse(JSON.stringify(it)),
       method,
+      n: nn,
       when: nowISO()
     };
 
-    if (method === "cash") day.stats.cash += it.price;
-    if (method === "card") day.stats.card += it.price;
-    if (method === "comp") day.stats.comp += it.price;
+    const amount = nn * it.price;
+    if (method === "cash") day.stats.cash += amount;
+    if (method === "card") day.stats.card += amount;
+    if (method === "comp") day.stats.comp += amount;
 
-    it.qty -= 1;
+    it.qty -= nn;
     if (it.qty <= 0) ticket.items = ticket.items.filter(x => x.id !== itemId);
 
     if (ticket.items.length === 0) {
@@ -186,9 +192,9 @@
     }
 
     saveDB(db);
+    return true;
   };
 
-  // ✅ Πληρωμή ΟΛΟΥ του τραπεζιού με 1 κίνηση
   const payWholeTicket = (db, tableId, userId, method) => {
     const day = getDay(db);
     const key = ticketKey(tableId, userId);
@@ -196,25 +202,14 @@
     if (!t || !t.items || t.items.length === 0) return false;
 
     const snapshot = JSON.parse(JSON.stringify(t));
-    let delta = 0;
-
     for (const it of t.items) {
       const lineTotal = it.qty * it.price;
-      delta += lineTotal;
-
       if (method === "cash") day.stats.cash += lineTotal;
       if (method === "card") day.stats.card += lineTotal;
       if (method === "comp") day.stats.comp += lineTotal;
     }
 
-    db.undo = {
-      type: "payAll",
-      table: tableId,
-      userId,
-      method,
-      ticketSnapshot: snapshot,
-      when: nowISO()
-    };
+    db.undo = { type: "payAll", table: tableId, userId, method, ticketSnapshot: snapshot, when: nowISO() };
 
     delete day.tickets[key];
     saveDB(db);
@@ -226,7 +221,7 @@
     if (!u) return false;
     const day = getDay(db);
 
-    if (u.type === "payOne") {
+    if (u.type === "payN") {
       const key = ticketKey(u.table, u.userId);
       let t = day.tickets[key];
       if (!t) {
@@ -234,7 +229,6 @@
         day.tickets[key] = t;
       }
 
-      // restore item (add back qty+1)
       const snap = u.itemSnapshot;
       let it = t.items.find(x => x.id === snap.id);
       if (!it) {
@@ -242,11 +236,12 @@
         it.qty = 0;
         t.items.push(it);
       }
-      it.qty += 1;
+      it.qty += Number(u.n || 1);
 
-      if (u.method === "cash") day.stats.cash -= snap.price;
-      if (u.method === "card") day.stats.card -= snap.price;
-      if (u.method === "comp") day.stats.comp -= snap.price;
+      const amount = Number(u.n || 1) * snap.price;
+      if (u.method === "cash") day.stats.cash -= amount;
+      if (u.method === "card") day.stats.card -= amount;
+      if (u.method === "comp") day.stats.comp -= amount;
 
       db.undo = null;
       saveDB(db);
@@ -257,10 +252,8 @@
       const key = ticketKey(u.table, u.userId);
       const snapTicket = u.ticketSnapshot;
 
-      // restore ticket
       day.tickets[key] = JSON.parse(JSON.stringify(snapTicket));
 
-      // revert stats
       for (const it of snapTicket.items) {
         const lineTotal = it.qty * it.price;
         if (u.method === "cash") day.stats.cash -= lineTotal;
@@ -448,6 +441,19 @@
     });
   };
 
+  const getPayQty = (itemId, maxQty) => {
+    const key = `${db.currentUserId}::${itemId}`;
+    const v = Number(db.ui?.payQtyByItem?.[key] || 1);
+    return Math.max(1, Math.min(v, maxQty));
+  };
+  const setPayQty = (itemId, v, maxQty) => {
+    if (!db.ui) db.ui = {};
+    if (!db.ui.payQtyByItem) db.ui.payQtyByItem = {};
+    const key = `${db.currentUserId}::${itemId}`;
+    db.ui.payQtyByItem[key] = Math.max(1, Math.min(Number(v || 1), maxQty));
+    saveDB(db);
+  };
+
   const renderOpenItems = () => {
     const list = $("openItemsList");
     list.innerHTML = "";
@@ -467,7 +473,7 @@
       return;
     }
 
-    // ✅ Πληρωμή ΟΛΟΥ τραπεζιού
+    // Πληρωμή ΟΛΟΥ τραπεζιού
     const payAllRow = document.createElement("div");
     payAllRow.className = "row";
     payAllRow.innerHTML = `
@@ -497,18 +503,25 @@
     });
     list.appendChild(payAllRow);
 
-    // ✅ items
+    // items
     t.items.forEach(it => {
+      const payQty = getPayQty(it.id, it.qty);
+
       const row = document.createElement("div");
       row.className = "row";
       row.innerHTML = `
         <div class="main">
           <div class="title">${escapeHtml(it.name)}</div>
           <div class="sub">${escapeHtml(it.cat)} · ${fmt(it.price)} · Υπόλοιπο: ${it.qty}</div>
-          <div class="paychips">
-            <span class="chip ok" data-pay="cash">Μετ +1</span>
-            <span class="chip accent" data-pay="card">Κάρ +1</span>
-            <span class="chip warn" data-pay="comp">Κερ +1</span>
+
+          <div class="paychips" style="margin-top:10px; gap:8px; flex-wrap:wrap">
+            <span class="chip ${payQty===1?"on":""}" data-q="1">1</span>
+            <span class="chip ${payQty===2?"on":""}" data-q="2">2</span>
+            <span class="chip ${payQty===3?"on":""}" data-q="3">3</span>
+
+            <span class="chip ok" data-pay="cash">Μετ (${payQty})</span>
+            <span class="chip accent" data-pay="card">Κάρ (${payQty})</span>
+            <span class="chip warn" data-pay="comp">Κερ (${payQty})</span>
           </div>
         </div>
 
@@ -519,6 +532,16 @@
         </div>
       `;
 
+      // επιλογή ποσότητας πληρωμής
+      row.querySelectorAll("[data-q]").forEach(qb => {
+        qb.addEventListener("click", () => {
+          const q = Number(qb.getAttribute("data-q"));
+          setPayQty(it.id, q, it.qty);
+          renderOpenItems();
+        });
+      });
+
+      // + / - ανοιχτής ποσότητας
       row.querySelector('[data-plus]')?.addEventListener("click", () => {
         it.qty += 1;
         saveDB(db);
@@ -541,20 +564,25 @@
         }
         it.qty -= 1;
         saveDB(db);
+        // clamp payQty
+        setPayQty(it.id, Math.min(getPayQty(it.id, 999), it.qty), it.qty);
         renderOpenItems();
       });
 
+      // πληρωμή N τεμαχίων
       row.querySelectorAll("[data-pay]").forEach(ch => {
         ch.addEventListener("click", () => {
           const method = ch.getAttribute("data-pay");
           const methodName = method==="cash"?"Μετρητά":method==="card"?"Κάρτα":"Κερασμένο";
-          confirmBox("Επιβεβαίωση πληρωμής", `Να πληρωθεί 1 τεμ. “${it.name}” ως ${methodName};`, () => {
+          const n = getPayQty(it.id, it.qty);
+
+          confirmBox("Επιβεβαίωση πληρωμής", `Να πληρωθούν ${n} τεμ. “${it.name}” ως ${methodName};`, () => {
             const key = ticketKey(activeTable, db.currentUserId);
             const day = getDay(db);
             const ticket = day.tickets[key];
             if (!ticket) return;
 
-            payOneUnit(db, ticket, it.id, method);
+            payNUnits(db, ticket, it.id, method, n);
 
             const t2 = getTicket(db, activeTable, db.currentUserId);
             const unpaid2 = t2 ? ticketUnpaidTotal(t2) : 0;
@@ -654,19 +682,6 @@
     const day = getDay(db);
     const list = $("summaryList");
     list.innerHTML = "";
-
-    db.users.forEach(u => {
-      const row = document.createElement("div");
-      row.className = "row";
-      row.innerHTML = `
-        <div class="main">
-          <div class="title">${escapeHtml(u.name)}</div>
-          <div class="sub">—</div>
-        </div>
-        <div class="price"></div>
-      `;
-      list.appendChild(row);
-    });
 
     const totalRow = document.createElement("div");
     totalRow.className = "row";
