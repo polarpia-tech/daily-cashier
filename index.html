@@ -12,1492 +12,955 @@
       --text:#e9eef7;
       --muted:#9fb0c7;
       --line:rgba(255,255,255,.10);
+      --line2:rgba(255,255,255,.06);
       --accent:#3aa2ff;
       --ok:#24d18d;
       --warn:#ffb020;
       --danger:#ff5b6e;
       --tap:44px;
-      --r:20px;
+      --r:14px;
     }
-    html, body{ width:100%; max-width:100%; overflow-x:hidden; height:100%; }
-    *{ box-sizing:border-box; min-width:0; }
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      -webkit-font-smoothing:antialiased;
-      overflow-x:hidden;
-      position:relative;
-      min-height:100%;
-    }
-    body::before{
-      content:"";
-      position:fixed; inset:0; z-index:-1;
-      background:
-        radial-gradient(900px 560px at 50% -10%, rgba(58,162,255,.18), transparent 60%),
-        radial-gradient(700px 460px at 18% 16%, rgba(36,209,141,.10), transparent 62%),
-        radial-gradient(780px 520px at 82% 26%, rgba(255,176,32,.06), transparent 62%);
-      pointer-events:none;
-    }
+    html,body{height:100%; width:100%; margin:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; overflow-x:hidden;}
+    *{box-sizing:border-box; min-width:0;}
+    button,input,select{font:inherit; color:inherit;}
+    button{touch-action:manipulation;}
+    .app{min-height:100%; display:flex; flex-direction:column;}
 
-    button,input,select{ font:inherit; color:inherit; max-width:100%; }
-    button{ touch-action:manipulation; }
-
-    /* ✅ FULL WIDTH: no max-width on mobile */
-    .wrap{
-      width:100%;
-      max-width:100%;
-      margin:0;
-      padding:10px 10px 120px;
-      overflow-x:hidden;
+    /* Top bar */
+    .topbar{
+      position:sticky; top:0; z-index:1000;
+      padding:10px 10px 8px;
+      background:rgba(11,15,20,.92);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line2);
     }
-    /* ✅ On larger screens, keep it pleasant */
-    @media(min-width:900px){
-      .wrap{ max-width:900px; margin:0 auto; padding:14px 14px 120px; }
-    }
-
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .between{ justify-content:space-between; }
-    .title{ font-size:22px; font-weight:900; line-height:1.1; }
-    .sub{ color:var(--muted); font-size:13px; line-height:1.25; margin-top:4px; }
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      padding:12px;
-      box-shadow:0 18px 60px rgba(0,0,0,.40);
-      width:100%;
-      overflow:hidden;
-    }
-    .card2{
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:12px;
-      width:100%;
-      overflow:hidden;
-    }
-
-    .pill{
-      height:var(--tap);
-      border-radius:999px;
-      padding:0 16px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      display:inline-flex; align-items:center; justify-content:center;
-      cursor:pointer; user-select:none;
-      transition:.15s transform,.15s border-color;
-      line-height:1.15;
-      max-width:100%;
-      text-align:center;
-      white-space:nowrap;
-    }
-    .pill:hover{ transform:translateY(-1px); border-color:rgba(58,162,255,.35); }
-    .pill:active{ transform:none; }
-    .pill.primary{ border-color:rgba(58,162,255,.55); box-shadow:0 0 0 3px rgba(58,162,255,.12) inset; }
-    .pill.ok{ border-color:rgba(36,209,141,.55); box-shadow:0 0 0 3px rgba(36,209,141,.10) inset; }
-    .pill.warn{ border-color:rgba(255,176,32,.55); box-shadow:0 0 0 3px rgba(255,176,32,.10) inset; }
-    .pill.bad{ border-color:rgba(255,91,110,.65); box-shadow:0 0 0 3px rgba(255,91,110,.10) inset; }
-    .pill.small{ height:36px; padding:0 14px; font-size:14px; }
-    .pill.block{ width:100%; }
-    .btnIcon{
-      width:var(--tap); height:var(--tap);
-      border-radius:999px;
+    .toprow{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .shop{font-weight:900; font-size:18px; line-height:1.1;}
+    .sub{color:var(--muted); font-size:12.5px; line-height:1.2; margin-top:4px; white-space:pre-line;}
+    .right{display:flex; align-items:center; gap:8px;}
+    .iconbtn{
+      width:40px; height:40px; border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
       display:grid; place-items:center;
       cursor:pointer;
-      max-width:var(--tap);
     }
-
-    .view{ display:none; }
-    .view.show{ display:block; }
-
-    .bigBtn{
-      height:68px;
-      border-radius:18px;
+    .select{
+      height:40px;
+      border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
-      cursor:pointer;
+      padding:0 12px;
+      max-width:52vw;
+    }
+
+    /* Main */
+    .main{flex:1; padding:10px 10px 96px;}
+    .view{display:none;}
+    .view.show{display:block;}
+
+    /* Buttons / rows */
+    .big{
       width:100%;
+      height:56px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 14px;
+      cursor:pointer;
+      font-weight:900;
+    }
+    .big .meta{color:var(--muted); font-weight:800; font-size:13px;}
+    .row{
+      width:100%;
+      border:1px solid transparent;
+      background:transparent;
+      padding:12px 6px;
+      border-radius:12px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 14px;
-      font-weight:900;
-    }
-    .bigBtn .meta{ color:var(--muted); font-weight:800; font-size:13px; }
-
-    .list{ display:flex; flex-direction:column; gap:10px; width:100%; }
-    .listItem{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      border-radius:16px;
-      padding:12px;
-      display:flex; align-items:center; justify-content:space-between;
-      cursor:pointer;
       gap:10px;
     }
-    .listItem .n{ font-weight:900; }
-    .listItem .m{ color:var(--muted); font-size:13px; margin-top:4px; }
-
+    .row:active{background:rgba(255,255,255,.03);}
+    .row + .row{border-top:1px solid var(--line2); border-radius:0;}
+    .leftcol{display:flex; flex-direction:column; gap:4px; min-width:0;}
+    .title{font-weight:900; line-height:1.15; word-break:break-word;}
+    .mini{color:var(--muted); font-size:12.5px; line-height:1.2;}
     .badge{
       display:inline-flex; align-items:center; justify-content:center;
-      min-width:22px; height:22px; padding:0 7px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      font-size:12px; font-weight:900;
-    }
-
-    .ticketHeader{
-      position:sticky; top:0;
-      z-index:50;
-      padding:10px 0;
-      background:rgba(11,15,20,.86);
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-
-    .lines{ display:flex; flex-direction:column; gap:10px; }
-    .lines.scrollBox{
-      max-height:280px;
-      overflow:auto;
-      padding-right:2px;
-    }
-
-    /* ✅ tighter line layout (more space for name) */
-    .line{
+      padding:0 10px; height:22px; border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
-      border-radius:16px;
-      padding:10px;
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap:10px;
-      align-items:center;
-    }
-    .lineLeft .n{ font-weight:900; line-height:1.2; }
-    .lineLeft .m{ color:var(--muted); font-size:12.5px; margin-top:6px; line-height:1.25; }
-    .lineRight{
-      display:flex; gap:8px; align-items:center;
+      font-size:12px; font-weight:900;
+      flex:0 0 auto;
+      white-space:nowrap;
     }
 
-    /* ✅ smaller +/- and icons */
-    .qtyBox{
+    /* Controls */
+    .ctrls{display:flex; align-items:center; gap:8px; flex:0 0 auto;}
+    .qty{
       display:flex; align-items:center; gap:6px;
       border:1px solid var(--line);
       border-radius:999px;
       padding:4px;
       background:rgba(255,255,255,.02);
-      flex:0 0 auto;
     }
     .qbtn{
-      width:30px; height:30px;
-      border-radius:999px;
+      width:30px; height:30px; border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
-      cursor:pointer;
       display:grid; place-items:center;
+      cursor:pointer;
       font-weight:900;
       font-size:16px;
     }
-    .qval{
-      min-width:24px;
-      text-align:center;
-      font-weight:900;
-      font-size:14px;
-    }
-
-    .payIcons{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
-    .picon{
+    .qval{min-width:22px; text-align:center; font-weight:900; font-size:14px;}
+    .payicons{display:flex; align-items:center; gap:6px;}
+    .pbtn{
       width:30px; height:30px;
       border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
-      cursor:pointer;
       display:grid; place-items:center;
-      font-weight:900;
+      cursor:pointer;
       font-size:15px;
     }
-    .picon.ok{ border-color:rgba(36,209,141,.55); }
-    .picon.primary{ border-color:rgba(58,162,255,.55); }
-    .picon.warn{ border-color:rgba(255,176,32,.55); }
+    .pbtn.cash{border-color:rgba(36,209,141,.55);}
+    .pbtn.card{border-color:rgba(58,162,255,.55);}
+    .pbtn.free{border-color:rgba(255,176,32,.55);}
 
-    .quickGrid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:10px;
-      width:100%;
+    /* Tabs */
+    .tabs{
+      display:flex; gap:8px; overflow:auto; padding:6px 0 10px;
+      -webkit-overflow-scrolling: touch;
     }
-    @media(min-width:520px){ .quickGrid{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
-    .qCard{
-      height:62px;
-      border-radius:18px;
-      padding:10px;
+    .tab{
+      flex:0 0 auto;
+      height:38px;
+      border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
-      cursor:pointer;
-      display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
-      overflow:hidden;
+      padding:0 12px;
       font-weight:900;
-      text-align:left;
-      line-height:1.2;
-      position:relative;
-    }
-    .qCard .price{ color:var(--muted); font-size:13px; font-weight:800; margin-top:6px; }
-
-    .catRow{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:8px;
-      width:100%;
-    }
-    @media(min-width:520px){ .catRow{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
-    .catBtn{
-      height:46px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
       cursor:pointer;
-      font-weight:900;
       font-size:13px;
-      display:flex; align-items:center; justify-content:center;
-      padding:0 10px;
-      text-align:center;
-      line-height:1.1;
+      display:flex; align-items:center;
+      white-space:nowrap;
     }
-    .catBtn.active{
-      border-color:rgba(58,162,255,.55);
-      box-shadow:0 0 0 3px rgba(58,162,255,.12) inset;
-    }
-
-    /* ✅ products: add +/- inside tile */
-    .prodGrid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:10px;
+    .tab.active{border-color:rgba(58,162,255,.55); box-shadow:0 0 0 3px rgba(58,162,255,.12) inset;}
+    .search{
       width:100%;
-    }
-    @media(min-width:520px){ .prodGrid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
-    .pTile{
+      height:42px;
+      border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.03);
-      border-radius:18px;
-      padding:10px;
-      position:relative;
-      overflow:hidden;
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap:8px;
-      align-items:center;
-      min-height:74px;
+      padding:0 14px;
+      outline:none;
     }
-    .pName{ font-weight:900; line-height:1.2; }
-    .pPrice{ color:var(--muted); font-size:13px; font-weight:800; margin-top:6px; }
-    .pCtrls{ display:flex; flex-direction:column; gap:6px; align-items:center; }
-    .pSmall{
-      width:30px;height:30px;border-radius:999px;
-      border:1px solid var(--line); background:rgba(255,255,255,.03);
-      display:grid; place-items:center; cursor:pointer;
-      font-weight:900; font-size:16px;
-    }
-    .pQty{
-      font-weight:900; font-size:13px;
-      min-width:26px; text-align:center;
-      color:var(--text);
-      opacity:.9;
-    }
-    .pAddTap{
-      position:absolute; inset:0;
-      background:transparent;
-      border:none;
-      cursor:pointer;
-    }
-    .pAddTap:active{ background:rgba(255,255,255,.03); }
 
-    .bottom{
-      position:fixed; left:0; right:0; bottom:0;
-      width:100%;
-      max-width:100%;
+    /* Bottom bar */
+    .bottombar{
+      position:fixed; left:0; right:0; bottom:0; z-index:1200;
       padding:10px 10px calc(10px + env(safe-area-inset-bottom));
-      background:linear-gradient(180deg, transparent, rgba(11,15,20,.70) 25%, rgba(11,15,20,.94));
+      background:linear-gradient(180deg, transparent, rgba(11,15,20,.78) 22%, rgba(11,15,20,.96));
+      border-top:1px solid var(--line2);
       backdrop-filter: blur(10px);
-      border-top:1px solid rgba(255,255,255,.06);
-      z-index:900;
-      overflow:hidden;
     }
-    .bottom .inner{
-      width:100%;
+    .bwrap{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:10px;
     }
-    @media(min-width:900px){
-      .bottom .inner{ max-width:900px; margin:0 auto; }
+    .bbtn{
+      height:46px; border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      cursor:pointer;
+      font-weight:900;
+      width:100%;
+      display:flex; align-items:center; justify-content:center;
+      gap:8px;
+      white-space:nowrap;
     }
+    .bbtn.danger{border-color:rgba(255,91,110,.55);}
+    .bbtn.primary{border-color:rgba(58,162,255,.55);}
+    .bbtn.ok{border-color:rgba(36,209,141,.55);}
 
+    /* Overlay */
     .overlay{
-      position:fixed; inset:0;
+      position:fixed; inset:0; z-index:3000;
       background:rgba(0,0,0,.55);
       backdrop-filter: blur(4px);
       display:none;
-      z-index:2000;
-      padding:18px 10px;
-      overflow:hidden;
+      padding:14px 10px;
     }
-    .overlay.show{ display:flex; align-items:flex-end; justify-content:center; }
+    .overlay.show{display:flex; align-items:flex-end; justify-content:center;}
     .sheet{
       width:calc(100vw - 20px);
       max-width:900px;
-      border-radius:22px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(15,20,29,.92);
-      box-shadow:0 30px 120px rgba(0,0,0,.65);
-      padding:14px;
-      max-height:85vh;
+      max-height:86vh;
       overflow:auto;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(15,20,29,.92);
+      padding:12px;
+      box-shadow:0 30px 120px rgba(0,0,0,.65);
     }
-    .sheetHead{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding-bottom:10px; }
-    .hr{ height:1px; background:var(--line); margin:12px 0; }
-    .muted{ color:var(--muted); }
-
-    .payLine{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      padding:10px; border-radius:14px; border:1px solid var(--line);
+    .sheethead{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .sheettitle{font-weight:900; font-size:16px;}
+    .hr{height:1px; background:var(--line2); margin:10px 0;}
+    .sheetbtnrow{display:flex; gap:10px; flex-wrap:wrap;}
+    .sheetbtn{
+      height:42px; border-radius:999px;
+      border:1px solid var(--line);
       background:rgba(255,255,255,.03);
+      padding:0 14px;
       cursor:pointer;
+      font-weight:900;
     }
-    .payLine input{ width:20px; height:20px; accent-color:var(--accent); flex:0 0 auto; }
-    .payLine .left{ display:flex; align-items:center; gap:10px; min-width:0; }
-    .payLine .t{ font-weight:900; line-height:1.15; word-break:break-word; }
-    .payLine .s{ color:var(--muted); font-size:13px; margin-top:4px; line-height:1.2; }
-    .payLine .right{ font-weight:900; flex:0 0 auto; }
+    .sheetbtn.danger{border-color:rgba(255,91,110,.55);}
+    .sheetbtn.ok{border-color:rgba(36,209,141,.55);}
+    .sheetbtn.primary{border-color:rgba(58,162,255,.55);}
 
+    /* Toast */
     .toast{
       position:fixed;
       left:50%;
       transform:translateX(-50%);
-      bottom:calc(86px + env(safe-area-inset-bottom));
+      bottom:calc(82px + env(safe-area-inset-bottom));
+      z-index:5000;
       background:rgba(20,28,40,.92);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:18px;
-      padding:10px 14px;
-      box-shadow:0 18px 60px rgba(0,0,0,.45);
-      z-index:4000;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:10px 12px;
       display:none;
       max-width:calc(100vw - 20px);
     }
-    .toast.show{ display:block; }
-    .toast .t{ font-weight:900; }
-    .toast .s{ color:var(--muted); font-size:13px; margin-top:4px; line-height:1.2; }
+    .toast.show{display:block;}
+    .toast .t{font-weight:900;}
+    .toast .s{color:var(--muted); font-size:12.5px; margin-top:4px; line-height:1.2;}
 
-    .tinyTable{ width:100%; border-collapse:separate; border-spacing:0 8px; }
-    .tinyTable td{
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--line);
-      padding:10px 10px;
+    /* PIN Modal (numeric keyboard) */
+    .pinBox{
+      width:calc(100vw - 20px);
+      max-width:420px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(15,20,29,.96);
+      padding:14px;
+      box-shadow:0 30px 120px rgba(0,0,0,.65);
+    }
+    .pinTitle{font-weight:900; font-size:16px;}
+    .pinSub{color:var(--muted); font-size:12.5px; margin-top:6px; white-space:pre-line;}
+    .pinInput{
+      margin-top:12px;
+      width:100%;
+      height:52px;
       border-radius:14px;
-      vertical-align:top;
-      font-size:13px;
-      line-height:1.25;
-      overflow:hidden;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      padding:0 14px;
+      outline:none;
+      font-size:22px;
+      letter-spacing:10px;
+      text-align:center;
+    }
+
+    /* Screensaver */
+    .screensaver{
+      position:fixed; inset:0; z-index:9999;
+      display:none;
+      background:#000;
+      color:#fff;
+      padding:24px;
+    }
+    .screensaver.show{display:flex; align-items:center; justify-content:center;}
+    .ssCenter{text-align:center; max-width:92vw;}
+    .ssLogo{
+      font-weight:1000;
+      font-size:40px;
+      letter-spacing:.8px;
+      line-height:1.1;
+      word-break:break-word;
+    }
+    .ssUser{
+      margin-top:16px;
+      font-size:16px;
+      opacity:.85;
+      letter-spacing:.2px;
+    }
+    .ssHint{
+      margin-top:26px;
+      font-size:12.5px;
+      opacity:.55;
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="row between">
-      <div>
-        <div class="title" id="shopName">—</div>
-        <div class="sub" id="todayText">—</div>
+<div class="app">
+  <div class="topbar">
+    <div class="toprow">
+      <div style="min-width:0;">
+        <div class="shop" id="shopName">—</div>
+        <div class="sub" id="topSub">—</div>
       </div>
-      <div class="row" style="gap:8px;">
-        <button class="btnIcon" id="btnSummaryTop" title="Σύνοψη">📊</button>
-        <button class="btnIcon" id="btnSettings" title="Ρυθμίσεις">⚙</button>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:12px;">
-      <!-- HOME -->
-      <div id="viewHome" class="view show">
-        <div class="card2">
-          <div class="row between" style="gap:10px;">
-            <select id="userSelect" class="pill" style="flex:1; min-width:180px;"></select>
-            <button class="pill small" id="btnUndo">↩ Undo</button>
-          </div>
-          <div class="sub" id="homeStats" style="margin-top:10px;">—</div>
-        </div>
-
-        <button class="bigBtn" id="btnNewOrder" style="margin-top:12px;">
-          <span>➕ Νέα Παραγγελία</span>
-          <span class="meta">Διάλεξε τραπέζι</span>
-        </button>
-
-        <button class="bigBtn" id="btnOpenOrders" style="margin-top:12px;">
-          <span>📄 Ανοιχτές Παραγγελίες</span>
-          <span class="meta" id="openOrdersCount">0</span>
-        </button>
-
-        <button class="bigBtn" id="btnSummary2" style="margin-top:12px;">
-          <span>📊 Σύνοψη / Export</span>
-          <span class="meta">Ημέρας</span>
-        </button>
-
-        <div class="sub muted" style="margin-top:12px;">
-          Ροή: <b>Home → Ticket → Πληρωμή → Home</b>
-        </div>
-      </div>
-
-      <!-- TABLE PICKER -->
-      <div id="viewTables" class="view">
-        <div class="row between">
-          <button class="pill small" id="btnBackHome1">← Home</button>
-          <div class="row" style="gap:8px;">
-            <button class="pill small" id="btnShowAll">Όλα</button>
-            <button class="pill small primary" id="btnShowOpen">Ανοιχτά</button>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="card2">
-          <div style="font-weight:900;">Επιλογή τραπεζιού</div>
-          <div class="sub muted">Λίστα για ταχύτητα.</div>
-        </div>
-
-        <div style="height:10px;"></div>
-
-        <div class="card2">
-          <div class="row between">
-            <div>
-              <div style="font-weight:900;">Τραπέζια</div>
-              <div class="sub muted" id="tablesHint">—</div>
-            </div>
-            <button class="pill small" id="btnSearchOpen">🔎 Εύρεση</button>
-          </div>
-          <div style="height:10px;"></div>
-          <div id="tableList" class="list"></div>
-          <div class="sub" id="tablesEmpty" style="display:none;margin-top:10px;">— Δεν υπάρχουν ανοιχτά.</div>
-        </div>
-      </div>
-
-      <!-- TICKET -->
-      <div id="viewTicket" class="view">
-        <div class="ticketHeader">
-          <div class="row between">
-            <button class="pill small" id="btnBackHome2">← Home</button>
-            <div class="row" style="gap:8px;">
-              <button class="pill small" id="btnNote">✏️ Σημείωση</button>
-              <button class="pill small" id="btnSearch">🔎 Search</button>
-              <button class="pill warn small" id="btnPay">Πληρωμή</button>
-            </div>
-          </div>
-          <div class="sub" id="ticketInfo">—</div>
-        </div>
-
-        <div class="card2" style="margin-top:12px;">
-          <div class="row between">
-            <div>
-              <div style="font-weight:900;">Ανοιχτά items</div>
-              <div class="sub muted">Ομαδοποιημένα με ποσότητα (+/−) & γρήγορη πληρωμή.</div>
-            </div>
-            <div class="pill small" id="ticketTotalPill">Σύνολο: 0,00 €</div>
-          </div>
-          <div style="height:10px;"></div>
-          <div id="ticketLines" class="lines scrollBox"></div>
-        </div>
-
-        <div class="card2" style="margin-top:12px;">
-          <div class="row between">
-            <div>
-              <div style="font-weight:900;">Γρήγορα (Top 8 σήμερα)</div>
-              <div class="sub muted">Tap για +1</div>
-            </div>
-            <button class="pill small" id="btnClearQuick">Reset</button>
-          </div>
-          <div style="height:10px;"></div>
-          <div id="quickGrid" class="quickGrid"></div>
-        </div>
-
-        <div class="card2" style="margin-top:12px;">
-          <div style="font-weight:900;">Κατηγορίες</div>
-          <div class="sub muted" id="catHint">—</div>
-          <div style="height:10px;"></div>
-          <div class="catRow" id="catRow"></div>
-
-          <div style="height:10px;"></div>
-          <div id="prodGrid" class="prodGrid"></div>
-        </div>
-
-        <div style="height:140px;"></div>
+      <div class="right">
+        <select id="userSelect" class="select"></select>
+        <button class="iconbtn" id="btnSummaryTop" title="Σύνοψη">📊</button>
+        <button class="iconbtn" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
       </div>
     </div>
   </div>
 
-  <!-- Bottom bar -->
-  <div class="bottom" id="bottomBar">
-    <div class="inner">
-      <button class="pill block" id="btnCSV">Εξαγωγή CSV</button>
-      <button class="pill block" id="btnSummary3">📊 Σύνοψη</button>
-      <button class="pill bad block" id="btnWipeAll">Διαγραφή όλων</button>
+  <div class="main">
+    <!-- HOME -->
+    <div id="viewHome" class="view show">
+      <button class="big" id="btnNewOrder"><span>➕ Νέα Παραγγελία</span><span class="meta">Διάλεξε τραπέζι</span></button>
+      <div style="height:10px;"></div>
+      <button class="big" id="btnOpenOrders"><span>📄 Ανοιχτά</span><span class="meta" id="openCountMeta">0</span></button>
+      <div style="height:10px;"></div>
+      <button class="big" id="btnSummaryHome"><span>📊 Σύνοψη</span><span class="meta">Ημέρας</span></button>
+      <div style="height:12px;"></div>
+      <div class="sub" id="homeStats">—</div>
+    </div>
+
+    <!-- TABLES -->
+    <div id="viewTables" class="view">
+      <div class="toprow" style="margin-bottom:10px;">
+        <button class="sheetbtn" id="btnBackHome">← Home</button>
+        <div class="sub" id="tablesSub" style="margin:0;">—</div>
+        <button class="sheetbtn" id="btnToggleTables">Μόνο ανοιχτά</button>
+      </div>
+      <div id="tablesList"></div>
+    </div>
+
+    <!-- TICKET -->
+    <div id="viewTicket" class="view">
+      <div class="toprow" style="margin-bottom:8px;">
+        <button class="sheetbtn" id="btnBackTables">← Τραπέζια</button>
+        <div class="sub" id="ticketSub" style="margin:0;">—</div>
+        <button class="sheetbtn primary" id="btnPay">Πληρωμή</button>
+      </div>
+
+      <div class="sub" style="margin-bottom:8px;">Ανοιχτά items</div>
+      <div id="openItemsList"></div>
+
+      <div style="height:12px;"></div>
+      <div class="sub">Top 8 σήμερα</div>
+      <div class="tabs" id="top8Row"></div>
+
+      <div style="height:12px;"></div>
+      <div class="sub">Κατηγορίες</div>
+      <div class="tabs" id="catTabs"></div>
+
+      <input id="prodSearch" class="search" placeholder="🔎 Αναζήτηση προϊόντος..." />
+
+      <div style="height:10px;"></div>
+      <div id="productsList"></div>
     </div>
   </div>
 
-  <!-- Settings -->
-  <div class="overlay" id="overlay">
-    <div class="sheet">
-      <div class="sheetHead">
-        <div style="font-weight:900; font-size:18px;">Ρυθμίσεις</div>
-        <button class="pill small" id="btnCloseSheet">Κλείσιμο</button>
-      </div>
-
-      <div class="card2">
-        <div class="row between">
-          <div>
-            <div class="sub">Ημέρα</div>
-            <div style="font-weight:900;" id="dayLabel">—</div>
-          </div>
-          <div>
-            <div class="sub">Χρήστης</div>
-            <div style="font-weight:900;" id="userLabel">—</div>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="row" style="gap:8px;flex-wrap:wrap;">
-          <button class="pill small" id="btnAddUser">+ Χρήστης</button>
-          <button class="pill small" id="btnRenameUser">✎ Μετονομασία</button>
-          <button class="pill small" id="btnSetPin">🔒 PIN</button>
-          <button class="pill small" id="btnAdminShop">🏷 Όνομα μαγαζιού</button>
-          <button class="pill small bad" id="btnDeleteUser">🗑 Διαγραφή</button>
-        </div>
-
-        <div class="sub muted" style="margin-top:10px;">
-          Το <b>🏷 Όνομα μαγαζιού</b> αλλάζει μόνο με <b>Admin PIN</b>.
-        </div>
-      </div>
+  <div class="bottombar">
+    <div class="bwrap">
+      <button class="bbtn" id="btnUndo">↩ Undo</button>
+      <button class="bbtn primary" id="btnCSV">CSV</button>
+      <button class="bbtn danger" id="btnWipe">Διαγραφή</button>
     </div>
   </div>
+</div>
 
-  <!-- Summary -->
-  <div class="overlay" id="summaryOverlay">
-    <div class="sheet">
-      <div class="sheetHead">
-        <div style="font-weight:900; font-size:18px;">📊 Σύνοψη ημέρας</div>
-        <button class="pill small" id="btnCloseSummary">Κλείσιμο</button>
-      </div>
-
-      <div class="card2">
-        <div class="sub" id="daySummaryFull">—</div>
-
-        <div class="hr"></div>
-
-        <div style="font-weight:900;">Top 5 προϊόντα σήμερα</div>
-        <div class="sub muted">Με βάση τα items που καταχωρήθηκαν σήμερα.</div>
-        <div style="height:8px;"></div>
-        <table class="tinyTable" id="topProductsTable"></table>
-
-        <div class="hr"></div>
-
-        <div style="font-weight:900;">Σύνοψη ανά χρήστη</div>
-        <div class="sub muted">Πάτα πάνω σε χρήστη για αναλυτικά.</div>
-        <div style="height:8px;"></div>
-        <table class="tinyTable" id="userSummaryTable"></table>
-      </div>
+<!-- Settings overlay -->
+<div class="overlay" id="settingsOv">
+  <div class="sheet">
+    <div class="sheethead">
+      <div class="sheettitle">⚙️ Ρυθμίσεις</div>
+      <button class="sheetbtn" id="btnCloseSettings">Κλείσιμο</button>
+    </div>
+    <div class="hr"></div>
+    <div class="sub" id="settingsSub">—</div>
+    <div class="hr"></div>
+    <div class="sheetbtnrow">
+      <button class="sheetbtn" id="btnAddUser">+ Χρήστης</button>
+      <button class="sheetbtn" id="btnRenameUser">✏️ Μετονομασία</button>
+      <button class="sheetbtn" id="btnSetPin">🔒 PIN χρήστη</button>
+      <button class="sheetbtn" id="btnShopName">🏷 Όνομα μαγαζιού</button>
+      <button class="sheetbtn danger" id="btnDelUser">🗑 Διαγραφή χρήστη</button>
+    </div>
+    <div class="hr"></div>
+    <div class="sub">
+      Σημείωση: δεν ζητάει PIN στην πληρωμή (για να μην καθυστερεί).
+      Το PIN δουλεύει στην αλλαγή/διαχείριση χρήστη & σε ευαίσθητες ενέργειες.
     </div>
   </div>
+</div>
 
-  <!-- User drilldown -->
-  <div class="overlay" id="userOverlay">
-    <div class="sheet">
-      <div class="sheetHead">
-        <div>
-          <div style="font-weight:900; font-size:18px;" id="userDetailTitle">—</div>
-          <div class="sub muted" id="userDetailSub">—</div>
-        </div>
-        <button class="pill small" id="btnCloseUserOverlay">Κλείσιμο</button>
-      </div>
-      <div class="card2" id="userDetailBody"></div>
+<!-- Summary overlay -->
+<div class="overlay" id="summaryOv">
+  <div class="sheet">
+    <div class="sheethead">
+      <div class="sheettitle">📊 Σύνοψη ημέρας</div>
+      <button class="sheetbtn" id="btnCloseSummary">Κλείσιμο</button>
+    </div>
+    <div class="hr"></div>
+    <div class="sub" id="summaryText">—</div>
+    <div class="hr"></div>
+    <div class="sub" style="margin-bottom:6px;">Top προϊόντα</div>
+    <div id="topList"></div>
+    <div class="hr"></div>
+    <div class="sub" style="margin-bottom:6px;">Ανά χρήστη (πάτα για λεπτομέρειες)</div>
+    <div id="userSumList"></div>
+  </div>
+</div>
+
+<!-- User details overlay -->
+<div class="overlay" id="userOv">
+  <div class="sheet">
+    <div class="sheethead">
+      <div class="sheettitle" id="userTitle">—</div>
+      <button class="sheetbtn" id="btnCloseUser">Κλείσιμο</button>
+    </div>
+    <div class="hr"></div>
+    <div class="sub" id="userSub">—</div>
+    <div class="hr"></div>
+    <div id="userBody"></div>
+  </div>
+</div>
+
+<!-- Pay overlay -->
+<div class="overlay" id="payOv">
+  <div class="sheet">
+    <div class="sheethead">
+      <div class="sheettitle" id="payTitle">Πληρωμή</div>
+      <button class="sheetbtn" id="btnClosePay">Κλείσιμο</button>
+    </div>
+    <div class="hr"></div>
+    <div class="sub">Επίλεξε items (split) και μετά τρόπο πληρωμής.</div>
+    <div class="hr"></div>
+    <div id="payList"></div>
+    <div class="hr"></div>
+    <div class="sub" id="payTotal">Τελικό: 0,00 €</div>
+    <div style="height:10px;"></div>
+    <div class="sheetbtnrow">
+      <button class="sheetbtn ok" id="btnPayCash">💶 Μετρητά</button>
+      <button class="sheetbtn primary" id="btnPayCard">💳 Κάρτα</button>
+      <button class="sheetbtn" style="border-color:rgba(255,176,32,.55)" id="btnPayFree">🎁 Κερασμένα</button>
+      <button class="sheetbtn" id="btnSelAll">Επίλεξε όλα</button>
     </div>
   </div>
+</div>
 
-  <!-- Search -->
-  <div class="overlay" id="searchOverlay">
-    <div class="sheet">
-      <div class="sheetHead">
-        <div style="font-weight:900; font-size:18px;">Αναζήτηση προϊόντος</div>
-        <button class="pill small" id="btnCloseSearch">Κλείσιμο</button>
-      </div>
-      <div class="card2">
-        <input id="search" class="pill block" placeholder="Γράψε π.χ. cappuccino..." style="text-align:left;justify-content:flex-start;"/>
-        <div style="height:10px;"></div>
-        <div id="searchList" class="lines"></div>
-      </div>
+<!-- QuickPay overlay -->
+<div class="overlay" id="qpayOv">
+  <div class="sheet">
+    <div class="sheethead">
+      <div class="sheettitle" id="qpayTitle">—</div>
+      <button class="sheetbtn" id="btnCloseQPay">Κλείσιμο</button>
+    </div>
+    <div class="hr"></div>
+    <div class="sub" id="qpaySub">—</div>
+    <div class="hr"></div>
+    <div class="sheetbtnrow" id="qpayBtns"></div>
+  </div>
+</div>
+
+<!-- PIN Overlay (numeric keyboard) -->
+<div class="overlay" id="pinOv" style="align-items:center;">
+  <div class="pinBox">
+    <div class="sheethead">
+      <div class="pinTitle" id="pinTitle">PIN</div>
+      <button class="sheetbtn" id="pinCancel">Άκυρο</button>
+    </div>
+    <div class="pinSub" id="pinSub">—</div>
+    <input
+      class="pinInput"
+      id="pinInput"
+      type="password"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      maxlength="4"
+      autocomplete="one-time-code"
+      placeholder="••••"
+    />
+    <div class="hr"></div>
+    <div class="sheetbtnrow" style="justify-content:flex-end;">
+      <button class="sheetbtn primary" id="pinOk">ΟΚ</button>
     </div>
   </div>
+</div>
 
-  <!-- Pay sheet -->
-  <div class="overlay" id="payOverlay">
-    <div class="sheet">
-      <div class="sheetHead">
-        <div>
-          <div id="payTitle" style="font-weight:900; font-size:18px;">—</div>
-          <div class="sub">Split: διάλεξε items και τρόπο πληρωμής.</div>
-        </div>
-        <button class="pill small" id="btnClosePay">Κλείσιμο</button>
-      </div>
-
-      <div class="card2">
-        <div class="row between" style="gap:8px;">
-          <button class="pill small" id="btnSelectAll">Επίλεξε όλα</button>
-          <div class="sub" id="payTotal">Τελικό: 0,00 €</div>
-        </div>
-        <div style="height:10px;"></div>
-
-        <div id="payList" class="lines"></div>
-
-        <div class="hr"></div>
-
-        <div class="row" style="gap:10px;flex-wrap:wrap;">
-          <button class="pill ok" id="btnPayCash">Μετρητά</button>
-          <button class="pill primary" id="btnPayCard">Κάρτα</button>
-          <button class="pill warn" id="btnPayFree">Κερασμένα</button>
-        </div>
-      </div>
-    </div>
+<!-- Screensaver -->
+<div class="screensaver" id="ss">
+  <div class="ssCenter">
+    <div class="ssLogo" id="ssLogo">—</div>
+    <div class="ssUser" id="ssUser">—</div>
+    <div class="ssHint">Πάτησε οπουδήποτε για επιστροφή</div>
   </div>
+</div>
 
-  <!-- Table search -->
-  <div class="overlay" id="tableSearchOverlay">
-    <div class="sheet">
-      <div class="sheetHead">
-        <div style="font-weight:900; font-size:18px;">Εύρεση τραπεζιού</div>
-        <button class="pill small" id="btnCloseTableSearch">Κλείσιμο</button>
-      </div>
-      <div class="card2">
-        <input id="tableSearch" class="pill block" placeholder="Γράψε π.χ. T3 ή BAR..." style="text-align:left;justify-content:flex-start;"/>
-        <div style="height:10px;"></div>
-        <div id="tableSearchList" class="list"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick pay qty -->
-  <div class="overlay" id="quickPayOverlay">
-    <div class="sheet">
-      <div class="sheetHead">
-        <div style="font-weight:900; font-size:18px;" id="quickPayTitle">—</div>
-        <button class="pill small" id="btnCloseQuickPay">Κλείσιμο</button>
-      </div>
-      <div class="card2">
-        <div class="sub muted" id="quickPayInfo">—</div>
-        <div class="hr"></div>
-        <div class="row" style="gap:10px;flex-wrap:wrap;" id="quickPayQtyRow"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast">
-    <div class="t" id="toastT">—</div>
-    <div class="s" id="toastS">—</div>
-  </div>
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="t" id="toastT">—</div>
+  <div class="s" id="toastS">—</div>
+</div>
 
 <script>
-/* ===================== STORAGE KEYS ===================== */
-const LS_KEY = "mini_cashier_db_v9"; // bump to force fresh storage format
-const LS_USERS = "mini_cashier_users_v4";
-const LS_ACTIVE_USER = "mini_cashier_active_user_v4";
-const LS_FAVS = "mini_cashier_favs_v3";
-const LS_SHOP = "mini_cashier_shop_v2";
-const LS_ADMIN_HASH = "mini_cashier_admin_hash_v2";
+/* ===================== STORAGE ===================== */
+const LS_DB = "dcash_db_v2";
+const LS_USERS = "dcash_users_v2";
+const LS_ACTIVE = "dcash_active_user_v2";
+const LS_SHOP = "dcash_shop_v2";
+const LS_ADMIN_HASH = "dcash_admin_hash_v2";
+const LS_FAVS = "dcash_favs_v2";
 
 /* ===================== CONFIG ===================== */
 const TODAY = new Date().toISOString().slice(0,10);
-const tables = ["T1","T2","T3","T4","T5","T6","T7","T8","BAR","ΕΞΩ"];
-const tableGroups = [
-  { title:"Εσωτερικά", list:["T1","T2","T3","T4","T5","T6","T7","T8"] },
-  { title:"BAR", list:["BAR"] },
-  { title:"ΕΞΩ", list:["ΕΞΩ"] },
+const IDLE_HOME_MS = 35000;          // 30-40s -> Home
+const IDLE_SCREENSAVER_EXTRA = 12000; // +few seconds -> Screensaver
+const TABLES = ["T1","T2","T3","T4","T5","T6","T7","T8","BAR","ΕΞΩ"];
+const CATS = [
+  {id:"coffee", label:"☕ Καφέδες", allowed:["coffee_hot","coffee_cold","tea","choco","extras"]},
+  {id:"snack",  label:"🥐 Σνακ", allowed:["snack"]},
+  {id:"drinks", label:"🍺 Ποτά", allowed:["beer","wine","spirit","cocktail"]},
+  {id:"soft",   label:"🥤 Αναψυκτικά", allowed:["soft","juice"]},
 ];
-const CONFIRM_MIN_TOTAL = 15;
-const CONFIRM_MIN_ITEMS = 3;
-const IDLE_HOME_MS = 35000;
 
-/* ===================== HAPTIC ===================== */
-function vibrate(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms);}catch{} }
+const PRODUCTS = [
+  {cat:"coffee_hot", name:"Espresso μονός", price:2.60},
+  {cat:"coffee_hot", name:"Espresso διπλός", price:3.20},
+  {cat:"coffee_hot", name:"Espresso macchiato", price:2.90},
+  {cat:"coffee_hot", name:"Americano", price:3.20},
+  {cat:"coffee_hot", name:"Cappuccino", price:3.60},
+  {cat:"coffee_hot", name:"Cappuccino διπλός", price:4.20},
+  {cat:"coffee_hot", name:"Latte macchiato", price:4.20},
+  {cat:"coffee_hot", name:"Flat white", price:4.40},
+  {cat:"coffee_hot", name:"Mocha", price:4.50},
+  {cat:"coffee_hot", name:"Καφές φίλτρου", price:3.00},
+  {cat:"extras", name:"Decaf (+)", price:0.30},
+
+  {cat:"coffee_cold", name:"Freddo espresso", price:3.80},
+  {cat:"coffee_cold", name:"Freddo cappuccino", price:4.20},
+  {cat:"coffee_cold", name:"Iced latte", price:4.50},
+  {cat:"coffee_cold", name:"Cold brew", price:4.80},
+  {cat:"coffee_cold", name:"Frappe", price:3.50},
+
+  {cat:"tea", name:"Τσάι (μαύρο, πράσινο, βότανα)", price:3.20},
+  {cat:"tea", name:"Τσάι φρούτων", price:3.50},
+  {cat:"tea", name:"Chai latte", price:4.30},
+
+  {cat:"choco", name:"Ζεστή σοκολάτα", price:4.20},
+  {cat:"choco", name:"Κρύα σοκολάτα", price:4.50},
+  {cat:"choco", name:"Λευκή σοκολάτα", price:4.50},
+  {cat:"choco", name:"Κακάο", price:4.00},
+  {cat:"extras", name:"Φυτικό γάλα (βρώμης/αμυγδάλου) (+)", price:0.50},
+
+  {cat:"soft", name:"Coca-Cola / Zero / Fanta (0,33l)", price:3.40},
+  {cat:"soft", name:"Ice Tea", price:3.60},
+  {cat:"soft", name:"Σόδα / Τόνικ", price:3.20},
+  {cat:"soft", name:"Μεταλλικό νερό (0,33l)", price:2.80},
+  {cat:"soft", name:"Μεταλλικό νερό (0,75l)", price:5.50},
+
+  {cat:"juice", name:"Φυσικός χυμός πορτοκάλι", price:4.50},
+  {cat:"juice", name:"Χυμός ανάμεικτος", price:4.80},
+  {cat:"juice", name:"Smoothie φρούτων", price:5.80},
+  {cat:"juice", name:"Milkshake", price:5.50},
+
+  {cat:"snack", name:"Κρουασάν σκέτο", price:2.80},
+  {cat:"snack", name:"Κρουασάν σοκολάτα", price:3.20},
+  {cat:"snack", name:"Μάφιν", price:3.50},
+  {cat:"snack", name:"Κέικ (κομμάτι)", price:4.20},
+  {cat:"snack", name:"Cheesecake", price:4.80},
+  {cat:"snack", name:"Μπισκότα", price:2.50},
+  {cat:"snack", name:"Τοστ ζαμπόν-τυρί", price:4.50},
+  {cat:"snack", name:"Τοστ vegetarian", price:4.80},
+
+  {cat:"beer", name:"Μπύρα βαρελίσια (0,5l)", price:5.20},
+  {cat:"beer", name:"Μπύρα εμφιαλωμένη (0,33l)", price:4.20},
+  {cat:"beer", name:"Weissbier (0,5l)", price:5.50},
+  {cat:"beer", name:"Μπύρα χωρίς αλκοόλ", price:4.20},
+
+  {cat:"wine", name:"Κρασί ποτήρι", price:5.50},
+  {cat:"wine", name:"Κρασί καράφα (0,5l)", price:12.00},
+  {cat:"wine", name:"Φιάλη κρασί (από)", price:22.00},
+  {cat:"wine", name:"Prosecco ποτήρι", price:6.50},
+
+  {cat:"spirit", name:"Ουίσκι standard", price:8.50},
+  {cat:"spirit", name:"Premium ουίσκι", price:10.50},
+  {cat:"spirit", name:"Βότκα", price:8.00},
+  {cat:"spirit", name:"Ρούμι", price:8.50},
+  {cat:"spirit", name:"Τζιν", price:8.50},
+  {cat:"spirit", name:"Ούζο / Τσίπουρο", price:7.50},
+  {cat:"spirit", name:"Λικέρ", price:7.50},
+
+  {cat:"cocktail", name:"Mojito", price:9.50},
+  {cat:"cocktail", name:"Caipirinha", price:9.50},
+  {cat:"cocktail", name:"Margarita", price:10.00},
+  {cat:"cocktail", name:"Aperol Spritz", price:8.50},
+  {cat:"cocktail", name:"Gin Tonic", price:9.00},
+  {cat:"cocktail", name:"Negroni", price:10.50},
+];
 
 /* ===================== HELPERS ===================== */
 const $ = (id)=>document.getElementById(id);
 const fmt = (n)=> (n||0).toLocaleString("el-GR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 const uid = ()=> Math.random().toString(36).slice(2)+Date.now().toString(36);
-function load(key, fallback){
-  try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
-  catch{ return fallback; }
-}
+function load(key, fallback){ try{ const raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback; } catch{ return fallback; } }
 function save(key,val){ localStorage.setItem(key, JSON.stringify(val)); }
-function toast(title, msg){
-  $("toastT").textContent = title;
-  $("toastS").textContent = msg;
+function toast(t,s){
+  $("toastT").textContent=t; $("toastS").textContent=s;
   $("toast").classList.add("show");
-  setTimeout(()=> $("toast").classList.remove("show"), 2200);
+  setTimeout(()=>$("toast").classList.remove("show"), 2200);
 }
+function vibrate(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms);}catch{} }
 async function sha256Hex(str){
-  const enc = new TextEncoder().encode(str);
-  const buf = await crypto.subtle.digest("SHA-256", enc);
+  const enc=new TextEncoder().encode(str);
+  const buf=await crypto.subtle.digest("SHA-256", enc);
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
 }
-function isValidPin(pin){ return /^\d{4}$/.test(pin); }
+function isPin(p){ return /^\d{4}$/.test(p||""); }
 
-/* ===================== AUTO HOME (IDLE) ===================== */
-let idleTimer = null;
+/* ===================== PIN MODAL (numeric keyboard) ===================== */
+let pinResolve = null;
+
+function pinOpen({title="PIN", sub="", cancelText="Άκυρο", okText="ΟΚ"} = {}){
+  $("pinTitle").textContent = title;
+  $("pinSub").textContent = sub || "";
+  $("pinCancel").textContent = cancelText;
+  $("pinOk").textContent = okText;
+  $("pinInput").value = "";
+  $("pinOv").classList.add("show");
+
+  // focus after showing
+  setTimeout(()=>{ $("pinInput").focus(); }, 50);
+
+  return new Promise((resolve)=>{
+    pinResolve = resolve;
+  });
+}
+
+function pinClose(result){
+  $("pinOv").classList.remove("show");
+  const r = pinResolve;
+  pinResolve = null;
+  if(r) r(result);
+}
+
+$("pinCancel").onclick = ()=> pinClose(null);
+$("pinOk").onclick = ()=> pinClose(($("pinInput").value||"").trim());
+$("pinInput").addEventListener("keydown",(e)=>{
+  if(e.key==="Enter") pinClose(($("pinInput").value||"").trim());
+});
+
+/* ===================== SCREENSAVER ===================== */
+function showScreensaver(){
+  $("ssLogo").textContent = getShopName();
+  $("ssUser").textContent = `Εν υπηρεσία: ${getActiveUser().name}`;
+  $("ss").classList.add("show");
+}
+function hideScreensaver(){
+  $("ss").classList.remove("show");
+}
+$("ss").addEventListener("click", ()=>{
+  hideScreensaver();
+  resetIdleTimers();
+});
+
+/* ===================== IDLE -> HOME -> SCREENSAVER ===================== */
+let idleTimerHome=null;
+let idleTimerSS=null;
+
 function closeAllOverlays(){
-  ["overlay","summaryOverlay","searchOverlay","payOverlay","tableSearchOverlay","userOverlay","quickPayOverlay"]
-    .forEach(id => $(id).classList.remove("show"));
+  ["settingsOv","summaryOv","userOv","payOv","qpayOv","pinOv"].forEach(id=>$(id).classList.remove("show"));
 }
-function showView(v){
-  view=v;
-  $("viewHome").classList.toggle("show", v==="home");
-  $("viewTables").classList.toggle("show", v==="tables");
-  $("viewTicket").classList.toggle("show", v==="ticket");
-}
-function goHomeFromIdle(){
+function goHome(){
   closeAllOverlays();
   showView("home");
   renderAll();
 }
-function resetIdle(){
-  if(idleTimer) clearTimeout(idleTimer);
-  idleTimer = setTimeout(goHomeFromIdle, IDLE_HOME_MS);
+function resetIdleTimers(){
+  hideScreensaver();
+  if(idleTimerHome) clearTimeout(idleTimerHome);
+  if(idleTimerSS) clearTimeout(idleTimerSS);
+
+  idleTimerHome = setTimeout(()=>{ goHome(); }, IDLE_HOME_MS);
+  idleTimerSS = setTimeout(()=>{ showScreensaver(); }, IDLE_HOME_MS + IDLE_SCREENSAVER_EXTRA);
 }
 ["click","touchstart","scroll","keydown","input"].forEach(ev=>{
-  document.addEventListener(ev, resetIdle, {capture:true, passive:true});
+  document.addEventListener(ev, resetIdleTimers, {capture:true, passive:true});
 });
-resetIdle();
-
-/* ===================== SHOP NAME (Admin) ===================== */
-function getShopName(){
-  const s = load(LS_SHOP, null);
-  return s?.name || "Το Μαγαζί";
-}
-function setShopNameLocal(name){
-  save(LS_SHOP, {name});
-  $("shopName").textContent = name;
-}
-async function ensureAdminPin(){
-  let h = localStorage.getItem(LS_ADMIN_HASH);
-  if(h) return h;
-  alert("Πρώτη φορά: Όρισε Admin PIN (μόνο εσύ).");
-  const p1 = prompt("Βάλε Admin PIN (4 ψηφία):");
-  if(!p1 || !isValidPin(p1)) { alert("Άκυρο PIN."); return null; }
-  const p2 = prompt("Ξαναγράψε το Admin PIN:");
-  if(p2 !== p1) { alert("Δεν ταιριάζουν."); return null; }
-  h = await sha256Hex(p1);
-  localStorage.setItem(LS_ADMIN_HASH, h);
-  return h;
-}
-async function verifyAdminPin(reason){
-  const h = localStorage.getItem(LS_ADMIN_HASH) || await ensureAdminPin();
-  if(!h) return false;
-  const p = prompt(`Admin PIN απαιτείται (${reason}).\nΓράψε 4-ψήφιο PIN:`);
-  if(!p) return false;
-  if(!isValidPin(p)) { alert("Άκυρο PIN."); return false; }
-  const ph = await sha256Hex(p);
-  if(ph !== h){ alert("Λάθος Admin PIN."); return false; }
-  return true;
-}
+resetIdleTimers();
 
 /* ===================== USERS ===================== */
 function ensureUsers(){
-  let users = load(LS_USERS, null);
+  let users=load(LS_USERS,null);
   if(!users || !Array.isArray(users) || users.length===0){
-    users = [{id:uid(), name:"Χρήστης 1", pinHash:null}];
+    users=[{id:uid(), name:"Χρήστης 1", pinHash:null}];
     save(LS_USERS, users);
-    save(LS_ACTIVE_USER, users[0].id);
+    save(LS_ACTIVE, users[0].id);
   }
   return users;
 }
 function getActiveUserId(){
-  const users = ensureUsers();
-  const saved = load(LS_ACTIVE_USER, null);
-  if(saved && users.some(u=>u.id===saved)) return saved;
-  save(LS_ACTIVE_USER, users[0].id);
+  const users=ensureUsers();
+  const a=load(LS_ACTIVE,null);
+  if(a && users.some(u=>u.id===a)) return a;
+  save(LS_ACTIVE, users[0].id);
   return users[0].id;
 }
 function getActiveUser(){
-  const users = ensureUsers();
-  const id = getActiveUserId();
-  return users.find(u=>u.id===id) || users[0];
+  const users=ensureUsers();
+  return users.find(u=>u.id===getActiveUserId()) || users[0];
 }
 async function requireUserPinIfExists(user, reason){
   if(!user.pinHash) return true;
-  const pin = prompt(`PIN απαιτείται (${reason}).\nΓράψε 4-ψήφιο PIN:`);
+  const pin = await pinOpen({
+    title: "🔒 PIN",
+    sub: `PIN απαιτείται (${reason}).\nΓράψε 4 ψηφία.`,
+    cancelText: "Άκυρο",
+    okText: "Επιβεβαίωση"
+  });
   if(!pin) return false;
-  if(!isValidPin(pin)) { alert("Άκυρο PIN."); return false; }
-  const h = await sha256Hex(pin);
-  if(h !== user.pinHash){ alert("Λάθος PIN."); return false; }
+  if(!isPin(pin)){ alert("Άκυρο PIN."); return false; }
+  const h=await sha256Hex(pin);
+  if(h!==user.pinHash){ alert("Λάθος PIN."); return false; }
   return true;
 }
-async function changeUserWithPin(newId){
-  const users = ensureUsers();
-  const newUser = users.find(u=>u.id===newId);
-  if(!newUser) return;
-  const ok = await requireUserPinIfExists(newUser, "Αλλαγή χρήστη");
-  if(!ok){ $("userSelect").value = getActiveUserId(); return; }
-  save(LS_ACTIVE_USER, newUser.id);
+async function changeUser(newId){
+  const users=ensureUsers();
+  const u=users.find(x=>x.id===newId);
+  if(!u) return;
+  const ok=await requireUserPinIfExists(u, "Αλλαγή χρήστη");
+  if(!ok){ $("userSelect").value=getActiveUserId(); return; }
+  save(LS_ACTIVE, u.id);
   renderAll();
 }
 
-/* ===================== MENU ===================== */
-const products = [
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Espresso μονός", price:2.60},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Espresso διπλός", price:3.20},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Espresso macchiato", price:2.90},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Americano", price:3.20},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Cappuccino", price:3.60},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Cappuccino διπλός", price:4.20},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Latte macchiato", price:4.20},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Flat white", price:4.40},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Mocha", price:4.50},
-  {cat:"coffee_hot", group:"☕ Καφέδες", name:"Καφές φίλτρου", price:3.00},
-  {cat:"extras", group:"➕ Extras", name:"Decaf (+)", price:0.30},
+/* ===================== SHOP (Admin PIN) ===================== */
+function getShopName(){ return load(LS_SHOP,null)?.name || "Το Μαγαζί"; }
+function setShopName(name){ save(LS_SHOP,{name}); }
 
-  {cat:"coffee_cold", group:"❄️ Κρύοι καφέδες", name:"Freddo espresso", price:3.80},
-  {cat:"coffee_cold", group:"❄️ Κρύοι καφέδες", name:"Freddo cappuccino", price:4.20},
-  {cat:"coffee_cold", group:"❄️ Κρύοι καφέδες", name:"Iced latte", price:4.50},
-  {cat:"coffee_cold", group:"❄️ Κρύοι καφέδες", name:"Cold brew", price:4.80},
-  {cat:"coffee_cold", group:"❄️ Κρύοι καφέδες", name:"Frappe", price:3.50},
+async function ensureAdminPin(){
+  let h = localStorage.getItem(LS_ADMIN_HASH);
+  if(h) return h;
 
-  {cat:"tea", group:"🫖 Τσάι", name:"Τσάι (μαύρο, πράσινο, βότανα)", price:3.20},
-  {cat:"tea", group:"🫖 Τσάι", name:"Τσάι φρούτων", price:3.50},
-  {cat:"tea", group:"🫖 Τσάι", name:"Chai latte", price:4.30},
+  alert("Πρώτη φορά: Όρισε Admin PIN (4 ψηφία).");
+  const p1 = await pinOpen({title:"Admin PIN", sub:"Γράψε 4 ψηφία για Admin PIN", cancelText:"Άκυρο", okText:"Συνέχεια"});
+  if(!p1) return null;
+  if(!isPin(p1)){ alert("Άκυρο PIN."); return null; }
 
-  {cat:"choco", group:"🍫 Σοκολάτες", name:"Ζεστή σοκολάτα", price:4.20},
-  {cat:"choco", group:"🍫 Σοκολάτες", name:"Κρύα σοκολάτα", price:4.50},
-  {cat:"choco", group:"🍫 Σοκολάτες", name:"Λευκή σοκολάτα", price:4.50},
-  {cat:"choco", group:"🍫 Σοκολάτες", name:"Κακάο", price:4.00},
-  {cat:"extras", group:"➕ Extras", name:"Φυτικό γάλα (βρώμης/αμυγδάλου) (+)", price:0.50},
+  const p2 = await pinOpen({title:"Admin PIN", sub:"Ξανά Admin PIN (επιβεβαίωση)", cancelText:"Άκυρο", okText:"Αποθήκευση"});
+  if(!p2) return null;
+  if(p2!==p1){ alert("Δεν ταιριάζουν."); return null; }
 
-  {cat:"soft", group:"🥤 Αναψυκτικά", name:"Coca-Cola / Zero / Fanta (0,33l)", price:3.40},
-  {cat:"soft", group:"🥤 Αναψυκτικά", name:"Ice Tea", price:3.60},
-  {cat:"soft", group:"🥤 Αναψυκτικά", name:"Σόδα / Τόνικ", price:3.20},
-  {cat:"soft", group:"🥤 Αναψυκτικά", name:"Μεταλλικό νερό (0,33l)", price:2.80},
-  {cat:"soft", group:"🥤 Αναψυκτικά", name:"Μεταλλικό νερό (0,75l)", price:5.50},
-
-  {cat:"juice", group:"🍊 Χυμοί", name:"Φυσικός χυμός πορτοκάλι", price:4.50},
-  {cat:"juice", group:"🍊 Χυμοί", name:"Χυμός ανάμεικτος", price:4.80},
-  {cat:"juice", group:"🍊 Χυμοί", name:"Smoothie φρούτων", price:5.80},
-  {cat:"juice", group:"🍊 Χυμοί", name:"Milkshake", price:5.50},
-
-  {cat:"snack", group:"🥐 Σνακ", name:"Κρουασάν σκέτο", price:2.80},
-  {cat:"snack", group:"🥐 Σνακ", name:"Κρουασάν σοκολάτα", price:3.20},
-  {cat:"snack", group:"🥐 Σνακ", name:"Μάφιν", price:3.50},
-  {cat:"snack", group:"🥐 Σνακ", name:"Κέικ (κομμάτι)", price:4.20},
-  {cat:"snack", group:"🥐 Σνακ", name:"Cheesecake", price:4.80},
-  {cat:"snack", group:"🥐 Σνακ", name:"Μπισκότα", price:2.50},
-  {cat:"snack", group:"🥐 Σνακ", name:"Τοστ ζαμπόν-τυρί", price:4.50},
-  {cat:"snack", group:"🥐 Σνακ", name:"Τοστ vegetarian", price:4.80},
-
-  {cat:"beer", group:"🍺 Μπύρες", name:"Μπύρα βαρελίσια (0,5l)", price:5.20},
-  {cat:"beer", group:"🍺 Μπύρες", name:"Μπύρα εμφιαλωμένη (0,33l)", price:4.20},
-  {cat:"beer", group:"🍺 Μπύρες", name:"Weissbier (0,5l)", price:5.50},
-  {cat:"beer", group:"🍺 Μπύρες", name:"Μπύρα χωρίς αλκοόλ", price:4.20},
-
-  {cat:"wine", group:"🍷 Κρασιά", name:"Κρασί ποτήρι", price:5.50},
-  {cat:"wine", group:"🍷 Κρασιά", name:"Κρασί καράφα (0,5l)", price:12.00},
-  {cat:"wine", group:"🍷 Κρασιά", name:"Φιάλη κρασί (από)", price:22.00},
-  {cat:"wine", group:"🍷 Κρασιά", name:"Prosecco ποτήρι", price:6.50},
-
-  {cat:"spirit", group:"🥃 Ποτά", name:"Ουίσκι standard", price:8.50},
-  {cat:"spirit", group:"🥃 Ποτά", name:"Premium ουίσκι", price:10.50},
-  {cat:"spirit", group:"🥃 Ποτά", name:"Βότκα", price:8.00},
-  {cat:"spirit", group:"🥃 Ποτά", name:"Ρούμι", price:8.50},
-  {cat:"spirit", group:"🥃 Ποτά", name:"Τζιν", price:8.50},
-  {cat:"spirit", group:"🥃 Ποτά", name:"Ούζο / Τσίπουρο", price:7.50},
-  {cat:"spirit", group:"🥃 Ποτά", name:"Λικέρ", price:7.50},
-
-  {cat:"cocktail", group:"🍸 Κοκτέιλ", name:"Mojito", price:9.50},
-  {cat:"cocktail", group:"🍸 Κοκτέιλ", name:"Caipirinha", price:9.50},
-  {cat:"cocktail", group:"🍸 Κοκτέιλ", name:"Margarita", price:10.00},
-  {cat:"cocktail", group:"🍸 Κοκτέιλ", name:"Aperol Spritz", price:8.50},
-  {cat:"cocktail", group:"🍸 Κοκτέιλ", name:"Gin Tonic", price:9.00},
-  {cat:"cocktail", group:"🍸 Κοκτέιλ", name:"Negroni", price:10.50},
-];
-
-const cats = [
-  {id:"coffee", label:"☕ Καφέδες", allowed:["coffee_hot","coffee_cold","tea","choco","extras"]},
-  {id:"snack", label:"🥐 Σνακ", allowed:["snack"]},
-  {id:"drinks", label:"🍺 Ποτά", allowed:["beer","wine","spirit","cocktail"]},
-  {id:"soft", label:"🥤 Αναψυκτικά", allowed:["soft","juice"]},
-];
-
-/* ===================== FAVORITES ===================== */
-function loadFavs(){ return load(LS_FAVS, { day:TODAY, counts:{} }); }
-function saveFavs(obj){ save(LS_FAVS, obj); }
-function bumpFav(name){
-  let favs = loadFavs();
-  if(favs.day !== TODAY) favs = { day:TODAY, counts:{} };
-  favs.counts[name] = (favs.counts[name]||0)+1;
-  saveFavs(favs);
+  h = await sha256Hex(p1);
+  localStorage.setItem(LS_ADMIN_HASH, h);
+  return h;
 }
-function resetFavs(){ saveFavs({day:TODAY, counts:{}}); }
-function getTop8Products(){
-  let favs = loadFavs();
-  const counts = favs.day===TODAY ? favs.counts : {};
-  const names = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
-  const arr = names.map(n=>products.find(p=>p.name===n)).filter(Boolean);
-  if(arr.length < 8){
-    for(const p of products){
-      if(arr.length>=8) break;
-      if(!arr.some(x=>x.name===p.name) && p.cat!=="extras") arr.push(p);
-    }
-  }
-  return arr.slice(0,8);
+
+async function verifyAdminPin(reason){
+  const h = localStorage.getItem(LS_ADMIN_HASH) || await ensureAdminPin();
+  if(!h) return false;
+
+  const p = await pinOpen({title:"Admin PIN", sub:`Admin PIN απαιτείται (${reason}).`, cancelText:"Άκυρο", okText:"ΟΚ"});
+  if(!p) return false;
+  if(!isPin(p)) return false;
+
+  const ph = await sha256Hex(p);
+  if(ph!==h){ alert("Λάθος Admin PIN."); return false; }
+  return true;
 }
 
 /* ===================== DB ===================== */
 function ensureDB(){
-  const db = load(LS_KEY, { days:{} });
+  const db=load(LS_DB, {days:{}});
   if(!db.days[TODAY]){
-    db.days[TODAY] = {
-      meta:{ day:TODAY, activeTable: tables[0], activeCat: "coffee", tableFilter:"open" },
+    db.days[TODAY]={
+      meta:{ day:TODAY, activeTable:"T1", activeCat:"coffee", showOnlyOpen:true },
       tables:{},
       payments:[],
-      undone:[],
-      notes:{}
+      undo:[]
     };
-    for(const t of tables) db.days[TODAY].tables[t] = { lines:[] };
-    save(LS_KEY, db);
+    for(const t of TABLES) db.days[TODAY].tables[t]={lines:[]};
+    save(LS_DB, db);
   } else {
-    for(const t of tables){
-      if(!db.days[TODAY].tables[t]) db.days[TODAY].tables[t] = { lines:[] };
-      if(!Array.isArray(db.days[TODAY].tables[t].lines)) db.days[TODAY].tables[t].lines = [];
+    for(const t of TABLES){
+      if(!db.days[TODAY].tables[t]) db.days[TODAY].tables[t]={lines:[]};
+      if(!Array.isArray(db.days[TODAY].tables[t].lines)) db.days[TODAY].tables[t].lines=[];
     }
-    if(!Array.isArray(db.days[TODAY].payments)) db.days[TODAY].payments = [];
-    if(!Array.isArray(db.days[TODAY].undone)) db.days[TODAY].undone = [];
-    if(!db.days[TODAY].notes) db.days[TODAY].notes = {};
-    if(!db.days[TODAY].meta.activeCat) db.days[TODAY].meta.activeCat = "coffee";
-    if(!db.days[TODAY].meta.tableFilter) db.days[TODAY].meta.tableFilter = "open";
+    if(!Array.isArray(db.days[TODAY].payments)) db.days[TODAY].payments=[];
+    if(!Array.isArray(db.days[TODAY].undo)) db.days[TODAY].undo=[];
+    if(!db.days[TODAY].meta.activeCat) db.days[TODAY].meta.activeCat="coffee";
+    if(typeof db.days[TODAY].meta.showOnlyOpen!=="boolean") db.days[TODAY].meta.showOnlyOpen=true;
   }
   return db;
 }
 function getLines(db, table){ return db.days[TODAY].tables[table].lines; }
-function unpaidLines(lines){ return lines.filter(x=>!x.paid); }
-function paidLines(lines){ return lines.filter(x=>!!x.paid); }
-function sumOpen(db, table){ return unpaidLines(getLines(db, table)).reduce((s,x)=>s+x.price,0); }
-function countOpenItems(db, table){ return unpaidLines(getLines(db, table)).length; }
-
-function calcDayStats(db){
-  const day = db.days[TODAY];
-  let openTables=0, openItems=0, paidItems=0, totalItems=0;
-  const prodCounts = {};
-  for(const t of tables){
-    const lines = getLines(db,t);
-    const open = unpaidLines(lines).length;
-    const paid = paidLines(lines).length;
-    if(open>0) openTables++;
-    openItems += open;
-    paidItems += paid;
-    totalItems += lines.length;
-    for(const l of lines){
-      prodCounts[l.name] = (prodCounts[l.name]||0)+1;
-    }
+function openLines(lines){ return lines.filter(x=>!x.paid); }
+function sumOpen(db, t){ return openLines(getLines(db,t)).reduce((s,x)=>s+x.price,0); }
+function cntOpen(db, t){ return openLines(getLines(db,t)).length; }
+function dayStats(db){
+  let openTables=0, openItems=0;
+  for(const t of TABLES){
+    const c=cntOpen(db,t);
+    if(c>0) openTables++;
+    openItems+=c;
   }
-  const paymentsCount = day.payments.length;
-  const paidTotal = day.payments.reduce((s,p)=>s+p.total,0);
-  const sums = {cash:0, card:0, free:0};
-  for(const p of day.payments){ sums[p.method]+=p.total; }
-  return { openTables, openItems, paidItems, totalItems, paymentsCount, paidTotal, sums, prodCounts };
-}
-function getTopProducts(prodCounts, limit=5){
-  return Object.entries(prodCounts).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([name,count])=>({name,count}));
-}
-function calcUserPaymentSummary(db){
-  const day = db.days[TODAY];
-  const users = ensureUsers();
-  const map = {};
-  for(const u of users) map[u.name] = { cash:0, card:0, free:0, count:0 };
-  for(const p of day.payments){
-    if(!map[p.user]) map[p.user] = { cash:0, card:0, free:0, count:0 };
-    map[p.user][p.method] += p.total;
-    map[p.user].count += 1;
-  }
-  return Object.entries(map).map(([name,v])=>({name,...v,total:v.cash+v.card+v.free}))
-    .sort((a,b)=>b.total-a.total);
+  const paidTotal=db.days[TODAY].payments.reduce((s,p)=>s+p.total,0);
+  const cash=db.days[TODAY].payments.filter(p=>p.method==="cash").reduce((s,p)=>s+p.total,0);
+  const card=db.days[TODAY].payments.filter(p=>p.method==="card").reduce((s,p)=>s+p.total,0);
+  const free=db.days[TODAY].payments.filter(p=>p.method==="free").reduce((s,p)=>s+p.total,0);
+  return {openTables, openItems, paidTotal, cash, card, free};
 }
 
-/* ===================== GROUPING (for +/−) ===================== */
-function groupOpenByNameAndPrice(lines){
-  const map = new Map();
+/* ===================== FAVORITES (Top8) ===================== */
+function loadFavs(){ return load(LS_FAVS,{day:TODAY, counts:{}}); }
+function saveFavs(f){ save(LS_FAVS,f); }
+function bumpFav(name){
+  let f=loadFavs();
+  if(f.day!==TODAY) f={day:TODAY, counts:{}};
+  f.counts[name]=(f.counts[name]||0)+1;
+  saveFavs(f);
+}
+function top8(){
+  const f=loadFavs();
+  const counts = (f.day===TODAY)? f.counts : {};
+  const names = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
+  const arr = names.map(n=>PRODUCTS.find(p=>p.name===n)).filter(Boolean);
+  for(const p of PRODUCTS){
+    if(arr.length>=8) break;
+    if(!arr.some(x=>x.name===p.name) && p.cat!=="extras") arr.push(p);
+  }
+  return arr.slice(0,8);
+}
+
+/* ===================== GROUP OPEN BY PRODUCT ===================== */
+function groupOpen(lines){
+  const map=new Map();
   for(const l of lines){
     if(l.paid) continue;
-    const key = l.name + "||" + l.price.toFixed(2);
-    if(!map.has(key)) map.set(key, { name:l.name, price:l.price, ids:[], by:lastByFor(lines,l.name,l.price), lastAt:lastAtFor(lines,l.name,l.price) });
-    map.get(key).ids.push(l.id);
+    const k=l.name+"||"+l.price.toFixed(2);
+    if(!map.has(k)) map.set(k,{name:l.name, price:l.price, ids:[], lastAt:0});
+    const g=map.get(k);
+    g.ids.push(l.id);
+    g.lastAt=Math.max(g.lastAt, l.at||0);
   }
   return [...map.values()].sort((a,b)=>b.lastAt-a.lastAt);
 }
-function lastAtFor(lines,name,price){
-  let m=0;
-  for(const l of lines){
-    if(!l.paid && l.name===name && l.price===price) m=Math.max(m,l.at||0);
-  }
-  return m;
-}
-function lastByFor(lines,name,price){
-  let last=null, at=0;
-  for(const l of lines){
-    if(!l.paid && l.name===name && l.price===price){
-      if((l.at||0)>=at){ at=l.at||0; last=l.by||null; }
-    }
-  }
-  return last;
-}
-function addOneUnit(name, price){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const line = { id: uid(), name, price, at: Date.now(), by: getActiveUser().name, paid: null };
+
+/* ===================== ADD/REMOVE ===================== */
+function addItem(name, price){
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  const line={id:uid(), name, price, at:Date.now(), by:getActiveUser().name, paid:null};
   db.days[TODAY].tables[t].lines.push(line);
   bumpFav(name);
-  db.days[TODAY].undone.unshift({type:"add", table:t, line});
-  db.days[TODAY].undone = db.days[TODAY].undone.slice(0,25);
-  save(LS_KEY, db);
+  db.days[TODAY].undo.unshift({type:"add", table:t, line});
+  db.days[TODAY].undo=db.days[TODAY].undo.slice(0,25);
+  save(LS_DB, db);
 }
-function removeOneUnit(name, price){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const lines = db.days[TODAY].tables[t].lines;
-  const idx = lines.findIndex(x=>!x.paid && x.name===name && x.price===price);
+function removeOne(name, price){
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  const lines=db.days[TODAY].tables[t].lines;
+  const idx=lines.findIndex(x=>!x.paid && x.name===name && x.price===price);
   if(idx>=0){
-    const removed = lines.splice(idx,1)[0];
-    db.days[TODAY].undone.unshift({type:"remove", table:t, line:removed});
-    db.days[TODAY].undone = db.days[TODAY].undone.slice(0,25);
-    save(LS_KEY, db);
+    const removed=lines.splice(idx,1)[0];
+    db.days[TODAY].undo.unshift({type:"remove", table:t, line:removed});
+    db.days[TODAY].undo=db.days[TODAY].undo.slice(0,25);
+    save(LS_DB, db);
   }
 }
-
-/* ===================== VIEWS ===================== */
-let view = "home";
-
-/* ===================== TOP RENDER ===================== */
-function renderTop(){
-  $("todayText").textContent = "Σήμερα: " + TODAY.split("-").reverse().join("/");
-  $("shopName").textContent = getShopName();
-
-  const users = ensureUsers();
-  $("userSelect").innerHTML = users.map(u=>`<option value="${u.id}">${u.name}</option>`).join("");
-  $("userSelect").value = getActiveUserId();
-
-  $("dayLabel").textContent = TODAY.split("-").reverse().join("/");
-  $("userLabel").textContent = getActiveUser().name;
-}
-
-/* ===================== HOME ===================== */
-function renderHome(){
-  const db = ensureDB();
-  const st = calcDayStats(db);
-  $("homeStats").textContent =
-    `Ανοιχτά: ${st.openTables} τραπέζια • ${st.openItems} items • Πληρωμές: ${st.paymentsCount} • Σύνολο ημέρας: ${fmt(st.paidTotal)}`;
-  $("openOrdersCount").textContent = `${st.openTables}`;
-}
-
-/* ===================== TABLE PICKER ===================== */
-function renderTables(){
-  const db = ensureDB();
-  const filter = db.days[TODAY].meta.tableFilter;
-  $("tablesHint").textContent = (filter==="open") ? "Δείχνει μόνο όσα έχουν υπόλοιπο." : "Δείχνει όλα.";
-
-  const list = $("tableList");
-  list.innerHTML = "";
-
-  let any = false;
-  for(const g of tableGroups){
-    const head = document.createElement("div");
-    head.className = "sub muted";
-    head.style.marginTop = "6px";
-    head.textContent = g.title;
-    list.appendChild(head);
-
-    for(const t of g.list){
-      const openTotal = sumOpen(db,t);
-      const openCount = countOpenItems(db,t);
-      const note = (db.days[TODAY].notes?.[t]||"").trim();
-      const show = (filter==="all") ? true : openCount>0;
-      if(!show) continue;
-
-      any = true;
-      const item = document.createElement("div");
-      item.className = "listItem";
-      item.innerHTML = `
-        <div>
-          <div class="n">${t} ${note ? `<span class="badge" title="Σημείωση">✏️</span>` : ""}</div>
-          <div class="m">${openCount>0 ? `${openCount} items • Υπόλοιπο: ${fmt(openTotal)}` : "— κενό"}</div>
-        </div>
-        <div class="badge">${openCount}</div>
-      `;
-      item.onclick = ()=>{
-        const db2 = ensureDB();
-        db2.days[TODAY].meta.activeTable = t;
-        save(LS_KEY, db2);
-        showView("ticket");
-        renderAll();
-      };
-      list.appendChild(item);
-    }
+function undo(){
+  const db=ensureDB();
+  const a=db.days[TODAY].undo.shift();
+  if(!a){ toast("Undo","Δεν υπάρχει κάτι."); return; }
+  if(a.type==="add"){
+    const lines=db.days[TODAY].tables[a.table].lines;
+    const i=lines.findIndex(x=>x.id===a.line.id);
+    if(i>=0) lines.splice(i,1);
+    toast("Undo","Αφαιρέθηκε item.");
+  } else if(a.type==="remove"){
+    db.days[TODAY].tables[a.table].lines.push(a.line);
+    toast("Undo","Επαναφέρθηκε item.");
+  } else if(a.type==="pay"){
+    const lines=db.days[TODAY].tables[a.table].lines;
+    for(const l of lines) if(a.itemIds.includes(l.id)) l.paid=null;
+    db.days[TODAY].payments=db.days[TODAY].payments.filter(p=>p.id!==a.paymentId);
+    toast("Undo","Αναιρέθηκε πληρωμή.");
   }
-  $("tablesEmpty").style.display = any ? "none" : "block";
-}
-
-/* ===================== TICKET ===================== */
-function renderTicketHeader(){
-  const db = ensureDB();
-  const day = db.days[TODAY];
-  const t = day.meta.activeTable;
-  const openTotal = sumOpen(db,t);
-  const note = (day.notes?.[t]||"").trim();
-  const user = getActiveUser().name;
-
-  $("ticketInfo").textContent =
-    `Τραπέζι: ${t} • Υπόλοιπο: ${fmt(openTotal)} • Χρήστης: ${user}${note?` • Σημ.: ${note}`:""}`;
-  $("ticketTotalPill").textContent = `Σύνολο: ${fmt(openTotal)}`;
-}
-
-/* ---- Quick pay state ---- */
-const quickPayState = { table:null, name:null, price:null, ids:[], method:null };
-
-function showOverlay(id,on){ $(id).classList.toggle("show",!!on); }
-
-/* quick pay: ask qty if >1 */
-function openQuickPay(table, name, price, ids, method){
-  quickPayState.table = table;
-  quickPayState.name = name;
-  quickPayState.price = price;
-  quickPayState.ids = ids.slice();
-  quickPayState.method = method;
-
-  const label = method==="cash"?"Μετρητά":method==="card"?"Κάρτα":"Κερασμένα";
-  $("quickPayTitle").textContent = `${label} — ${name}`;
-  $("quickPayInfo").textContent = `Διαθέσιμα: ${ids.length} × ${fmt(price)}. Διάλεξε πόσα να κλείσουν τώρα.`;
-
-  const row = $("quickPayQtyRow");
-  row.innerHTML = "";
-  const max = ids.length;
-  const options = max<=8 ? Array.from({length:max},(_,i)=>i+1) : [1,2,3,4,5,max];
-
-  for(const n of options){
-    const b = document.createElement("button");
-    b.className = "pill";
-    b.textContent = `${n}`;
-    b.onclick = ()=>{ quickPayCommit(n); };
-    row.appendChild(b);
-  }
-  showOverlay("quickPayOverlay", true);
-}
-function quickPayCommit(qty){
-  const table = quickPayState.table;
-  const ids = quickPayState.ids.slice(0, qty);
-  const method = quickPayState.method;
-
-  doPaymentOnIds(table, ids, method, /*fromQuick=*/true);
-
-  showOverlay("quickPayOverlay", false);
-  toast("✅ Πληρώθηκε", `${qty} × ${quickPayState.name}`);
+  save(LS_DB, db);
   renderAll();
 }
 
-/* Render grouped open items with +/- and quick pay icons */
-function renderTicketLines(){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const lines = getLines(db,t);
-  const groups = groupOpenByNameAndPrice(lines);
+/* ===================== PAY (Split + QuickPay) ===================== */
+const payState={ ids:new Set() };
 
-  const box = $("ticketLines");
-  box.innerHTML = "";
-
-  if(groups.length===0){
-    const d = document.createElement("div");
-    d.className = "sub";
-    d.textContent = "— Δεν υπάρχουν ανοιχτά items.";
-    box.appendChild(d);
-    return;
-  }
-
-  for(const g of groups){
-    const qty = g.ids.length;
-    const total = qty * g.price;
-
-    const div = document.createElement("div");
-    div.className = "line";
-    div.innerHTML = `
-      <div class="lineLeft">
-        <div class="n">${g.name}</div>
-        <div class="m">${qty} × ${fmt(g.price)} = <b>${fmt(total)}</b></div>
-      </div>
-
-      <div class="lineRight">
-        <div class="qtyBox" title="Ποσότητα">
-          <button class="qbtn" data-act="minus">−</button>
-          <div class="qval">${qty}</div>
-          <button class="qbtn" data-act="plus">+</button>
-        </div>
-
-        <div class="payIcons" title="Πληρωμή προϊόντος">
-          <button class="picon ok" data-pay="cash">💶</button>
-          <button class="picon primary" data-pay="card">💳</button>
-          <button class="picon warn" data-pay="free">🎁</button>
-        </div>
-      </div>
-    `;
-
-    div.querySelector('[data-act="plus"]').onclick = (e)=>{
-      e.stopPropagation();
-      addOneUnit(g.name, g.price);
-      vibrate(18);
-      renderAll();
-    };
-    div.querySelector('[data-act="minus"]').onclick = (e)=>{
-      e.stopPropagation();
-      removeOneUnit(g.name, g.price);
-      vibrate([12,25,12]);
-      renderAll();
-    };
-
-    div.querySelector('[data-pay="cash"]').onclick = (e)=>{ e.stopPropagation(); quickPayHandle(t,g,"cash"); };
-    div.querySelector('[data-pay="card"]').onclick = (e)=>{ e.stopPropagation(); quickPayHandle(t,g,"card"); };
-    div.querySelector('[data-pay="free"]').onclick = (e)=>{ e.stopPropagation(); quickPayHandle(t,g,"free"); };
-
-    box.appendChild(div);
-  }
-}
-
-function quickPayHandle(table, group, method){
-  const ids = group.ids.slice();
-  if(ids.length === 1){
-    doPaymentOnIds(table, ids, method, /*fromQuick=*/true);
-    toast("✅ Πληρώθηκε", `${group.name}`);
-    renderAll();
-    return;
-  }
-  openQuickPay(table, group.name, group.price, ids, method);
-}
-
-/* ===================== QUICK GRID ===================== */
-function renderQuick(){
-  const grid = $("quickGrid");
-  grid.innerHTML = "";
-  const top8 = getTop8Products();
-  for(const p of top8){
-    const b = document.createElement("button");
-    b.className = "qCard";
-    b.innerHTML = `<div>${p.name}</div><div class="price">${fmt(p.price)}</div>`;
-    b.onclick = ()=>{
-      addOneUnit(p.name, p.price);
-      vibrate(18);
-      renderAll();
-    };
-    grid.appendChild(b);
-  }
-}
-
-/* ===================== CATEGORIES / PRODUCTS ===================== */
-function renderCategories(){
-  const db = ensureDB();
-  const active = db.days[TODAY].meta.activeCat || "coffee";
-  const row = $("catRow");
-  row.innerHTML = "";
-
-  for(const c of cats){
-    const b = document.createElement("button");
-    b.className = "catBtn" + (c.id===active ? " active" : "");
-    b.textContent = c.label;
-    b.onclick = ()=>{
-      const db2 = ensureDB();
-      db2.days[TODAY].meta.activeCat = c.id;
-      save(LS_KEY, db2);
-      renderCategories();
-      renderProductGrid();
-    };
-    row.appendChild(b);
-  }
-  const label = cats.find(x=>x.id===active)?.label || "";
-  $("catHint").textContent = `Ενεργή: ${label}`;
-}
-
-/* ✅ product tile with +/- */
-function renderProductGrid(){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const lines = getLines(db,t);
-  const open = unpaidLines(lines);
-  const qtyMap = {};
-  for(const l of open){
-    qtyMap[l.name] = (qtyMap[l.name]||0) + 1;
-  }
-
-  const active = db.days[TODAY].meta.activeCat || "coffee";
-  const allowed = cats.find(x=>x.id===active)?.allowed || [];
-  const list = products.filter(p=>allowed.includes(p.cat));
-
-  const grid = $("prodGrid");
-  grid.innerHTML = "";
-
-  for(const p of list){
-    const qty = qtyMap[p.name] || 0;
-    const tile = document.createElement("div");
-    tile.className = "pTile";
-    tile.innerHTML = `
-      <button class="pAddTap" title="Tap για +1"></button>
-      <div>
-        <div class="pName">${p.name}</div>
-        <div class="pPrice">${fmt(p.price)}</div>
-      </div>
-      <div class="pCtrls">
-        <button class="pSmall" data-act="plus">+</button>
-        <div class="pQty">${qty}</div>
-        <button class="pSmall" data-act="minus">−</button>
-      </div>
-    `;
-
-    // tap anywhere adds +1 (fast)
-    tile.querySelector(".pAddTap").onclick = ()=>{
-      addOneUnit(p.name, p.price);
-      vibrate(18);
-      renderAll();
-    };
-    tile.querySelector('[data-act="plus"]').onclick = (e)=>{
-      e.stopPropagation();
-      addOneUnit(p.name, p.price);
-      vibrate(18);
-      renderAll();
-    };
-    tile.querySelector('[data-act="minus"]').onclick = (e)=>{
-      e.stopPropagation();
-      removeOneUnit(p.name, p.price);
-      vibrate([12,25,12]);
-      renderAll();
-    };
-
-    grid.appendChild(tile);
-  }
-}
-
-/* ===================== NOTES ===================== */
-function editNote(){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const current = (db.days[TODAY].notes?.[t]||"").trim();
-  const val = prompt(`Σημείωση για ${t}:`, current);
-  if(val===null) return;
-  db.days[TODAY].notes[t] = val.trim();
-  save(LS_KEY, db);
-  toast("Σημείωση", val.trim()? "Αποθηκεύτηκε." : "Καθαρίστηκε.");
-  renderAll();
-}
-
-/* ===================== SEARCH ===================== */
-function renderSearch(){
-  const q = $("search").value.trim().toLowerCase();
-  const box = $("searchList");
-  box.innerHTML = "";
-  const res = products.filter(p=>p.name.toLowerCase().includes(q)).slice(0,80);
-  for(const p of res){
-    const div = document.createElement("div");
-    div.className = "line";
-    div.style.cursor="pointer";
-    div.innerHTML = `
-      <div class="lineLeft">
-        <div class="n">${p.name}</div>
-        <div class="m">${p.group}</div>
-      </div>
-      <div style="font-weight:900;flex:0 0 auto;">${fmt(p.price)}</div>
-    `;
-    div.onclick = ()=>{
-      addOneUnit(p.name, p.price);
-      showOverlay("searchOverlay", false);
-      renderAll();
-    };
-    box.appendChild(div);
-  }
-}
-
-/* ===================== PAY (Split) ===================== */
-const payState = { ids:new Set() };
-
-function openPaySheet(){
-  payState.ids = new Set();
+function openPay(){
+  payState.ids=new Set();
   renderPayList();
-  showOverlay("payOverlay", true);
+  $("payOv").classList.add("show");
 }
+function closePay(){ $("payOv").classList.remove("show"); }
 
 function renderPayList(){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const open = unpaidLines(getLines(db,t));
-  $("payTitle").textContent = `Ticket: ${t}`;
-
-  const list = $("payList");
-  list.innerHTML = "";
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  const open=openLines(getLines(db,t));
+  $("payTitle").textContent = `Πληρωμή — ${t} • Υπόλοιπο ${fmt(sumOpen(db,t))}`;
+  const box=$("payList");
+  box.innerHTML="";
   for(const l of open){
-    const row = document.createElement("div");
-    row.className="payLine";
-    row.innerHTML = `
-      <div class="left">
-        <input type="checkbox"/>
-        <div style="min-width:0;">
-          <div class="t">${l.name}</div>
-          <div class="s">${l.by} • ${new Date(l.at).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})}</div>
-        </div>
+    const r=document.createElement("div");
+    r.className="row";
+    r.innerHTML=`
+      <div class="leftcol">
+        <div class="title">${l.name}</div>
+        <div class="mini">${l.by} • ${new Date(l.at).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})}</div>
       </div>
-      <div class="right">${fmt(l.price)}</div>
+      <div class="ctrls">
+        <span class="badge">${fmt(l.price)}</span>
+        <input type="checkbox" style="width:22px;height:22px;accent-color:var(--accent)" />
+      </div>
     `;
-    const cb = row.querySelector("input");
-    cb.checked = payState.ids.has(l.id);
-    cb.onchange=()=>{
-      if(cb.checked) payState.ids.add(l.id); else payState.ids.delete(l.id);
-      updatePayTotal();
-    };
-    row.onclick=(e)=>{
-      if(e.target.tagName.toLowerCase()==="input") return;
-      cb.checked=!cb.checked; cb.dispatchEvent(new Event("change"));
-    };
-    list.appendChild(row);
+    const cb=r.querySelector("input");
+    cb.checked=payState.ids.has(l.id);
+    cb.onchange=()=>{ cb.checked ? payState.ids.add(l.id) : payState.ids.delete(l.id); updatePayTotal(); };
+    r.onclick=(e)=>{ if(e.target.tagName.toLowerCase()==="input") return; cb.checked=!cb.checked; cb.dispatchEvent(new Event("change")); };
+    box.appendChild(r);
   }
   updatePayTotal();
 }
 function updatePayTotal(){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const open = unpaidLines(getLines(db,t));
-  const selected = open.filter(x=>payState.ids.has(x.id));
-  const total = selected.reduce((s,x)=>s+x.price,0);
-  $("payTotal").textContent = `Τελικό: ${fmt(total)}`;
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  const open=openLines(getLines(db,t));
+  const sel=open.filter(x=>payState.ids.has(x.id));
+  const total=sel.reduce((s,x)=>s+x.price,0);
+  $("payTotal").textContent = `Τελικό: ${fmt(total)} (${sel.length} items)`;
 }
-function toggleSelectAll(){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const open = unpaidLines(getLines(db,t));
+function selectAllPay(){
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  const open=openLines(getLines(db,t));
   if(payState.ids.size===open.length){
     payState.ids=new Set();
-    $("btnSelectAll").textContent="Επίλεξε όλα";
-  }else{
+  } else {
     payState.ids=new Set(open.map(x=>x.id));
-    $("btnSelectAll").textContent="Αποεπιλογή όλων";
   }
   renderPayList();
 }
 
-function mustConfirmPayment(method, total, count){
-  return (method==="free") || (total>=CONFIRM_MIN_TOTAL) || (count>=CONFIRM_MIN_ITEMS);
+function confirmPaymentIfNeeded(method,total,count){
+  if(method==="free") return confirm(`Επιβεβαίωση ΚΕΡΑΣΜΕΝΑ\nItems: ${count}\nΣύνολο: ${fmt(total)}\nΝα καταχωρηθεί;`);
+  if(total>=15 || count>=3) return confirm(`Επιβεβαίωση πληρωμής\nItems: ${count}\nΣύνολο: ${fmt(total)}\nΝα καταχωρηθεί;`);
+  return true;
 }
 
-function doPaymentOnIds(table, ids, method, fromQuick=false){
-  const db = ensureDB();
-  const lines = getLines(db, table);
+function payIds(table, ids, method, fromQuick=false){
+  const db=ensureDB();
+  const lines=getLines(db,table);
   const now=Date.now();
   const user=getActiveUser().name;
 
@@ -1505,165 +968,128 @@ function doPaymentOnIds(table, ids, method, fromQuick=false){
   const realIds=[];
   for(const l of lines){
     if(ids.includes(l.id) && !l.paid){
-      total += l.price;
+      total+=l.price;
       realIds.push(l.id);
     }
   }
   if(realIds.length===0) return;
 
-  const label = ({cash:"Μετρητά",card:"Κάρτα",free:"Κερασμένα"}[method]||method);
-  const needConfirm = mustConfirmPayment(method, total, realIds.length);
-  if(needConfirm){
-    if(!confirm(`Επιβεβαίωση\n\nΤραπέζι: ${table}\nΧρήστης: ${user}\nΤρόπος: ${label}\nItems: ${realIds.length}\nΣύνολο: ${fmt(total)}\n\nΝα καταχωρηθεί;`)) return;
-  }
+  if(!confirmPaymentIfNeeded(method,total,realIds.length)) return;
 
-  for(const l of lines){
-    if(realIds.includes(l.id)) l.paid = { method, at: now, by: user };
-  }
+  for(const l of lines) if(realIds.includes(l.id)) l.paid={method, at:now, by:user};
 
-  const paymentId = uid();
-  db.days[TODAY].payments.push({ id: paymentId, at: now, table, user, method, total, itemIds: realIds });
+  const pid=uid();
+  db.days[TODAY].payments.push({id:pid, at:now, table, user, method, total, itemIds:realIds});
+  db.days[TODAY].undo.unshift({type:"pay", paymentId:pid, table, itemIds:realIds});
+  db.days[TODAY].undo=db.days[TODAY].undo.slice(0,25);
 
-  db.days[TODAY].undone.unshift({type:"pay", paymentId, table, itemIds: realIds});
-  db.days[TODAY].undone = db.days[TODAY].undone.slice(0,25);
+  save(LS_DB, db);
 
-  save(LS_KEY, db);
-
-  const remaining = unpaidLines(getLines(db, table)).length;
   if(!fromQuick){
-    showOverlay("payOverlay", false);
-    showView("home");
+    closePay();
+    goHome(); // μετά την πληρωμή -> Home
   } else {
-    if(remaining===0){
-      showView("home");
-    }
+    if(cntOpen(db, table)===0) goHome();
   }
 }
 
-function doPayment(method){
-  const db = ensureDB();
-  const t = db.days[TODAY].meta.activeTable;
-  const open = unpaidLines(getLines(db,t));
-  const selected = open.filter(x=>payState.ids.has(x.id));
-  if(selected.length===0){ alert("Διάλεξε items."); return; }
-  const ids = selected.map(x=>x.id);
-
-  doPaymentOnIds(t, ids, method, false);
-  toast("✅ Πληρωμή", `${t} — ${fmt(selected.reduce((s,x)=>s+x.price,0))}`);
+function doPay(method){
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  const open=openLines(getLines(db,t));
+  const sel=open.filter(x=>payState.ids.has(x.id));
+  if(sel.length===0){ alert("Διάλεξε items."); return; }
+  payIds(t, sel.map(x=>x.id), method, false);
+  toast("✅ Πληρωμή", `${t} — ${fmt(sel.reduce((s,x)=>s+x.price,0))}`);
   renderAll();
 }
 
-/* ===================== UNDO ===================== */
-function undoLast(){
-  const db = ensureDB();
-  const a = db.days[TODAY].undone.shift();
-  if(!a){ toast("Undo", "Δεν υπάρχει κάτι για αναίρεση."); return; }
+/* Quick pay */
+function openQuickPay(table, g, method){
+  const label = method==="cash"?"💶 Μετρητά":method==="card"?"💳 Κάρτα":"🎁 Κερασμένα";
+  $("qpayTitle").textContent = `${label} — ${g.name}`;
+  $("qpaySub").textContent = `Διαθέσιμα: ${g.ids.length} × ${fmt(g.price)}. Διάλεξε πόσα να κλείσουν τώρα.`;
 
-  if(a.type==="add"){
-    const lines = db.days[TODAY].tables[a.table].lines;
-    const idx = lines.findIndex(x=>x.id===a.line.id);
-    if(idx>=0) lines.splice(idx,1);
-    toast("Undo", "Αφαιρέθηκε το τελευταίο item.");
-  } else if(a.type==="remove"){
-    db.days[TODAY].tables[a.table].lines.push(a.line);
-    toast("Undo", "Επαναφέρθηκε το item.");
-  } else if(a.type==="pay"){
-    const lines = db.days[TODAY].tables[a.table].lines;
-    for(const l of lines){
-      if(a.itemIds.includes(l.id)) l.paid = null;
-    }
-    db.days[TODAY].payments = db.days[TODAY].payments.filter(p=>p.id!==a.paymentId);
-    toast("Undo", "Αναιρέθηκε η τελευταία πληρωμή.");
+  const box=$("qpayBtns");
+  box.innerHTML="";
+  const max=g.ids.length;
+  const opts = max<=8 ? Array.from({length:max},(_,i)=>i+1) : [1,2,3,4,5,max];
+  for(const n of opts){
+    const b=document.createElement("button");
+    b.className="sheetbtn";
+    b.textContent = `${n}`;
+    b.onclick=()=>{ payIds(table, g.ids.slice(0,n), method, true); $("qpayOv").classList.remove("show"); renderAll(); };
+    box.appendChild(b);
   }
-
-  save(LS_KEY, db);
-  renderAll();
+  $("qpayOv").classList.add("show");
 }
 
-/* ===================== SUMMARY + USER DRILLDOWN ===================== */
-function renderSummary(){
-  const db = ensureDB();
-  const st = calcDayStats(db);
-
-  $("daySummaryFull").textContent =
-    `Ανοιχτά τραπέζια: ${st.openTables} • Ανοιχτά items: ${st.openItems} • Πληρωμένα items: ${st.paidItems} • Σύνολο items: ${st.totalItems} • Πληρωμές: ${st.paymentsCount} • Σύνολο εισπράξεων: ${fmt(st.paidTotal)}`
-    + `\n(Μετρητά: ${fmt(st.sums.cash)} • Κάρτα: ${fmt(st.sums.card)} • Κερασμένα: ${fmt(st.sums.free)})`;
-
-  const top = getTopProducts(st.prodCounts, 5);
-  const tt = $("topProductsTable");
-  tt.innerHTML = "";
-  if(top.length===0){
-    tt.innerHTML = `<tr><td class="muted">— Δεν υπάρχουν καταχωρήσεις ακόμα σήμερα.</td></tr>`;
-  } else {
-    for(const it of top){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td><b>${it.name}</b><div class="muted">Τεμάχια: ${it.count}</div></td>`;
-      tt.appendChild(tr);
+/* ===================== SUMMARY ===================== */
+function paymentsByUser(db){
+  const users=ensureUsers();
+  const map={};
+  for(const u of users) map[u.name]={cash:0,card:0,free:0,count:0,total:0};
+  for(const p of db.days[TODAY].payments){
+    if(!map[p.user]) map[p.user]={cash:0,card:0,free:0,count:0,total:0};
+    map[p.user][p.method]+=p.total;
+    map[p.user].count+=1;
+    map[p.user].total+=p.total;
+  }
+  return Object.entries(map).map(([name,v])=>({name,...v})).sort((a,b)=>b.total-a.total);
+}
+function topProductsToday(db, limit=5){
+  const counts={};
+  for(const t of TABLES){
+    for(const l of getLines(db,t)){
+      counts[l.name]=(counts[l.name]||0)+1;
     }
   }
-
-  const us = calcUserPaymentSummary(db);
-  const ut = $("userSummaryTable");
-  ut.innerHTML = "";
-
-  for(const u of us){
-    const tr = document.createElement("tr");
-    tr.style.cursor="pointer";
-    tr.innerHTML = `
-      <td>
-        <b>${u.name}</b>
-        <div class="muted">Πληρωμές: ${u.count}</div>
-        <div class="muted">Μετρητά: ${fmt(u.cash)} • Κάρτα: ${fmt(u.card)} • Κερασμένα: ${fmt(u.free)}</div>
-        <div class="muted">Σύνολο: ${fmt(u.total)}</div>
-      </td>`;
-    tr.onclick = ()=> openUserDetails(u.name);
-    ut.appendChild(tr);
-  }
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([name,c])=>({name,count:c}));
 }
+function openSummary(){
+  renderSummary();
+  $("summaryOv").classList.add("show");
+}
+function closeSummary(){ $("summaryOv").classList.remove("show"); }
 
-function openUserDetails(userName){
-  const db = ensureDB();
-  const day = db.days[TODAY];
-  const payments = day.payments.filter(p=>p.user===userName).sort((a,b)=>b.at-a.at);
-
-  const sums = {cash:0, card:0, free:0};
-  let count=0;
-  for(const p of payments){ sums[p.method]+=p.total; count++; }
-
-  $("userDetailTitle").textContent = `👤 ${userName}`;
-  $("userDetailSub").textContent = `Κινήσεις: ${count} • Μετρητά: ${fmt(sums.cash)} • Κάρτα: ${fmt(sums.card)} • Κερασμένα: ${fmt(sums.free)} • Σύνολο: ${fmt(sums.cash+sums.card+sums.free)}`;
-
-  const body = $("userDetailBody");
-  body.innerHTML = "";
-
-  if(payments.length===0){
-    body.innerHTML = `<div class="muted">— Δεν υπάρχουν πληρωμές.</div>`;
+function openUserDetails(name){
+  const db=ensureDB();
+  const pay=db.days[TODAY].payments.filter(p=>p.user===name).sort((a,b)=>b.at-a.at);
+  const sums={cash:0,card:0,free:0,total:0,count:pay.length};
+  for(const p of pay){ sums[p.method]+=p.total; sums.total+=p.total; }
+  $("userTitle").textContent = `👤 ${name}`;
+  $("userSub").textContent = `Πληρωμές: ${sums.count} • Μετρητά: ${fmt(sums.cash)} • Κάρτα: ${fmt(sums.card)} • Κερασμένα: ${fmt(sums.free)} • Σύνολο: ${fmt(sums.total)}`;
+  const body=$("userBody");
+  body.innerHTML="";
+  if(pay.length===0){
+    const d=document.createElement("div");
+    d.className="sub";
+    d.textContent="— Δεν υπάρχουν πληρωμές.";
+    body.appendChild(d);
   } else {
-    for(const p of payments.slice(0,200)){
-      const div = document.createElement("div");
-      div.className="listItem";
-      div.style.cursor="default";
-      div.innerHTML = `
-        <div>
-          <div class="n">${fmt(p.total)} <span class="badge">${p.method}</span></div>
-          <div class="m">${new Date(p.at).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})} • ${p.table}</div>
+    for(const p of pay.slice(0,200)){
+      const r=document.createElement("div");
+      r.className="row";
+      r.style.borderTop="1px solid var(--line2)";
+      r.innerHTML=`
+        <div class="leftcol">
+          <div class="title">${fmt(p.total)} <span class="badge">${p.method}</span></div>
+          <div class="mini">${new Date(p.at).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})} • ${p.table}</div>
         </div>
-        <div class="badge">${p.itemIds?.length || 0}</div>
+        <span class="badge">${p.itemIds?.length||0} items</span>
       `;
-      body.appendChild(div);
+      body.appendChild(r);
     }
   }
-
-  showOverlay("userOverlay", true);
+  $("userOv").classList.add("show");
 }
 
 /* ===================== CSV ===================== */
 function exportCSV(){
-  const db = ensureDB();
-  const day = db.days[TODAY];
-  const rows = [];
+  const db=ensureDB();
+  const rows=[];
   rows.push(["date","time","table","user","method","total","items"].join(","));
-  for(const p of day.payments){
+  for(const p of db.days[TODAY].payments){
     rows.push([
       TODAY,
       new Date(p.at).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit",second:"2-digit"}),
@@ -1671,249 +1097,454 @@ function exportCSV(){
       p.user,
       p.method,
       (p.total||0).toFixed(2),
-      (p.itemIds?.length || 0)
+      (p.itemIds?.length||0)
     ].join(","));
   }
-  const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `daily-cashier-${TODAY}.csv`;
+  const blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`daily-cashier-${TODAY}.csv`;
   a.click();
 }
 
-/* ===================== WIPE ALL ===================== */
-async function wipeAll(){
-  if(!confirm("Θα σβηστούν ΟΛΑ. Συνέχεια;")) return;
-  const word = prompt("Για ασφάλεια γράψε ακριβώς: DELETE");
+/* ===================== WIPE ===================== */
+function wipeAll(){
+  if(!confirm("Θα σβηστούν όλα τα δεδομένα. Συνέχεια;")) return;
+  const word=prompt('Γράψε ακριβώς: DELETE');
   if(word!=="DELETE"){ alert("Ακυρώθηκε."); return; }
-  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_DB);
   localStorage.removeItem(LS_USERS);
-  localStorage.removeItem(LS_ACTIVE_USER);
-  localStorage.removeItem(LS_FAVS);
+  localStorage.removeItem(LS_ACTIVE);
   localStorage.removeItem(LS_SHOP);
   localStorage.removeItem(LS_ADMIN_HASH);
+  localStorage.removeItem(LS_FAVS);
   location.reload();
 }
 
-/* ===================== USER MANAGEMENT ===================== */
+/* ===================== SETTINGS ACTIONS ===================== */
 async function addUser(){
-  const name = prompt("Όνομα νέου χρήστη:");
+  const name=prompt("Όνομα νέου χρήστη:");
   if(!name) return;
-  const users = ensureUsers();
-  users.push({ id: uid(), name: name.trim(), pinHash: null });
+  const users=ensureUsers();
+  users.push({id:uid(), name:name.trim(), pinHash:null});
   save(LS_USERS, users);
-  save(LS_ACTIVE_USER, users[users.length-1].id);
+  save(LS_ACTIVE, users[users.length-1].id);
   renderAll();
 }
 async function renameUser(){
-  const active = getActiveUser();
-  const ok = await requireUserPinIfExists(active, "Μετονομασία");
+  const u=getActiveUser();
+  const ok=await requireUserPinIfExists(u, "Μετονομασία");
   if(!ok) return;
-  const name = prompt("Νέο όνομα:", active.name);
+  const name=prompt("Νέο όνομα:", u.name);
   if(!name) return;
-  const users = ensureUsers();
-  const idx = users.findIndex(u=>u.id===active.id);
-  users[idx].name = name.trim();
+  const users=ensureUsers();
+  const i=users.findIndex(x=>x.id===u.id);
+  users[i].name=name.trim();
   save(LS_USERS, users);
   renderAll();
 }
-async function setPin(){
-  const active = getActiveUser();
-  const ok = await requireUserPinIfExists(active, "Αλλαγή PIN");
+async function setUserPin(){
+  const u=getActiveUser();
+  const ok=await requireUserPinIfExists(u, "Αλλαγή PIN");
   if(!ok) return;
-  const pin1 = prompt("Νέο 4-ψήφιο PIN:");
-  if(!pin1 || !isValidPin(pin1)) { alert("Άκυρο PIN."); return; }
-  const pin2 = prompt("Ξαναγράψε το PIN:");
-  if(pin2 !== pin1) { alert("Δεν ταιριάζουν."); return; }
-  const users = ensureUsers();
-  const idx = users.findIndex(u=>u.id===active.id);
-  users[idx].pinHash = await sha256Hex(pin1);
+
+  const p1 = await pinOpen({title:"PIN χρήστη", sub:"Νέο 4-ψήφιο PIN", cancelText:"Άκυρο", okText:"Συνέχεια"});
+  if(!p1) return;
+  if(!isPin(p1)){ alert("Άκυρο PIN."); return; }
+
+  const p2 = await pinOpen({title:"PIN χρήστη", sub:"Ξανά PIN (επιβεβαίωση)", cancelText:"Άκυρο", okText:"Αποθήκευση"});
+  if(!p2) return;
+  if(p2!==p1){ alert("Δεν ταιριάζουν."); return; }
+
+  const users=ensureUsers();
+  const i=users.findIndex(x=>x.id===u.id);
+  users[i].pinHash=await sha256Hex(p1);
   save(LS_USERS, users);
-  alert("Το PIN άλλαξε.");
+  alert("PIN ενημερώθηκε.");
 }
-async function deleteUser(){
-  const active = getActiveUser();
-  const ok = await requireUserPinIfExists(active, "Διαγραφή χρήστη");
+async function delUser(){
+  const u=getActiveUser();
+  const ok=await requireUserPinIfExists(u, "Διαγραφή χρήστη");
   if(!ok) return;
-  const users = ensureUsers();
+  const users=ensureUsers();
   if(users.length<=1){ alert("Πρέπει να υπάρχει τουλάχιστον 1 χρήστης."); return; }
-  if(!confirm(`Να διαγραφεί ο χρήστης "${active.name}";`)) return;
-  const left = users.filter(u=>u.id!==active.id);
+  if(!confirm(`Να διαγραφεί ο χρήστης "${u.name}";`)) return;
+  const left=users.filter(x=>x.id!==u.id);
   save(LS_USERS, left);
-  save(LS_ACTIVE_USER, left[0].id);
+  save(LS_ACTIVE, left[0].id);
   renderAll();
 }
-async function changeShopName(){
-  const ok = await verifyAdminPin("Αλλαγή ονόματος μαγαζιού");
+async function changeShop(){
+  const ok=await verifyAdminPin("Αλλαγή ονόματος μαγαζιού");
   if(!ok) return;
-  const cur = getShopName();
-  const name = prompt("Νέο όνομα μαγαζιού:", cur);
+  const cur=getShopName();
+  const name=prompt("Νέο όνομα μαγαζιού:", cur);
   if(!name) return;
-  setShopNameLocal(name.trim());
-  toast("🏷 Όνομα μαγαζιού", "Αλλάχτηκε.");
+  setShopName(name.trim());
+  toast("🏷 Όνομα","Αλλάχτηκε.");
+  renderAll();
 }
 
-/* ===================== TABLE SEARCH ===================== */
-function openTableSearch(){
-  $("tableSearch").value = "";
-  renderTableSearch("");
-  showOverlay("tableSearchOverlay", true);
-  setTimeout(()=> $("tableSearch").focus(), 50);
+/* ===================== VIEWS ===================== */
+let view="home";
+function showView(v){
+  view=v;
+  $("viewHome").classList.toggle("show", v==="home");
+  $("viewTables").classList.toggle("show", v==="tables");
+  $("viewTicket").classList.toggle("show", v==="ticket");
 }
-function renderTableSearch(q){
-  const db = ensureDB();
-  const filter = (q||"").trim().toUpperCase();
-  const list = $("tableSearchList");
-  list.innerHTML = "";
 
-  const openTables = tables
-    .map(t=>({t, open:countOpenItems(db,t), total:sumOpen(db,t)}))
-    .filter(x=>x.open>0);
+/* ===================== RENDER ===================== */
+function renderTop(){
+  $("shopName").textContent=getShopName();
+  const u=getActiveUser();
+  const stats=dayStats(ensureDB());
+  $("topSub").textContent = `Σήμερα ${TODAY.split("-").reverse().join("/")} • Χρήστης: ${u.name} • Ανοιχτά: ${stats.openTables} / ${stats.openItems}`;
 
-  const filtered = openTables.filter(x=>x.t.includes(filter));
-  const arr = (filter ? filtered : openTables).slice(0,30);
+  const users=ensureUsers();
+  $("userSelect").innerHTML = users.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+  $("userSelect").value = getActiveUserId();
+}
 
-  if(arr.length===0){
-    const d = document.createElement("div");
-    d.className="sub muted";
-    d.textContent="— Δεν βρέθηκε.";
-    list.appendChild(d);
-    return;
-  }
+function renderHome(){
+  const db=ensureDB();
+  const st=dayStats(db);
+  $("openCountMeta").textContent = `${st.openTables} τραπέζια`;
+  $("homeStats").textContent =
+    `Ανοιχτά τραπέζια: ${st.openTables} • Ανοιχτά items: ${st.openItems}\n`+
+    `Σύνολο εισπράξεων: ${fmt(st.paidTotal)} (💶 ${fmt(st.cash)} • 💳 ${fmt(st.card)} • 🎁 ${fmt(st.free)})`;
+}
 
-  for(const it of arr){
-    const row = document.createElement("div");
-    row.className="listItem";
-    row.innerHTML = `
-      <div>
-        <div class="n">${it.t}</div>
-        <div class="m">${it.open} items • ${fmt(it.total)}</div>
+function renderTables(){
+  const db=ensureDB();
+  const onlyOpen=db.days[TODAY].meta.showOnlyOpen;
+  $("btnToggleTables").textContent = onlyOpen ? "Μόνο ανοιχτά" : "Όλα";
+  $("tablesSub").textContent = onlyOpen ? "Δείχνει μόνο όσα έχουν υπόλοιπο." : "Δείχνει όλα τα τραπέζια.";
+
+  const box=$("tablesList");
+  box.innerHTML="";
+  let shown=0;
+  for(const t of TABLES){
+    const c=cntOpen(db,t);
+    const total=sumOpen(db,t);
+    if(onlyOpen && c===0) continue;
+    shown++;
+    const r=document.createElement("div");
+    r.className="row";
+    if(shown>1) r.style.borderTop="1px solid var(--line2)";
+    r.innerHTML=`
+      <div class="leftcol">
+        <div class="title">${t}</div>
+        <div class="mini">${c} items ανοιχτά</div>
       </div>
-      <div class="badge">${it.open}</div>
+      <div class="ctrls">
+        <span class="badge">${fmt(total)}</span>
+        <span class="badge">${c}</span>
+      </div>
     `;
-    row.onclick = ()=>{
-      const db2 = ensureDB();
-      db2.days[TODAY].meta.activeTable = it.t;
-      save(LS_KEY, db2);
-      showOverlay("tableSearchOverlay", false);
+    r.onclick=()=>{
+      const db2=ensureDB();
+      db2.days[TODAY].meta.activeTable=t;
+      save(LS_DB, db2);
       showView("ticket");
       renderAll();
     };
-    list.appendChild(row);
+    box.appendChild(r);
+  }
+  if(shown===0){
+    const d=document.createElement("div");
+    d.className="sub";
+    d.textContent="— Δεν υπάρχουν ανοιχτά τραπέζια.";
+    box.appendChild(d);
   }
 }
 
-/* ===================== MAIN RENDER ===================== */
+function renderTicket(){
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  $("ticketSub").textContent = `${t} • Υπόλοιπο ${fmt(sumOpen(db,t))}`;
+
+  renderOpenItems();
+  renderTop8();
+  renderCats();
+  renderProducts();
+}
+
+function renderOpenItems(){
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  const groups=groupOpen(getLines(db,t));
+  const box=$("openItemsList");
+  box.innerHTML="";
+
+  if(groups.length===0){
+    const d=document.createElement("div");
+    d.className="sub";
+    d.textContent="— Δεν υπάρχουν ανοιχτά items.";
+    box.appendChild(d);
+    return;
+  }
+
+  let first=true;
+  for(const g of groups){
+    const qty=g.ids.length;
+    const total=qty*g.price;
+    const r=document.createElement("div");
+    r.className="row";
+    if(!first) r.style.borderTop="1px solid var(--line2)";
+    first=false;
+    r.innerHTML=`
+      <div class="leftcol">
+        <div class="title">${g.name}</div>
+        <div class="mini">${qty} × ${fmt(g.price)} = <b>${fmt(total)}</b></div>
+      </div>
+      <div class="ctrls">
+        <div class="qty">
+          <button class="qbtn" data-a="minus">−</button>
+          <div class="qval">${qty}</div>
+          <button class="qbtn" data-a="plus">+</button>
+        </div>
+        <div class="payicons">
+          <button class="pbtn cash" data-p="cash">💶</button>
+          <button class="pbtn card" data-p="card">💳</button>
+          <button class="pbtn free" data-p="free">🎁</button>
+        </div>
+      </div>
+    `;
+
+    r.querySelector('[data-a="plus"]').onclick=(e)=>{ e.stopPropagation(); addItem(g.name,g.price); vibrate(18); renderAll(); };
+    r.querySelector('[data-a="minus"]').onclick=(e)=>{ e.stopPropagation(); removeOne(g.name,g.price); vibrate([12,25,12]); renderAll(); };
+
+    const quick=(method)=>{
+      if(g.ids.length===1){
+        payIds(t, g.ids.slice(), method, true);
+        toast("✅ Πληρώθηκε", g.name);
+        renderAll();
+        return;
+      }
+      openQuickPay(t, g, method);
+    };
+    r.querySelector('[data-p="cash"]').onclick=(e)=>{ e.stopPropagation(); quick("cash"); };
+    r.querySelector('[data-p="card"]').onclick=(e)=>{ e.stopPropagation(); quick("card"); };
+    r.querySelector('[data-p="free"]').onclick=(e)=>{ e.stopPropagation(); quick("free"); };
+
+    box.appendChild(r);
+  }
+}
+
+function renderTop8(){
+  const box=$("top8Row");
+  box.innerHTML="";
+  for(const p of top8()){
+    const b=document.createElement("button");
+    b.className="tab";
+    b.textContent = `${p.name} • ${fmt(p.price)}`;
+    b.onclick=()=>{ addItem(p.name,p.price); vibrate(18); renderAll(); };
+    box.appendChild(b);
+  }
+}
+
+function renderCats(){
+  const db=ensureDB();
+  const active=db.days[TODAY].meta.activeCat;
+  const box=$("catTabs");
+  box.innerHTML="";
+  for(const c of CATS){
+    const b=document.createElement("button");
+    b.className="tab"+(c.id===active?" active":"");
+    b.textContent=c.label;
+    b.onclick=()=>{
+      const db2=ensureDB();
+      db2.days[TODAY].meta.activeCat=c.id;
+      save(LS_DB, db2);
+      renderProducts();
+      renderCats();
+    };
+    box.appendChild(b);
+  }
+}
+
+function renderProducts(){
+  const db=ensureDB();
+  const t=db.days[TODAY].meta.activeTable;
+  const lines=openLines(getLines(db,t));
+  const qtyMap={};
+  for(const l of lines) qtyMap[l.name]=(qtyMap[l.name]||0)+1;
+
+  const active=db.days[TODAY].meta.activeCat;
+  const allowed=CATS.find(x=>x.id===active)?.allowed||[];
+  const q=($("prodSearch").value||"").trim().toLowerCase();
+
+  const list=PRODUCTS.filter(p=>allowed.includes(p.cat)).filter(p=>p.name.toLowerCase().includes(q));
+
+  const box=$("productsList");
+  box.innerHTML="";
+  let first=true;
+  for(const p of list){
+    const qty=qtyMap[p.name]||0;
+    const r=document.createElement("div");
+    r.className="row";
+    if(!first) r.style.borderTop="1px solid var(--line2)";
+    first=false;
+    r.innerHTML=`
+      <div class="leftcol">
+        <div class="title">${p.name}</div>
+        <div class="mini">${fmt(p.price)}</div>
+      </div>
+      <div class="ctrls">
+        <div class="qty">
+          <button class="qbtn" data-a="minus">−</button>
+          <div class="qval">${qty}</div>
+          <button class="qbtn" data-a="plus">+</button>
+        </div>
+      </div>
+    `;
+    r.querySelector('[data-a="plus"]').onclick=(e)=>{ e.stopPropagation(); addItem(p.name,p.price); vibrate(18); renderAll(); };
+    r.querySelector('[data-a="minus"]').onclick=(e)=>{ e.stopPropagation(); removeOne(p.name,p.price); vibrate([12,25,12]); renderAll(); };
+    r.onclick=()=>{ addItem(p.name,p.price); vibrate(12); renderAll(); };
+    box.appendChild(r);
+  }
+  if(list.length===0){
+    const d=document.createElement("div");
+    d.className="sub";
+    d.textContent="— Δεν βρέθηκαν προϊόντα.";
+    box.appendChild(d);
+  }
+}
+
+function renderSummary(){
+  const db=ensureDB();
+  const st=dayStats(db);
+  $("summaryText").textContent =
+    `Ανοιχτά τραπέζια: ${st.openTables} • Ανοιχτά items: ${st.openItems}\n`+
+    `Σύνολο εισπράξεων: ${fmt(st.paidTotal)} (💶 ${fmt(st.cash)} • 💳 ${fmt(st.card)} • 🎁 ${fmt(st.free)})`;
+
+  const top=topProductsToday(db,5);
+  const topBox=$("topList");
+  topBox.innerHTML="";
+  if(top.length===0){
+    const d=document.createElement("div");
+    d.className="sub";
+    d.textContent="— Δεν υπάρχουν καταχωρήσεις ακόμα.";
+    topBox.appendChild(d);
+  } else {
+    let first=true;
+    for(const it of top){
+      const r=document.createElement("div");
+      r.className="row";
+      if(!first) r.style.borderTop="1px solid var(--line2)";
+      first=false;
+      r.innerHTML=`
+        <div class="leftcol">
+          <div class="title">${it.name}</div>
+          <div class="mini">Τεμάχια: ${it.count}</div>
+        </div>
+        <span class="badge">${it.count}</span>
+      `;
+      topBox.appendChild(r);
+    }
+  }
+
+  const us=paymentsByUser(db);
+  const userBox=$("userSumList");
+  userBox.innerHTML="";
+  if(us.length===0){
+    const d=document.createElement("div");
+    d.className="sub";
+    d.textContent="— Δεν υπάρχουν πληρωμές.";
+    userBox.appendChild(d);
+  } else {
+    let first=true;
+    for(const u of us){
+      const r=document.createElement("div");
+      r.className="row";
+      if(!first) r.style.borderTop="1px solid var(--line2)";
+      first=false;
+      r.innerHTML=`
+        <div class="leftcol">
+          <div class="title">${u.name}</div>
+          <div class="mini">💶 ${fmt(u.cash)} • 💳 ${fmt(u.card)} • 🎁 ${fmt(u.free)} • Πληρωμές: ${u.count}</div>
+        </div>
+        <span class="badge">${fmt(u.total)}</span>
+      `;
+      r.onclick=()=>{ closeSummary(); openUserDetails(u.name); };
+      userBox.appendChild(r);
+    }
+  }
+}
+
+function renderSettings(){
+  const u=getActiveUser();
+  $("settingsSub").textContent = `Ημέρα: ${TODAY.split("-").reverse().join("/")} • Ενεργός χρήστης: ${u.name} • Shop: ${getShopName()}`;
+}
+
 function renderAll(){
   renderTop();
   renderHome();
   renderTables();
-  renderTicketHeader();
-  renderTicketLines();
-  renderQuick();
-  renderCategories();
-  renderProductGrid();
+  renderTicket();
   renderSummary();
+  renderSettings();
 }
 
 /* ===================== EVENTS ===================== */
-$("btnSettings").onclick = ()=> showOverlay("overlay", true);
-$("btnCloseSheet").onclick = ()=> showOverlay("overlay", false);
-$("overlay").onclick = (e)=>{ if(e.target.id==="overlay") showOverlay("overlay", false); };
+$("btnSettings").onclick=()=>{ renderSettings(); $("settingsOv").classList.add("show"); };
+$("btnCloseSettings").onclick=()=>$("settingsOv").classList.remove("show");
+$("settingsOv").onclick=(e)=>{ if(e.target.id==="settingsOv") $("settingsOv").classList.remove("show"); };
 
-$("btnSummaryTop").onclick = ()=> { renderSummary(); showOverlay("summaryOverlay", true); };
-$("btnSummary2").onclick = ()=> { renderSummary(); showOverlay("summaryOverlay", true); };
-$("btnSummary3").onclick = ()=> { renderSummary(); showOverlay("summaryOverlay", true); };
-$("btnCloseSummary").onclick = ()=> showOverlay("summaryOverlay", false);
-$("summaryOverlay").onclick = (e)=>{ if(e.target.id==="summaryOverlay") showOverlay("summaryOverlay", false); };
+$("btnSummaryTop").onclick=()=>openSummary();
+$("btnSummaryHome").onclick=()=>openSummary();
+$("btnCloseSummary").onclick=()=>closeSummary();
+$("summaryOv").onclick=(e)=>{ if(e.target.id==="summaryOv") closeSummary(); };
 
-$("btnCloseUserOverlay").onclick = ()=> showOverlay("userOverlay", false);
-$("userOverlay").onclick = (e)=>{ if(e.target.id==="userOverlay") showOverlay("userOverlay", false); };
+$("btnCloseUser").onclick=()=>$("userOv").classList.remove("show");
+$("userOv").onclick=(e)=>{ if(e.target.id==="userOv") $("userOv").classList.remove("show"); };
 
-$("btnNewOrder").onclick = ()=>{
-  const db = ensureDB();
-  db.days[TODAY].meta.tableFilter = "all";
-  save(LS_KEY, db);
-  showView("tables");
-  renderAll();
-};
-$("btnOpenOrders").onclick = ()=>{
-  const db = ensureDB();
-  db.days[TODAY].meta.tableFilter = "open";
-  save(LS_KEY, db);
-  showView("tables");
-  renderAll();
-};
-$("btnBackHome1").onclick = ()=> { showView("home"); renderAll(); };
-$("btnBackHome2").onclick = ()=> { showView("home"); renderAll(); };
+$("btnClosePay").onclick=()=>closePay();
+$("payOv").onclick=(e)=>{ if(e.target.id==="payOv") closePay(); };
 
-$("btnShowAll").onclick = ()=>{
-  const db = ensureDB();
-  db.days[TODAY].meta.tableFilter = "all";
-  save(LS_KEY, db);
+$("btnCloseQPay").onclick=()=>$("qpayOv").classList.remove("show");
+$("qpayOv").onclick=(e)=>{ if(e.target.id==="qpayOv") $("qpayOv").classList.remove("show"); };
+
+$("btnNewOrder").onclick=()=>{ showView("tables"); const db=ensureDB(); db.days[TODAY].meta.showOnlyOpen=false; save(LS_DB,db); renderAll(); };
+$("btnOpenOrders").onclick=()=>{ showView("tables"); const db=ensureDB(); db.days[TODAY].meta.showOnlyOpen=true; save(LS_DB,db); renderAll(); };
+$("btnBackHome").onclick=()=>goHome();
+$("btnBackTables").onclick=()=>{ showView("tables"); renderAll(); };
+
+$("btnToggleTables").onclick=()=>{
+  const db=ensureDB();
+  db.days[TODAY].meta.showOnlyOpen=!db.days[TODAY].meta.showOnlyOpen;
+  save(LS_DB, db);
   renderTables();
-};
-$("btnShowOpen").onclick = ()=>{
-  const db = ensureDB();
-  db.days[TODAY].meta.tableFilter = "open";
-  save(LS_KEY, db);
-  renderTables();
+  renderTop();
 };
 
-$("btnSearchOpen").onclick = openTableSearch;
-$("btnCloseTableSearch").onclick = ()=> showOverlay("tableSearchOverlay", false);
-$("tableSearchOverlay").onclick = (e)=>{ if(e.target.id==="tableSearchOverlay") showOverlay("tableSearchOverlay", false); };
-$("tableSearch").addEventListener("input", (e)=>renderTableSearch(e.target.value));
+$("btnPay").onclick=()=>openPay();
+$("btnPayCash").onclick=()=>doPay("cash");
+$("btnPayCard").onclick=()=>doPay("card");
+$("btnPayFree").onclick=()=>doPay("free");
+$("btnSelAll").onclick=()=>selectAllPay();
 
-$("btnPay").onclick = openPaySheet;
-$("btnClosePay").onclick = ()=> showOverlay("payOverlay", false);
-$("payOverlay").onclick = (e)=>{ if(e.target.id==="payOverlay") showOverlay("payOverlay", false); };
+$("prodSearch").addEventListener("input", ()=>renderProducts());
 
-$("btnSelectAll").onclick = toggleSelectAll;
-$("btnPayCash").onclick = ()=>doPayment("cash");
-$("btnPayCard").onclick = ()=>doPayment("card");
-$("btnPayFree").onclick = ()=>doPayment("free");
+$("btnUndo").onclick=()=>undo();
+$("btnCSV").onclick=()=>exportCSV();
+$("btnWipe").onclick=()=>wipeAll();
 
-$("btnCloseQuickPay").onclick = ()=> showOverlay("quickPayOverlay", false);
-$("quickPayOverlay").onclick = (e)=>{ if(e.target.id==="quickPayOverlay") showOverlay("quickPayOverlay", false); };
+$("btnAddUser").onclick=()=>addUser();
+$("btnRenameUser").onclick=()=>renameUser();
+$("btnSetPin").onclick=()=>setUserPin();
+$("btnDelUser").onclick=()=>delUser();
+$("btnShopName").onclick=()=>changeShop();
 
-$("btnCSV").onclick = exportCSV;
-$("btnWipeAll").onclick = wipeAll;
+$("userSelect").onchange=(e)=>changeUser(e.target.value);
 
-$("btnAddUser").onclick = addUser;
-$("btnRenameUser").onclick = renameUser;
-$("btnSetPin").onclick = setPin;
-$("btnDeleteUser").onclick = deleteUser;
-$("btnAdminShop").onclick = changeShopName;
-
-$("userSelect").onchange = (e)=> changeUserWithPin(e.target.value);
-
-$("btnUndo").onclick = undoLast;
-$("btnNote").onclick = editNote;
-
-$("btnClearQuick").onclick = ()=>{
-  if(confirm("Reset Top 8 για σήμερα;")){ resetFavs(); renderQuick(); toast("Top 8", "Έγινε reset."); }
-};
-
-$("btnSearch").onclick = ()=>{
-  $("search").value = "";
-  renderSearch();
-  showOverlay("searchOverlay", true);
-  setTimeout(()=> $("search").focus(), 50);
-};
-$("btnCloseSearch").onclick = ()=> showOverlay("searchOverlay", false);
-$("searchOverlay").onclick = (e)=>{ if(e.target.id==="searchOverlay") showOverlay("searchOverlay", false); };
-$("search").addEventListener("input", renderSearch);
-
-/* start */
-setShopNameLocal(getShopName());
+/* ===================== INIT ===================== */
+ensureUsers();
+ensureDB();
 showView("home");
 renderAll();
 
-/* optional service worker register if you use it */
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js");
-}
 </script>
 </body>
 </html>
