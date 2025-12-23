@@ -1513,8 +1513,7 @@
     const sum = toPay.reduce((s,it)=>s + it.price*it.qty, 0);
     const methodLabel = currentPayMethod==="cash" ? "Μετρητά" : currentPayMethod==="card" ? "Κάρτα" : "Κερασμένο";
 
-    if(!confirm(`Επιβεβαίωση: ${methodLabel} για ${toPay.length} item(s) • ${€(sum)} ;`)) return;
-
+    if(!confirm(`Επιβεβαίωση: ${methodLabel} για ${toPay.length} είδη • ${€(sum)} ;`)) return;
     // mark paid
     const t = tableData(activeTable);
     for(const it of t.items){
