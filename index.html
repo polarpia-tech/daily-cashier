@@ -113,30 +113,23 @@
     .row{ display:flex; align-items:center; gap:10px; }
     .row.space{ justify-content:space-between; }
 
-    /* press feedback */
+    /* ✅ PRESS ONLY (no ripple) */
     .pressable{
       position:relative; overflow:hidden;
-      transition: transform .06s ease, filter .06s ease, background-color .12s ease;
+      transition: transform .06s ease, filter .06s ease, background-color .12s ease, box-shadow .12s ease, border-color .12s ease;
       touch-action: manipulation; user-select:none; isolation:isolate;
+      will-change: transform, filter;
     }
-    .pressable:active{ transform: scale(.985); filter: brightness(1.10); }
+    .pressable:active{
+      transform: translateY(1px) scale(.975);
+      filter: brightness(1.18) saturate(1.05);
+    }
     .pressable.is-pressed{
-      background-color: rgba(47,227,159,.18) !important;
-      border-color: rgba(47,227,159,.35) !important;
-    }
-    .ripple{
-      position:absolute; border-radius:50%; pointer-events:none;
-      width:20px; height:20px;
-      transform: translate(-50%,-50%) scale(0);
-      background: rgba(255,255,255,.28);
-      opacity: 1;
-      animation: ripple .50s ease-out forwards;
-      z-index: 2;
-    }
-    @keyframes ripple{
-      0%{ transform: translate(-50%,-50%) scale(0); opacity: .95; }
-      60%{ opacity: .35; }
-      100%{ transform: translate(-50%,-50%) scale(22); opacity: 0; }
+      background-color: rgba(47,227,159,.30) !important;
+      border-color: rgba(47,227,159,.60) !important;
+      box-shadow:
+        0 0 0 4px rgba(47,227,159,.14) inset,
+        0 10px 26px rgba(0,0,0,.22);
     }
 
     /* tables */
@@ -348,7 +341,7 @@
   </div>
 
   <script>
-    const LS_KEY = "daily_cashier_db_v4"; // new key to avoid old broken state
+    const LS_KEY = "daily_cashier_db_v4";
     const TODAY = new Date().toISOString().slice(0,10);
 
     const el = (id) => document.getElementById(id);
@@ -362,38 +355,26 @@
     const modalFoot  = el("modalFoot");
 
     function hapticStrong(){
-      try{ if(navigator.vibrate) navigator.vibrate([22, 10, 22]); }catch{}
+      try{ if(navigator.vibrate) navigator.vibrate([28, 12, 28]); }catch{}
     }
     function hapticSmall(){
       try{ if(navigator.vibrate) navigator.vibrate(12); }catch{}
     }
 
-    function addRipple(elem, x, y){
-      const r = elem.getBoundingClientRect();
-      const rx = (x ?? (r.left + r.width/2)) - r.left;
-      const ry = (y ?? (r.top + r.height/2)) - r.top;
-      const rip = document.createElement("span");
-      rip.className = "ripple";
-      rip.style.left = rx + "px";
-      rip.style.top  = ry + "px";
-      elem.appendChild(rip);
-      rip.addEventListener("animationend", ()=> rip.remove());
-    }
     function pressFlash(elem){
       elem.classList.add("is-pressed");
-      setTimeout(()=> elem.classList.remove("is-pressed"), 120);
+      setTimeout(()=> elem.classList.remove("is-pressed"), 140);
     }
+
+    // ✅ No ripple + no double-fire: ONLY pointerdown
     function makePressable(elem, strong=false){
       if(!elem) return;
       elem.classList.add("pressable");
-      const down = (ev)=>{
-        const t = ev.touches?.[0];
-        addRipple(elem, t?.clientX ?? ev.clientX, t?.clientY ?? ev.clientY);
+      const down = ()=>{
         pressFlash(elem);
         strong ? hapticStrong() : hapticSmall();
       };
       elem.addEventListener("pointerdown", down, {passive:true});
-      elem.addEventListener("touchstart", down, {passive:true});
     }
 
     function euro(x){
@@ -425,8 +406,6 @@
     }
 
     function buildMenuIfMissing(){
-      // If menu missing, create it (kept short here: you already had full list before)
-      // For safety: if db.menu exists we won't override.
       const categories = [
         { id:"coffee_hot",  name:"Καφέδες – Ζεστοί", emoji:"☕" },
         { id:"coffee_cold", name:"Καφέδες – Κρύοι",  emoji:"🧊" },
@@ -441,16 +420,12 @@
         { id:"cocktail",    name:"Κοκτέιλ",           emoji:"🍸" },
         { id:"extras",      name:"Extras",            emoji:"➕" }
       ];
-      // NOTE: To keep response size manageable, products list should be pasted from your existing version if needed.
-      // We'll include the full products list via a minimal approach: if current db has products, keep them.
       return { categories, products: [] };
     }
 
     let db = loadDB() || defaultDB();
     if(!db.menu || !db.menu.categories){ db.menu = buildMenuIfMissing(); }
     if(!db.menu.products || db.menu.products.length===0){
-      // fallback: keep your full products list from previous working build
-      // (If you already have products in storage from earlier, this won't run.)
       db.menu.products = [
         { id:"p_espresso_single", cat:"coffee_hot", name:"Espresso μονός", price:2.60 },
         { id:"p_espresso_double", cat:"coffee_hot", name:"Espresso διπλός", price:3.20 },
@@ -528,6 +503,9 @@
     }
     ensureDay(); saveDB();
 
+    // ✅ IMPORTANT: lastUserId exists, prevents broken change handler
+    let lastUserId = db.currentUserId;
+
     function getUser(){ return db.users.find(u=>u.id===db.currentUserId) || db.users[0]; }
 
     function setTop(){
@@ -547,6 +525,9 @@
         if(u.id===db.currentUserId) opt.selected = true;
         sel.appendChild(opt);
       }
+      // keep select consistent
+      sel.value = db.currentUserId;
+      lastUserId = db.currentUserId;
     }
 
     // modal helpers
@@ -578,6 +559,29 @@
 
         modalFoot.appendChild(b1);
         modalFoot.appendChild(b2);
+
+        modalBack.style.display = "flex";
+      });
+    }
+
+    // ✅ 1-button alert (for wrong PIN etc.)
+    function modalAlert(title, text, okText="ΟΚ"){
+      return new Promise((resolve)=>{
+        modalTitle.textContent = title;
+        modalBody.textContent = text;
+        modalFoot.innerHTML = "";
+
+        const b = document.createElement("button");
+        b.className = "btn pressable good";
+        b.textContent = okText;
+        makePressable(b, true);
+        b.addEventListener("click", ()=>{ closeModal(); resolve(true); });
+
+        // occupy full width by adding a dummy + CSS grid? easiest: add two cols with first hidden
+        const dummy = document.createElement("div");
+        dummy.style.display = "none";
+        modalFoot.appendChild(dummy);
+        modalFoot.appendChild(b);
 
         modalBack.style.display = "flex";
       });
@@ -679,8 +683,7 @@
         btn.className = "btn pressable " + (b.kind||"") + (b.full ? " full" : "");
         btn.textContent = b.text;
         makePressable(btn, true);
-        btn.addEventListener("click", (ev)=>{
-          addRipple(btn, ev.clientX, ev.clientY);
+        btn.addEventListener("click", ()=>{
           pressFlash(btn);
           hapticStrong();
           b.onClick();
@@ -723,47 +726,46 @@
 
     // screens
     function renderHome(){
-  view.innerHTML = `
-    <div style="
-      text-align:center;
-      font-weight:1000;
-      letter-spacing:.2px;
-      margin: 6px 0 10px 0;
-      color: rgba(234,241,255,.92);
-      font-size: 16px;
-    ">Τραπέζια - Bar</div>
+      view.innerHTML = `
+        <div style="
+          text-align:center;
+          font-weight:1000;
+          letter-spacing:.2px;
+          margin: 6px 0 10px 0;
+          color: rgba(234,241,255,.92);
+          font-size: 16px;
+        ">Τραπέζια - Bar</div>
 
-    <div class="tables">
-      ${db.tables.map(t=>{
-        const total = tableTotal(t.id);
-        const count = unpaidItems(t.id).length;
-        const open = total>0;
-        return `
-          <button class="tbtn pressable" data-tid="${t.id}">
-            <div class="title">
-              <span class="led ${open ? "open" : ""}"></span>
-              ${t.label}
-            </div>
-            <div class="sub">${open ? ("Υπόλοιπο: " + euro(total)) : "—"}</div>
-            <div class="badge">${count}</div>
-          </button>
-        `;
-      }).join("")}
-    </div>
-  `;
+        <div class="tables">
+          ${db.tables.map(t=>{
+            const total = tableTotal(t.id);
+            const count = unpaidItems(t.id).length;
+            const open = total>0;
+            return `
+              <button class="tbtn pressable" data-tid="${t.id}">
+                <div class="title">
+                  <span class="led ${open ? "open" : ""}"></span>
+                  ${t.label}
+                </div>
+                <div class="sub">${open ? ("Υπόλοιπο: " + euro(total)) : "—"}</div>
+                <div class="badge">${count}</div>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `;
 
-  view.querySelectorAll("[data-tid]").forEach(b=>{
-    makePressable(b, true);
-    b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
-  });
+      view.querySelectorAll("[data-tid]").forEach(b=>{
+        makePressable(b, true);
+        b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
+      });
 
-  setBottomButtons([
-    { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
-    { text:"CSV", kind:"", onClick: ()=> exportCSV() },
-    { text:"Ρυθμίσεις", kind:"", onClick: ()=> gotoSettings() }
-  ]);
-}
-
+      setBottomButtons([
+        { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
+        { text:"CSV", kind:"", onClick: ()=> exportCSV() },
+        { text:"Ρυθμίσεις", kind:"", onClick: ()=> gotoSettings() }
+      ]);
+    }
 
     function renderTable(){
       const tid = state.tableId;
@@ -1019,7 +1021,6 @@
         </div>
       `).join("");
 
-      // wire settings actions
       const btnChangeShop = document.getElementById("btnChangeShop");
       const btnAddUser = document.getElementById("btnAddUser");
       const btnChangeOwner = document.getElementById("btnChangeOwner");
@@ -1084,6 +1085,7 @@
           if(!user) return;
           const ok = await modalConfirm("Διαγραφή χρήστη", `Να διαγραφεί ο χρήστης “${user.name}”;`, "Διαγραφή", "Άκυρο");
           if(!ok) return;
+
           db.users = db.users.filter(x=>x.id!==uid2);
           if(!db.users.length){
             db.users = [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }];
@@ -1139,42 +1141,42 @@
       else if(state.screen==="settings") renderSettings();
     }
 
-    // Top interactions
+    // ✅ Top interactions: user select requires USER PIN, safe revert
     el("userSelect").addEventListener("change", async ()=>{
-  const targetId = el("userSelect").value;
-  const targetUser = db.users.find(u=>u.id===targetId);
-  if(!targetUser){
-    el("userSelect").value = lastUserId;
-    return;
-  }
+      const sel = el("userSelect");
+      const targetId = sel.value;
 
-  const pin = await modalPromptPin(
-    "Αλλαγή χρήστη",
-    `PIN για: ${targetUser.name}`,
-    "Βάλε τον κωδικό για να αλλάξει ο χρήστης."
-  );
+      if(targetId === lastUserId) return;
 
-  // Άκυρο
-  if(pin === null){
-    el("userSelect").value = lastUserId;
-    return;
-  }
+      const targetUser = db.users.find(u=>u.id===targetId);
+      if(!targetUser){
+        sel.value = lastUserId;
+        return;
+      }
 
-  // Λάθος PIN
-  if(String(pin).trim() !== String(targetUser.pin).trim()){
-    await modalConfirm("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ", " ");
-    el("userSelect").value = lastUserId;
-    return;
-  }
+      const pin = await modalPromptPin(
+        "Αλλαγή χρήστη",
+        `PIN για: ${targetUser.name}`,
+        "Βάλε τον κωδικό για να αλλάξει ο χρήστης."
+      );
 
-  // Σωστό PIN -> αλλάζει
-  db.currentUserId = targetId;
-  lastUserId = targetId;
-  saveDB();
-  setTop();
-  render();
-});
+      if(pin === null){
+        sel.value = lastUserId;
+        return;
+      }
 
+      if(String(pin).trim() !== String(targetUser.pin).trim()){
+        await modalAlert("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ");
+        sel.value = lastUserId;
+        return;
+      }
+
+      db.currentUserId = targetId;
+      lastUserId = targetId;
+      saveDB();
+      setTop();
+      render();
+    });
 
     const btnGear = el("btnGear");
     makePressable(btnGear, true);
