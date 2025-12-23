@@ -3,7 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <!-- Fullscreen / PWA polish -->
   <meta name="theme-color" content="#0b0f14" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <title>Ημερήσιο Ταμείο</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <style>
@@ -80,6 +86,7 @@
       text-overflow:ellipsis;
     }
     select, button, input{ font: inherit; color:var(--text); }
+
     select{
       border:1px solid var(--line);
       background: rgba(17,24,36,.70);
@@ -156,8 +163,30 @@
       .tables{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
-    .tbtn{
+    /* --- PRESS FEEDBACK (visual) --- */
+    .pressable{
       position:relative;
+      overflow:hidden;
+      transition: transform .06s ease, filter .06s ease, box-shadow .10s ease;
+      touch-action: manipulation;
+      user-select:none;
+    }
+    .pressable:active{
+      transform: scale(.985);
+      filter: brightness(1.08);
+    }
+    .pressable::after{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background: radial-gradient(circle at var(--rx,50%) var(--ry,50%), rgba(255,255,255,.16), transparent 45%);
+      opacity:0;
+      transition: opacity .20s ease;
+      pointer-events:none;
+    }
+    .pressable.pulse::after{ opacity:1; }
+
+    .tbtn{
       text-align:left;
       padding: 14px 14px;
       border-radius: var(--r);
@@ -168,7 +197,6 @@
       flex-direction:column;
       justify-content:center;
       gap:4px;
-      user-select:none;
     }
     .tbtn .title{ font-weight:1000; font-size:18px; letter-spacing:.2px; }
     .tbtn .sub{ color:var(--muted); font-size:13px; }
@@ -217,7 +245,6 @@
       font-weight:800;
       color: var(--muted);
       white-space:nowrap;
-      user-select:none;
     }
     .chip.active{
       color: var(--text);
@@ -266,7 +293,6 @@
       align-items:center;
       justify-content:center;
       font-weight:1000;
-      user-select:none;
     }
     .qnum{ min-width: 22px; text-align:center; font-weight:1000; }
 
@@ -298,7 +324,6 @@
       align-items:center;
       justify-content:center;
       font-weight:1000;
-      user-select:none;
     }
     .btn:active{ transform: translateY(1px); }
     .btn.good{ border-color: rgba(47,227,159,.35); box-shadow:0 0 0 3px rgba(47,227,159,.06) inset; }
@@ -374,20 +399,22 @@
       align-items:center;
       gap:8px;
     }
+
+    /* make everything "pressable" feel consistent */
+    button, .li, .chip, .tbtn { cursor:pointer; }
   </style>
 </head>
 
 <body>
   <div class="app" id="app">
 
-    <!-- HOME: top shows only date + user -->
     <div class="topbar">
       <div class="left">
         <div class="date" id="topDate">—</div>
         <div class="userline" id="topUser">Εν υπηρεσία: —</div>
       </div>
       <select id="userSelect" title="Χρήστης"></select>
-      <button class="iconbtn" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
+      <button class="iconbtn pressable" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
     </div>
 
     <div class="content">
@@ -395,24 +422,21 @@
     </div>
   </div>
 
-  <!-- bottom actions -->
   <div class="bottom" id="bottom">
     <div class="bar" id="bottomBar"></div>
   </div>
 
-  <!-- modal -->
   <div class="modalBack" id="modalBack">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="head">
         <div class="ttl" id="modalTitle">—</div>
-        <button class="iconbtn" id="modalClose">✕</button>
+        <button class="iconbtn pressable" id="modalClose">✕</button>
       </div>
       <div class="body" id="modalBody"></div>
       <div class="foot" id="modalFoot"></div>
     </div>
   </div>
 
-  <!-- screensaver -->
   <div class="saver" id="saver">
     <div>
       <div class="logo" id="saverLogo">Κατάστημα</div>
@@ -423,17 +447,20 @@
 
   <script>
     /***********************
-     *  DAILY CASHIER v2
-     *  Home = only tables
-     *  Table flow: items -> add products -> pay all (cash/card) + treat 1 item
+     *  DAILY CASHIER v2.1
+     *  Polish:
+     *  - stronger press feedback + ripple + haptic
+     *  - mandatory PIN for users
+     *  - add/manage staff users via owner PIN
+     *  - fullscreen meta/manifest + safe-areas
      ***********************/
 
     const LS_KEY = "daily_cashier_db_v2";
     const TODAY = new Date().toISOString().slice(0,10);
 
     // inactivity
-    const IDLE_TO_HOME_MS = 40_000;      // 40s -> go home
-    const IDLE_TO_SAVER_AFTER_HOME_MS = 12_000; // after home, 12s -> screensaver
+    const IDLE_TO_HOME_MS = 40_000;
+    const IDLE_TO_SAVER_AFTER_HOME_MS = 12_000;
     let idleTimer = null;
     let saverTimer = null;
 
@@ -450,11 +477,38 @@
 
     const saver = el("saver");
 
+    /** HAPTIC + ripple */
+    function haptic(ms=12){
+      try{
+        if(navigator.vibrate) navigator.vibrate(ms);
+      }catch{}
+    }
+    function pressPulse(elem, clientX, clientY){
+      if(!elem) return;
+      const r = elem.getBoundingClientRect();
+      const x = ((clientX ?? (r.left + r.width/2)) - r.left) / r.width * 100;
+      const y = ((clientY ?? (r.top + r.height/2)) - r.top) / r.height * 100;
+      elem.style.setProperty("--rx", x.toFixed(1) + "%");
+      elem.style.setProperty("--ry", y.toFixed(1) + "%");
+      elem.classList.add("pulse");
+      setTimeout(()=> elem.classList.remove("pulse"), 180);
+    }
+    function makePressable(elem, vib=10){
+      if(!elem) return;
+      elem.classList.add("pressable");
+      const handler = (ev)=>{
+        const t = ev.touches?.[0];
+        pressPulse(elem, t?.clientX ?? ev.clientX, t?.clientY ?? ev.clientY);
+        haptic(vib);
+      };
+      elem.addEventListener("pointerdown", handler, {passive:true});
+      elem.addEventListener("touchstart", handler, {passive:true});
+    }
+
     function euro(x){
       const n = Number(x || 0);
       return n.toLocaleString("el-GR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
     }
-
     function uid(){
       return Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
@@ -472,8 +526,7 @@
         shopName: "Ημερήσιο Ταμείο",
         ownerPin: "1234",
         users: [
-          { id:"u1", name:"Χρήστης 1", pin:"" },
-          { id:"u2", name:"Χρήστης 2", pin:"" }
+          { id:"u1", name:"Υπάλληλος 1", pin:"1111" }
         ],
         currentUserId: "u1",
         tables: [
@@ -484,10 +537,10 @@
           { id:"T5",  label:"T5" },
           { id:"T6",  label:"T6" },
           { id:"BAR", label:"BAR" },
-          { id:"OUT", label:"ΕΞΩ" },
+          { id:"OUT", label:"ΕΞΩ" }
         ],
-        menu: {
-          categories: [
+        menu: (function(){
+          const categories = [
             { id:"coffee_hot",  name:"Καφέδες – Ζεστοί", emoji:"☕" },
             { id:"coffee_cold", name:"Καφέδες – Κρύοι",  emoji:"🧊" },
             { id:"tea",         name:"Τσάι – Ζεστά",     emoji:"🫖" },
@@ -500,9 +553,9 @@
             { id:"spirit",      name:"Ποτά",              emoji:"🥃" },
             { id:"cocktail",    name:"Κοκτέιλ",           emoji:"🍸" },
             { id:"extras",      name:"Extras",            emoji:"➕" }
-          ],
-          products: [
-            // HOT COFFEE
+          ];
+
+          const products = [
             { id:"p_espresso_single", cat:"coffee_hot", name:"Espresso μονός", price:2.60 },
             { id:"p_espresso_double", cat:"coffee_hot", name:"Espresso διπλός", price:3.20 },
             { id:"p_espresso_macchiato", cat:"coffee_hot", name:"Espresso macchiato", price:2.90 },
@@ -514,38 +567,32 @@
             { id:"p_mocha", cat:"coffee_hot", name:"Mocha", price:4.50 },
             { id:"p_filter", cat:"coffee_hot", name:"Καφές φίλτρου", price:3.00 },
 
-            // COLD COFFEE
             { id:"p_freddo_espresso", cat:"coffee_cold", name:"Freddo espresso", price:3.80 },
             { id:"p_freddo_cappuccino", cat:"coffee_cold", name:"Freddo cappuccino", price:4.20 },
             { id:"p_iced_latte", cat:"coffee_cold", name:"Iced latte", price:4.50 },
             { id:"p_cold_brew", cat:"coffee_cold", name:"Cold brew", price:4.80 },
             { id:"p_frappe", cat:"coffee_cold", name:"Frappe", price:3.50 },
 
-            // TEA
             { id:"p_tea_basic", cat:"tea", name:"Τσάι (μαύρο/πράσινο/βότανα)", price:3.20 },
             { id:"p_tea_fruit", cat:"tea", name:"Τσάι φρούτων", price:3.50 },
             { id:"p_chai_latte", cat:"tea", name:"Chai latte", price:4.30 },
 
-            // CHOCO
             { id:"p_hot_chocolate", cat:"choco", name:"Ζεστή σοκολάτα", price:4.20 },
             { id:"p_cold_chocolate", cat:"choco", name:"Κρύα σοκολάτα", price:4.50 },
             { id:"p_white_chocolate", cat:"choco", name:"Λευκή σοκολάτα", price:4.50 },
             { id:"p_cocoa", cat:"choco", name:"Κακάο", price:4.00 },
 
-            // SOFT / WATER
             { id:"p_cola", cat:"soft", name:"Coca-Cola / Zero / Fanta (0,33l)", price:3.40 },
             { id:"p_ice_tea", cat:"soft", name:"Ice Tea", price:3.60 },
             { id:"p_soda_tonic", cat:"soft", name:"Σόδα / Τόνικ", price:3.20 },
             { id:"p_water_033", cat:"soft", name:"Μεταλλικό νερό (0,33l)", price:2.80 },
             { id:"p_water_075", cat:"soft", name:"Μεταλλικό νερό (0,75l)", price:5.50 },
 
-            // JUICE / SMOOTHIES
             { id:"p_orange_juice", cat:"juice", name:"Φυσικός χυμός πορτοκάλι", price:4.50 },
             { id:"p_mix_juice", cat:"juice", name:"Χυμός ανάμεικτος", price:4.80 },
             { id:"p_fruit_smoothie", cat:"juice", name:"Smoothie φρούτων", price:5.80 },
             { id:"p_milkshake", cat:"juice", name:"Milkshake", price:5.50 },
 
-            // SNACKS
             { id:"p_croissant_plain", cat:"snack", name:"Κρουασάν σκέτο", price:2.80 },
             { id:"p_croissant_choco", cat:"snack", name:"Κρουασάν σοκολάτα", price:3.20 },
             { id:"p_muffin", cat:"snack", name:"Μάφιν", price:3.50 },
@@ -555,20 +602,17 @@
             { id:"p_toast_ham", cat:"snack", name:"Τοστ ζαμπόν-τυρί", price:4.50 },
             { id:"p_toast_veg", cat:"snack", name:"Τοστ vegetarian", price:4.80 },
 
-            // BEER
             { id:"p_beer_draft", cat:"beer", name:"Μπύρα βαρελίσια (0,5l)", price:5.20 },
             { id:"p_beer_bottle", cat:"beer", name:"Μπύρα εμφιαλωμένη (0,33l)", price:4.20 },
             { id:"p_weissbier", cat:"beer", name:"Weissbier (0,5l)", price:5.50 },
             { id:"p_beer_zero", cat:"beer", name:"Μπύρα χωρίς αλκοόλ", price:4.20 },
 
-            // WINE
             { id:"p_wine_glass", cat:"wine", name:"Κρασί ποτήρι", price:5.50 },
             { id:"p_wine_carafe", cat:"wine", name:"Κρασί καράφα (0,5l)", price:12.00 },
             { id:"p_wine_bottle_22", cat:"wine", name:"Φιάλη κρασί (22€)", price:22.00 },
             { id:"p_wine_bottle_28", cat:"wine", name:"Φιάλη κρασί (28€)", price:28.00 },
             { id:"p_prosecco_glass", cat:"wine", name:"Prosecco ποτήρι", price:6.50 },
 
-            // SPIRITS (4cl)
             { id:"p_whisky_std", cat:"spirit", name:"Ουίσκι standard (4cl)", price:8.50 },
             { id:"p_whisky_premium", cat:"spirit", name:"Premium ουίσκι (4cl)", price:10.50 },
             { id:"p_vodka", cat:"spirit", name:"Βότκα (4cl)", price:8.00 },
@@ -577,7 +621,6 @@
             { id:"p_ouzo_tsipouro", cat:"spirit", name:"Ούζο / Τσίπουρο (4cl)", price:7.50 },
             { id:"p_liqueur", cat:"spirit", name:"Λικέρ (4cl)", price:7.50 },
 
-            // COCKTAILS
             { id:"p_mojito", cat:"cocktail", name:"Mojito", price:9.50 },
             { id:"p_caipirinha", cat:"cocktail", name:"Caipirinha", price:9.50 },
             { id:"p_margarita", cat:"cocktail", name:"Margarita", price:10.00 },
@@ -585,18 +628,18 @@
             { id:"p_gin_tonic", cat:"cocktail", name:"Gin Tonic", price:9.00 },
             { id:"p_negroni", cat:"cocktail", name:"Negroni", price:10.50 },
 
-            // EXTRAS
             { id:"p_extra_decaf", cat:"extras", name:"Decaf (+)", price:0.30 },
             { id:"p_extra_plant_milk", cat:"extras", name:"Φυτικό γάλα (+)", price:0.50 }
-          ]
-        },
+          ];
+          return { categories, products };
+        })(),
         days: {}
       };
     }
 
     let db = loadDB() || defaultDB();
 
-    function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+    function saveDB(){ localStorage.setItem("daily_cashier_db_v2", JSON.stringify(db)); }
 
     function ensureDay(){
       if(!db.days[TODAY]) db.days[TODAY] = { tables:{}, payments:[] };
@@ -633,57 +676,25 @@
     }
 
     /* state */
-    let state = {
-      screen: "home",     // home | table | add | pay | summary
-      tableId: null,
-      categoryId: null
-    };
+    let state = { screen:"home", tableId:null, categoryId:null };
 
-    function gotoHome(){
-      state.screen = "home";
-      state.tableId = null;
-      state.categoryId = null;
-      render();
-    }
-    function gotoTable(tid){
-      state.screen = "table";
-      state.tableId = tid;
-      render();
-    }
-    function gotoAdd(tid){
-      state.screen = "add";
-      state.tableId = tid;
-      state.categoryId = state.categoryId || db.menu.categories[0]?.id || null;
-      render();
-    }
-    function gotoPay(tid){
-      state.screen = "pay";
-      state.tableId = tid;
-      render();
-    }
-    function gotoSummary(){
-      state.screen = "summary";
-      state.tableId = null;
-      render();
-    }
+    function gotoHome(){ state.screen="home"; state.tableId=null; state.categoryId=null; render(); }
+    function gotoTable(tid){ state.screen="table"; state.tableId=tid; render(); }
+    function gotoAdd(tid){ state.screen="add"; state.tableId=tid; state.categoryId = state.categoryId || db.menu.categories[0]?.id || null; render(); }
+    function gotoPay(tid){ state.screen="pay"; state.tableId=tid; render(); }
+    function gotoSummary(){ state.screen="summary"; state.tableId=null; render(); }
 
     /* helpers */
     function dayTable(tid){ ensureDay(); return db.days[TODAY].tables[tid]; }
     function allItems(tid){ return dayTable(tid).items; }
     function unpaidItems(tid){ return allItems(tid).filter(it => !it.paid && !it.voided); }
-    function tableTotal(tid){
-      let sum = 0;
-      for(const it of unpaidItems(tid)) sum += it.price;
-      return sum;
-    }
+    function tableTotal(tid){ return unpaidItems(tid).reduce((s,it)=>s+it.price,0); }
 
     function groupUnpaid(tid){
       const map = new Map();
       for(const it of unpaidItems(tid)){
         const k = it.prodId + "|" + it.price;
-        if(!map.has(k)){
-          map.set(k, { prodId: it.prodId, name: it.name, price: it.price, qty:0 });
-        }
+        if(!map.has(k)) map.set(k, { prodId: it.prodId, name: it.name, price: it.price, qty:0 });
         map.get(k).qty += 1;
       }
       return [...map.values()];
@@ -744,10 +755,11 @@
       modalFoot.innerHTML = "";
       for(const b of (buttons||[])){
         const btn = document.createElement("button");
-        btn.className = b.cls || "btn";
+        btn.className = "btn pressable " + (b.cls || "");
         btn.textContent = b.text || "ΟΚ";
-        btn.addEventListener("click", b.onClick || closeModal);
+        btn.addEventListener("click", (ev)=>{ pressPulse(btn, ev.clientX, ev.clientY); haptic(8); (b.onClick||closeModal)(); });
         modalFoot.appendChild(btn);
+        makePressable(btn, 8);
       }
       modalBack.style.display = "flex";
     }
@@ -758,6 +770,7 @@
       modalFoot.innerHTML = "";
     }
     el("modalClose").addEventListener("click", closeModal);
+    makePressable(el("modalClose"), 8);
     modalBack.addEventListener("click", (e)=>{ if(e.target===modalBack) closeModal(); });
 
     function confirmModal({title, bodyHtml, okText="ΟΚ", cancelText="Άκυρο", danger=false}){
@@ -766,14 +779,14 @@
           title,
           bodyHtml,
           buttons: [
-            { text: cancelText, cls:"btn", onClick: ()=>{ closeModal(); resolve(false); } },
-            { text: okText, cls:"btn " + (danger? "bad":"good"), onClick: ()=>{ closeModal(); resolve(true); } }
+            { text: cancelText, cls:"", onClick: ()=>{ closeModal(); resolve(false); } },
+            { text: okText, cls: (danger? "bad":"good"), onClick: ()=>{ closeModal(); resolve(true); } }
           ].filter(b => b.text !== "")
         });
       });
     }
 
-    function askPin({title, hint, maxLen=6}){
+    function askPin({title, hint, maxLen=6, allowEmpty=false}){
       return new Promise(resolve=>{
         const idInput = "pinInput";
         openModal({
@@ -783,17 +796,19 @@
             <input id="${idInput}" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"
               style="width:100%; height:46px; border-radius:14px; border:1px solid var(--line);
                      padding:0 12px; background:rgba(0,0,0,.18);" placeholder="PIN" />
+            <div class="small">${allowEmpty ? "Άδειο = ακύρωση / χωρίς αλλαγή." : ""}</div>
           `,
           buttons: [
-            { text:"Άκυρο", cls:"btn", onClick: ()=>{ closeModal(); resolve(null); } },
-            { text:"ΟΚ", cls:"btn good", onClick: ()=>{
+            { text:"Άκυρο", cls:"", onClick: ()=>{ closeModal(); resolve(null); } },
+            { text:"ΟΚ", cls:"good", onClick: ()=>{
                 const v = (document.getElementById(idInput)?.value || "").trim();
                 closeModal();
+                if(!allowEmpty && v.length===0) return resolve("");
                 resolve(v.slice(0,maxLen));
             } }
           ]
         });
-        setTimeout(()=> document.getElementById(idInput)?.focus(), 50);
+        setTimeout(()=> document.getElementById(idInput)?.focus(), 60);
       });
     }
 
@@ -809,15 +824,15 @@
                      padding:0 12px; background:rgba(0,0,0,.18);" placeholder="Κείμενο" />
           `,
           buttons: [
-            { text:"Άκυρο", cls:"btn", onClick: ()=>{ closeModal(); resolve(null); } },
-            { text:"ΟΚ", cls:"btn good", onClick: ()=>{
+            { text:"Άκυρο", cls:"", onClick: ()=>{ closeModal(); resolve(null); } },
+            { text:"ΟΚ", cls:"good", onClick: ()=>{
                 const v = (document.getElementById(idInput)?.value || "").trim();
                 closeModal();
                 resolve(v);
             } }
           ]
         });
-        setTimeout(()=> document.getElementById(idInput)?.focus(), 50);
+        setTimeout(()=> document.getElementById(idInput)?.focus(), 60);
       });
     }
 
@@ -832,11 +847,11 @@
         saverTimer = setTimeout(()=>{ saver.style.display = "flex"; }, IDLE_TO_SAVER_AFTER_HOME_MS);
       }, IDLE_TO_HOME_MS);
     }
-    ["click","touchstart","keydown","mousemove","scroll"].forEach(ev=>{
+    ["click","touchstart","keydown","pointerdown","scroll"].forEach(ev=>{
       window.addEventListener(ev, resetIdle, {passive:true});
     });
-    saver.addEventListener("click", ()=>{ saver.style.display="none"; resetIdle(); });
-    saver.addEventListener("touchstart", ()=>{ saver.style.display="none"; resetIdle(); }, {passive:true});
+    saver.addEventListener("click", ()=>{ saver.style.display="none"; resetIdle(); haptic(12); });
+    saver.addEventListener("touchstart", ()=>{ saver.style.display="none"; resetIdle(); haptic(12); }, {passive:true});
 
     /* bottom buttons */
     function setBottomButtons(btns){
@@ -848,10 +863,15 @@
       bottom.style.display = "block";
       for(const b of btns){
         const btn = document.createElement("button");
-        btn.className = "btn " + (b.kind || "");
+        btn.className = "btn pressable " + (b.kind || "");
         btn.textContent = b.text;
-        btn.addEventListener("click", b.onClick);
+        btn.addEventListener("click", (ev)=>{
+          pressPulse(btn, ev.clientX, ev.clientY);
+          haptic(10);
+          b.onClick();
+        });
         bottomBar.appendChild(btn);
+        makePressable(btn, 10);
       }
     }
 
@@ -864,7 +884,7 @@
             const count = unpaidItems(t.id).length;
             const isOpen = total>0;
             return `
-              <button class="tbtn ${isOpen?"open":""}" data-tid="${t.id}">
+              <button class="tbtn pressable ${isOpen?"open":""}" data-tid="${t.id}">
                 <div class="title">${t.label}</div>
                 <div class="sub">${isOpen ? ("Υπόλοιπο: " + euro(total)) : "—"}</div>
                 <div class="badge">${count}</div>
@@ -875,6 +895,7 @@
       `;
 
       view.querySelectorAll("[data-tid]").forEach(b=>{
+        makePressable(b, 12);
         b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
       });
 
@@ -885,7 +906,7 @@
       ]);
     }
 
-    /* TABLE screen (items only) */
+    /* TABLE screen */
     function renderTable(){
       const tid = state.tableId;
       const t = db.tables.find(x=>x.id===tid);
@@ -914,9 +935,9 @@
                     <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
                   </div>
                   <div class="qty">
-                    <button class="qbtn" data-minus="${g.prodId}">−</button>
+                    <button class="qbtn pressable" data-minus="${g.prodId}">−</button>
                     <div class="qnum">${g.qty}</div>
-                    <button class="qbtn" data-plus="${g.prodId}">+</button>
+                    <button class="qbtn pressable" data-plus="${g.prodId}">+</button>
                   </div>
                 </div>
               `).join("")}
@@ -926,9 +947,11 @@
       `;
 
       view.querySelectorAll("[data-minus]").forEach(b=>{
+        makePressable(b, 8);
         b.addEventListener("click", ()=> removeOneUnit(tid, b.getAttribute("data-minus")));
       });
       view.querySelectorAll("[data-plus]").forEach(b=>{
+        makePressable(b, 8);
         b.addEventListener("click", ()=> addProductToTable(b.getAttribute("data-plus")));
       });
 
@@ -939,7 +962,7 @@
       ]);
     }
 
-    /* ADD screen (categories + products) */
+    /* ADD screen */
     function renderAdd(){
       const tid = state.tableId;
       const t = db.tables.find(x=>x.id===tid);
@@ -961,7 +984,7 @@
           <div class="h">Κατηγορίες</div>
           <div class="chips" id="catChips">
             ${cats.map(c=>`
-              <button class="chip ${c.id===activeCat?"active":""}" data-cat="${c.id}">
+              <button class="chip pressable ${c.id===activeCat?"active":""}" data-cat="${c.id}">
                 ${c.emoji} ${escapeHtml(c.name)}
               </button>
             `).join("")}
@@ -973,7 +996,7 @@
           <div class="h">Προϊόντα</div>
           <div class="list">
             ${products.map(p=>`
-              <div class="li" data-add="${p.id}">
+              <div class="li pressable" data-add="${p.id}">
                 <div class="left">
                   <div class="name">${escapeHtml(p.name)}</div>
                   <div class="meta">${escapeHtml(catTitle(p.cat))}</div>
@@ -987,6 +1010,7 @@
       `;
 
       view.querySelectorAll("[data-cat]").forEach(b=>{
+        makePressable(b, 8);
         b.addEventListener("click", ()=>{
           state.categoryId = b.getAttribute("data-cat");
           render();
@@ -994,6 +1018,7 @@
       });
 
       view.querySelectorAll("[data-add]").forEach(li=>{
+        makePressable(li, 8);
         li.addEventListener("click", ()=> addProductToTable(li.getAttribute("data-add")));
       });
 
@@ -1008,7 +1033,7 @@
       return c ? `${c.emoji} ${c.name}` : "";
     }
 
-    /* PAY screen (pay all + treat 1) */
+    /* PAY screen */
     async function treatOne(tid, prodId){
       const it = findOneUnpaidUnit(tid, prodId);
       if(!it) return;
@@ -1085,8 +1110,8 @@
           <div class="h">Πληρωμή • ${escapeHtml(t?.label || tid)}</div>
           <div class="muted">Υπόλοιπο: <b>${euro(total)}</b></div>
           <div class="row" style="gap:10px; margin-top:10px;">
-            <button class="btn good" style="flex:1;" id="payCash">ΠΛΗΡΩΜΗ ΜΕΤΡΗΤΑ</button>
-            <button class="btn accent" style="flex:1;" id="payCard">ΠΛΗΡΩΜΗ ΚΑΡΤΑ</button>
+            <button class="btn pressable good" style="flex:1;" id="payCash">ΠΛΗΡΩΜΗ ΜΕΤΡΗΤΑ</button>
+            <button class="btn pressable accent" style="flex:1;" id="payCard">ΠΛΗΡΩΜΗ ΚΑΡΤΑ</button>
           </div>
           <div class="small">Το “κερασμένο” αφαιρεί 1 τεμ. από το υπόλοιπο.</div>
         </div>
@@ -1102,7 +1127,7 @@
                     <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
                   </div>
                   <div class="qty">
-                    <button class="qbtn" title="Κερασμένο 1 τεμ." data-treat="${g.prodId}">🎁</button>
+                    <button class="qbtn pressable" title="Κερασμένο 1 τεμ." data-treat="${g.prodId}">🎁</button>
                   </div>
                 </div>
               `).join("")}
@@ -1111,10 +1136,14 @@
         </div>
       `;
 
+      makePressable(el("payCash"), 14);
+      makePressable(el("payCard"), 14);
+
       el("payCash").addEventListener("click", ()=> payAll(tid, "cash"));
       el("payCard").addEventListener("click", ()=> payAll(tid, "card"));
 
       view.querySelectorAll("[data-treat]").forEach(b=>{
+        makePressable(b, 8);
         b.addEventListener("click", ()=> treatOne(tid, b.getAttribute("data-treat")));
       });
 
@@ -1164,7 +1193,7 @@
           ${usersArr.length===0 ? `<div class="muted2">Δεν υπάρχουν πληρωμές ακόμα.</div>` : `
             <div class="list">
               ${usersArr.map(([uname,o])=>`
-                <div class="li" data-user="${escapeHtml(uname)}">
+                <div class="li pressable" data-user="${escapeHtml(uname)}">
                   <div class="left">
                     <div class="name">${escapeHtml(uname)}</div>
                     <div class="meta">${o.count} κινήσεις • Μετρητά ${euro(o.cash)} • Κάρτα ${euro(o.card)} • Κερασμένα ${euro(o.treat)}</div>
@@ -1178,6 +1207,7 @@
       `;
 
       view.querySelectorAll("[data-user]").forEach(li=>{
+        makePressable(li, 8);
         li.addEventListener("click", ()=>{
           const uname = li.getAttribute("data-user");
           userBreakdown(uname);
@@ -1207,15 +1237,13 @@
       openModal({
         title:`Ανάλυση: ${uname}`,
         bodyHtml: html,
-        buttons:[
-          { text:"ΟΚ", cls:"btn good", onClick: closeModal },
-          { text:"", cls:"btn", onClick: closeModal }
-        ]
+        buttons:[ { text:"ΟΚ", cls:"good", onClick: closeModal } ]
       });
     }
 
     /* CSV */
     function exportCSV(){
+      haptic(12);
       const pay = db.days[TODAY].payments || [];
       const rows = [["date","time","table","product","price","method","user"].join(",")];
       for(const p of pay){
@@ -1241,7 +1269,7 @@
       URL.revokeObjectURL(url);
     }
 
-    /* SETTINGS */
+    /* SETTINGS (Owner PIN required for user admin) */
     async function openSettings(){
       openModal({
         title:"Ρυθμίσεις",
@@ -1251,28 +1279,33 @@
             <div class="small">Για αλλαγή ζητάει PIN ιδιοκτήτη.</div>
             <div class="row space">
               <div class="pill" style="flex:1; min-width:0;">Τρέχον: <b>${escapeHtml(db.shopName)}</b></div>
-              <button class="btn accent" style="flex:0 0 auto; height:38px; border-radius:999px;" id="btnChangeShop">Αλλαγή</button>
+              <button class="btn pressable accent" style="flex:0 0 auto; height:38px; border-radius:999px;" id="btnChangeShop">Αλλαγή</button>
             </div>
           </div>
 
           <div class="card" style="margin:0; padding:12px;">
             <div class="h">PIN ιδιοκτήτη</div>
             <div class="small">Άλλαξέ το σε κάτι που ξέρεις μόνο εσύ.</div>
-            <button class="btn" style="height:38px; border-radius:999px;" id="btnChangeOwnerPin">Αλλαγή PIN</button>
+            <button class="btn pressable" style="height:38px; border-radius:999px;" id="btnChangeOwnerPin">Αλλαγή PIN</button>
           </div>
 
           <div class="card" style="margin:0; padding:12px;">
-            <div class="h">Χρήστες</div>
-            <div class="small">Προαιρετικό PIN ανά χρήστη (δεν ζητάμε PIN στην πληρωμή).</div>
-            <div class="list">
+            <div class="h">Υπάλληλοι (ονόματα + PIN)</div>
+            <div class="small">Προσθήκη/Μετονομασία/Αλλαγή PIN μόνο με PIN ιδιοκτήτη.</div>
+            <div class="row" style="gap:10px; flex-wrap:wrap;">
+              <button class="btn pressable accent" style="height:38px; border-radius:999px;" id="btnAddUser">+ Νέος</button>
+            </div>
+            <div class="list" style="margin-top:10px;">
               ${db.users.map(u=>`
                 <div class="li">
                   <div class="left">
                     <div class="name">${escapeHtml(u.name)}</div>
-                    <div class="meta">PIN: ${u.pin ? "●●●●" : "—"}</div>
+                    <div class="meta">PIN: ${u.pin ? "●●●●" : "<span class='dangerText'>Χωρίς PIN (όχι επιτρεπτό)</span>"}</div>
                   </div>
                   <div class="qty">
-                    <button class="qbtn" data-setpin="${u.id}">PIN</button>
+                    <button class="qbtn pressable" data-rename="${u.id}">Όνομα</button>
+                    <button class="qbtn pressable" data-pin="${u.id}">PIN</button>
+                    <button class="qbtn pressable" data-del="${u.id}">🗑</button>
                   </div>
                 </div>
               `).join("")}
@@ -1284,28 +1317,44 @@
             <div class="small">40s αδράνεια → Home. +12s → screensaver.</div>
           </div>
         `,
-        buttons: [
-          { text:"ΟΚ", cls:"btn good", onClick: closeModal },
-          { text:"", cls:"btn", onClick: closeModal }
-        ]
+        buttons: [ { text:"ΟΚ", cls:"good", onClick: closeModal } ]
       });
 
       setTimeout(()=>{
-        document.getElementById("btnChangeShop")?.addEventListener("click", changeShopNameOwnerOnly);
-        document.getElementById("btnChangeOwnerPin")?.addEventListener("click", changeOwnerPin);
-        modalBody.querySelectorAll("[data-setpin]").forEach(b=>{
-          b.addEventListener("click", ()=> setUserPin(b.getAttribute("data-setpin")));
+        const cshop = document.getElementById("btnChangeShop");
+        const cpin  = document.getElementById("btnChangeOwnerPin");
+        const addU  = document.getElementById("btnAddUser");
+        if(cshop){ makePressable(cshop,8); cshop.addEventListener("click", changeShopNameOwnerOnly); }
+        if(cpin){ makePressable(cpin,8); cpin.addEventListener("click", changeOwnerPin); }
+        if(addU){ makePressable(addU,8); addU.addEventListener("click", addUserFlow); }
+
+        modalBody.querySelectorAll("[data-rename]").forEach(b=>{
+          makePressable(b,8);
+          b.addEventListener("click", ()=> renameUserFlow(b.getAttribute("data-rename")));
+        });
+        modalBody.querySelectorAll("[data-pin]").forEach(b=>{
+          makePressable(b,8);
+          b.addEventListener("click", ()=> setUserPinFlow(b.getAttribute("data-pin")));
+        });
+        modalBody.querySelectorAll("[data-del]").forEach(b=>{
+          makePressable(b,8);
+          b.addEventListener("click", ()=> deleteUserFlow(b.getAttribute("data-del")));
         });
       },0);
     }
 
-    async function changeShopNameOwnerOnly(){
-      const pin = await askPin({ title:"PIN ιδιοκτήτη", hint:"Δώσε το PIN ιδιοκτήτη για αλλαγή ονόματος." });
-      if(pin===null) return;
+    async function requireOwner(){
+      const pin = await askPin({ title:"PIN ιδιοκτήτη", hint:"Για αυτή την ενέργεια απαιτείται PIN ιδιοκτήτη." });
+      if(pin===null) return false;
       if(pin !== db.ownerPin){
         await confirmModal({ title:"Λάθος PIN", bodyHtml:`<div class="small dangerText">Λάθος PIN ιδιοκτήτη.</div>`, okText:"ΟΚ", cancelText:"" });
-        return;
+        return false;
       }
+      return true;
+    }
+
+    async function changeShopNameOwnerOnly(){
+      if(!(await requireOwner())) return;
       const name = await askText("Νέο όνομα μαγαζιού", "Πληκτρολόγησε το νέο όνομα.");
       if(!name) return;
       db.shopName = name.trim().slice(0,40);
@@ -1316,13 +1365,9 @@
     }
 
     async function changeOwnerPin(){
-      const oldPin = await askPin({ title:"PIN ιδιοκτήτη", hint:"Δώσε το τρέχον PIN ιδιοκτήτη." });
-      if(oldPin===null) return;
-      if(oldPin !== db.ownerPin){
-        await confirmModal({ title:"Λάθος PIN", bodyHtml:`<div class="small dangerText">Λάθος PIN ιδιοκτήτη.</div>`, okText:"ΟΚ", cancelText:"" });
-        return;
-      }
-      const newPin = await askPin({ title:"Νέο PIN", hint:"Δώσε νέο PIN (μόνο αριθμούς)." });
+      const ok = await requireOwner();
+      if(!ok) return;
+      const newPin = await askPin({ title:"Νέο PIN ιδιοκτήτη", hint:"Δώσε νέο PIN (μόνο αριθμούς)." });
       if(!newPin) return;
       db.ownerPin = newPin;
       saveDB();
@@ -1330,39 +1375,521 @@
       closeModal();
     }
 
-    async function setUserPin(userId){
-      const u = db.users.find(x=>x.id===userId);
-      if(!u) return;
-      const pin = await askPin({ title:`PIN για ${u.name}`, hint:"Προαιρετικό. Άδειο = χωρίς PIN." });
-      if(pin===null) return;
-      u.pin = (pin || "").trim();
+    async function addUserFlow(){
+      if(!(await requireOwner())) return;
+      const name = await askText("Νέος υπάλληλος", "Βάλε όνομα υπαλλήλου (π.χ. Μαρία).");
+      if(!name) return;
+      const pin = await askPin({ title:"PIN υπαλλήλου", hint:"Βάλε PIN (μόνο αριθμούς).", maxLen:8 });
+      if(!pin){ await confirmModal({ title:"Ακυρώθηκε", bodyHtml:`<div class="small dangerText">Χωρίς PIN δεν δημιουργείται χρήστης.</div>`, okText:"ΟΚ", cancelText:"" }); return; }
+
+      const id = "u" + uid();
+      db.users.push({ id, name: name.trim().slice(0,26), pin });
       saveDB();
-      await confirmModal({ title:"ΟΚ", bodyHtml:`<div class="small okText">Αποθηκεύτηκε.</div>`, okText:"ΟΚ", cancelText:"" });
+      fillUsers();
+      setTop();
       closeModal();
       openSettings();
     }
 
-    /* user switching (optional pin) */
+    async function renameUserFlow(userId){
+      if(!(await requireOwner())) return;
+      const u = db.users.find(x=>x.id===userId);
+      if(!u) return;
+      const name = await askText("Μετονομασία", `Τρέχον: ${u.name}`);
+      if(!name) return;
+      u.name = name.trim().slice(0,26);
+      saveDB();
+      fillUsers();
+      setTop();
+      closeModal();
+      openSettings();
+    }
+
+    async function setUserPinFlow(userId){
+      if(!(await requireOwner())) return;
+      const u = db.users.find(x=>x.id===userId);
+      if(!u) return;
+      const pin = await askPin({ title:`PIN για ${u.name}`, hint:"Βάλε νέο PIN (μόνο αριθμούς).", maxLen:8 });
+      if(!pin) return;
+      u.pin = pin;
+      saveDB();
+      closeModal();
+      openSettings();
+    }
+
+    async function deleteUserFlow(userId){
+      if(!(await requireOwner())) return;
+      const u = db.users.find(x=>x.id===userId);
+      if(!u) return;
+
+      if(db.users.length<=1){
+        await confirmModal({ title:"Δεν γίνεται", bodyHtml:`<div class="small dangerText">Πρέπει να υπάρχει τουλάχιστον 1 χρήστης.</div>`, okText:"ΟΚ", cancelText:"" });
+        return;
+      }
+      const ok = await confirmModal({
+        title:"Διαγραφή υπαλλήλου",
+        bodyHtml:`<div class="small dangerText">Να διαγραφεί ο χρήστης “${escapeHtml(u.name)}”; (Δεν σβήνει παλιά στοιχεία, μόνο τον χρήστη.)</div>`,
+        okText:"Διαγραφή",
+        cancelText:"Άκυρο",
+        danger:true
+      });
+      if(!ok) return;
+
+      // If current user deleted -> switch to first remaining
+      db.users = db.users.filter(x=>x.id!==userId);
+      if(db.currentUserId===userId) db.currentUserId = db.users[0].id;
+
+      saveDB();
+      fillUsers();
+      setTop();
+      closeModal();
+      openSettings();
+      render();
+    }
+
+    /* USER SWITCH: mandatory PIN */
     el("userSelect").addEventListener("change", async ()=>{
       const newId = el("userSelect").value;
       const u = db.users.find(x=>x.id===newId);
-      if(u?.pin){
-        const pin = await askPin({ title:"PIN χρήστη", hint:`Δώσε PIN για ${u.name}` });
-        if(pin !== u.pin){
-          await confirmModal({ title:"Λάθος PIN", bodyHtml:`<div class="small dangerText">Λάθος PIN.</div>`, okText:"ΟΚ", cancelText:"" });
-          fillUsers();
-          return;
-        }
+      if(!u){ fillUsers(); return; }
+
+      // Must have PIN
+      if(!u.pin){
+        await confirmModal({ title:"Χρήστης χωρίς PIN", bodyHtml:`<div class="small dangerText">Αυτός ο χρήστης δεν έχει PIN. Ορίστε PIN από Ρυθμίσεις.</div>`, okText:"ΟΚ", cancelText:"" });
+        fillUsers();
+        return;
       }
+
+      const pin = await askPin({ title:"PIN χρήστη", hint:`Δώσε PIN για ${u.name}` });
+      if(pin !== u.pin){
+        await confirmModal({ title:"Λάθος PIN", bodyHtml:`<div class="small dangerText">Λάθος PIN.</div>`, okText:"ΟΚ", cancelText:"" });
+        fillUsers();
+        return;
+      }
+
       db.currentUserId = newId;
       saveDB();
       setTop();
       render();
     });
 
-    el("btnSettings").addEventListener("click", openSettings);
+    /* bottom + screens */
+    function setBottomButtons(btns){
+      bottomBar.innerHTML = "";
+      if(!btns || btns.length===0){ bottom.style.display="none"; return; }
+      bottom.style.display="block";
+      for(const b of btns){
+        const btn = document.createElement("button");
+        btn.className = "btn pressable " + (b.kind || "");
+        btn.textContent = b.text;
+        btn.addEventListener("click", (ev)=>{
+          pressPulse(btn, ev.clientX, ev.clientY);
+          haptic(10);
+          b.onClick();
+        });
+        bottomBar.appendChild(btn);
+        makePressable(btn, 10);
+      }
+    }
 
-    /* main render */
+    /* HOME */
+    function renderHome(){
+      view.innerHTML = `
+        <div class="tables">
+          ${db.tables.map(t=>{
+            const total = tableTotal(t.id);
+            const count = unpaidItems(t.id).length;
+            const isOpen = total>0;
+            return `
+              <button class="tbtn pressable ${isOpen?"open":""}" data-tid="${t.id}">
+                <div class="title">${t.label}</div>
+                <div class="sub">${isOpen ? ("Υπόλοιπο: " + euro(total)) : "—"}</div>
+                <div class="badge">${count}</div>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      view.querySelectorAll("[data-tid]").forEach(b=>{
+        makePressable(b, 12);
+        b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
+      });
+
+      setBottomButtons([
+        { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
+        { text:"CSV", kind:"", onClick: ()=> exportCSV() },
+        { text:"Ρυθμίσεις", kind:"", onClick: ()=> openSettings() }
+      ]);
+    }
+
+    /* TABLE */
+    function renderTable(){
+      const tid = state.tableId;
+      const t = db.tables.find(x=>x.id===tid);
+      const groups = groupUnpaid(tid);
+      const total = tableTotal(tid);
+
+      view.innerHTML = `
+        <div class="card">
+          <div class="row space">
+            <div>
+              <div class="h">Τραπέζι: ${escapeHtml(t?.label || tid)}</div>
+              <div class="muted">Υπόλοιπο: <b>${euro(total)}</b></div>
+            </div>
+          </div>
+          <div class="small">Γρήγορα: Πίσω / + Προϊόν / Πληρωμή</div>
+        </div>
+
+        <div class="card">
+          <div class="h">Ανοιχτά items</div>
+          ${groups.length===0 ? `<div class="okText">Καθαρό ✅</div>` : `
+            <div class="list">
+              ${groups.map(g=>`
+                <div class="li">
+                  <div class="left">
+                    <div class="name">${escapeHtml(g.name)}</div>
+                    <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
+                  </div>
+                  <div class="qty">
+                    <button class="qbtn pressable" data-minus="${g.prodId}">−</button>
+                    <div class="qnum">${g.qty}</div>
+                    <button class="qbtn pressable" data-plus="${g.prodId}">+</button>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          `}
+        </div>
+      `;
+
+      view.querySelectorAll("[data-minus]").forEach(b=>{
+        makePressable(b, 8);
+        b.addEventListener("click", ()=> removeOneUnit(tid, b.getAttribute("data-minus")));
+      });
+      view.querySelectorAll("[data-plus]").forEach(b=>{
+        makePressable(b, 8);
+        b.addEventListener("click", ()=> addProductToTable(b.getAttribute("data-plus")));
+      });
+
+      setBottomButtons([
+        { text:"← Πίσω", kind:"", onClick: ()=> gotoHome() },
+        { text:"+ Προϊόν", kind:"accent", onClick: ()=> gotoAdd(tid) },
+        { text:"Πληρωμή", kind:"good", onClick: ()=> gotoPay(tid) }
+      ]);
+    }
+
+    /* ADD */
+    function renderAdd(){
+      const tid = state.tableId;
+      const t = db.tables.find(x=>x.id===tid);
+      const cats = db.menu.categories;
+      const activeCat = state.categoryId || cats[0]?.id || null;
+      const products = db.menu.products.filter(p=>p.cat===activeCat);
+
+      view.innerHTML = `
+        <div class="card">
+          <div class="row space">
+            <div>
+              <div class="h">+ Προϊόν • ${escapeHtml(t?.label || tid)}</div>
+              <div class="muted">Υπόλοιπο τώρα: <b>${euro(tableTotal(tid))}</b></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="h">Κατηγορίες</div>
+          <div class="chips" id="catChips">
+            ${cats.map(c=>`
+              <button class="chip pressable ${c.id===activeCat?"active":""}" data-cat="${c.id}">
+                ${c.emoji} ${escapeHtml(c.name)}
+              </button>
+            `).join("")}
+          </div>
+          <div class="small">Swipe οριζόντια στις κατηγορίες.</div>
+        </div>
+
+        <div class="card">
+          <div class="h">Προϊόντα</div>
+          <div class="list">
+            ${products.map(p=>`
+              <div class="li pressable" data-add="${p.id}">
+                <div class="left">
+                  <div class="name">${escapeHtml(p.name)}</div>
+                  <div class="meta">${escapeHtml(catTitle(p.cat))}</div>
+                </div>
+                <div class="price">${euro(p.price)}</div>
+              </div>
+            `).join("")}
+          </div>
+          <div class="small">Πάτα γραμμή προϊόντος → προστίθεται.</div>
+        </div>
+      `;
+
+      view.querySelectorAll("[data-cat]").forEach(b=>{
+        makePressable(b, 8);
+        b.addEventListener("click", ()=>{
+          state.categoryId = b.getAttribute("data-cat");
+          render();
+        });
+      });
+
+      view.querySelectorAll("[data-add]").forEach(li=>{
+        makePressable(li, 8);
+        li.addEventListener("click", ()=> addProductToTable(li.getAttribute("data-add")));
+      });
+
+      setBottomButtons([
+        { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) },
+        { text:"Πληρωμή", kind:"good", onClick: ()=> gotoPay(tid) }
+      ]);
+    }
+    function catTitle(catId){
+      const c = db.menu.categories.find(x=>x.id===catId);
+      return c ? `${c.emoji} ${c.name}` : "";
+    }
+
+    /* PAY */
+    async function treatOne(tid, prodId){
+      const it = findOneUnpaidUnit(tid, prodId);
+      if(!it) return;
+
+      const ok = await confirmModal({
+        title:"Κερασμένο",
+        bodyHtml:`<div class="small">Να γίνει κερασμένο <b>1 τεμ.</b> “${escapeHtml(it.name)}”;</div>`,
+        okText:"Ναι",
+        cancelText:"Άκυρο"
+      });
+      if(!ok) return;
+
+      it.paid = { method:"treat", ts: Date.now(), by: getUser()?.name || "" };
+      db.days[TODAY].payments.push({
+        id: uid(),
+        tableId: tid,
+        prodId: it.prodId,
+        name: it.name,
+        price: it.price,
+        method: "treat",
+        ts: it.paid.ts,
+        by: it.paid.by
+      });
+
+      saveDB();
+      render();
+    }
+
+    async function payAll(tid, method){
+      const items = unpaidItems(tid);
+      if(items.length===0){
+        await confirmModal({ title:"Πληρωμή", bodyHtml:`<div class="small">Δεν υπάρχει υπόλοιπο.</div>`, okText:"ΟΚ", cancelText:"" });
+        gotoHome();
+        return;
+      }
+
+      const ok = await confirmModal({
+        title:"Επιβεβαίωση",
+        bodyHtml:`<div class="small">Να πληρωθεί <b>όλο</b> το υπόλοιπο (${euro(tableTotal(tid))}) με <b>${methodLabel(method)}</b>;</div>`,
+        okText:"Ναι",
+        cancelText:"Άκυρο"
+      });
+      if(!ok) return;
+
+      const u = getUser()?.name || "";
+      const ts = Date.now();
+
+      for(const it of items){
+        it.paid = { method, ts, by: u };
+        db.days[TODAY].payments.push({
+          id: uid(),
+          tableId: tid,
+          prodId: it.prodId,
+          name: it.name,
+          price: it.price,
+          method,
+          ts,
+          by: u
+        });
+      }
+
+      saveDB();
+      gotoHome();
+    }
+
+    function renderPay(){
+      const tid = state.tableId;
+      const t = db.tables.find(x=>x.id===tid);
+      const groups = groupUnpaid(tid);
+      const total = tableTotal(tid);
+
+      view.innerHTML = `
+        <div class="card">
+          <div class="h">Πληρωμή • ${escapeHtml(t?.label || tid)}</div>
+          <div class="muted">Υπόλοιπο: <b>${euro(total)}</b></div>
+          <div class="row" style="gap:10px; margin-top:10px;">
+            <button class="btn pressable good" style="flex:1;" id="payCash">ΠΛΗΡΩΜΗ ΜΕΤΡΗΤΑ</button>
+            <button class="btn pressable accent" style="flex:1;" id="payCard">ΠΛΗΡΩΜΗ ΚΑΡΤΑ</button>
+          </div>
+          <div class="small">Το “κερασμένο” αφαιρεί 1 τεμ. από το υπόλοιπο.</div>
+        </div>
+
+        <div class="card">
+          <div class="h">Ανοιχτά προϊόντα</div>
+          ${groups.length===0 ? `<div class="okText">Δεν υπάρχει υπόλοιπο ✅</div>` : `
+            <div class="list">
+              ${groups.map(g=>`
+                <div class="li">
+                  <div class="left">
+                    <div class="name">${escapeHtml(g.name)}</div>
+                    <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
+                  </div>
+                  <div class="qty">
+                    <button class="qbtn pressable" title="Κερασμένο 1 τεμ." data-treat="${g.prodId}">🎁</button>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          `}
+        </div>
+      `;
+
+      const payCash = el("payCash");
+      const payCard = el("payCard");
+      makePressable(payCash, 14);
+      makePressable(payCard, 14);
+      payCash.addEventListener("click", ()=> payAll(tid, "cash"));
+      payCard.addEventListener("click", ()=> payAll(tid, "card"));
+
+      view.querySelectorAll("[data-treat]").forEach(b=>{
+        makePressable(b, 8);
+        b.addEventListener("click", ()=> treatOne(tid, b.getAttribute("data-treat")));
+      });
+
+      setBottomButtons([
+        { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) },
+        { text:"+ Προϊόν", kind:"accent", onClick: ()=> gotoAdd(tid) }
+      ]);
+    }
+
+    /* SUMMARY */
+    function renderSummary(){
+      const pay = db.days[TODAY].payments || [];
+      const totals = { cash:0, card:0, treat:0, all:0 };
+      const byUser = new Map();
+
+      for(const p of pay){
+        totals.all += p.price;
+        if(p.method==="cash") totals.cash += p.price;
+        if(p.method==="card") totals.card += p.price;
+        if(p.method==="treat") totals.treat += p.price;
+
+        const k = p.by || "—";
+        if(!byUser.has(k)) byUser.set(k, { cash:0, card:0, treat:0, all:0, count:0 });
+        const o = byUser.get(k);
+        o.all += p.price; o.count += 1;
+        if(p.method==="cash") o.cash += p.price;
+        if(p.method==="card") o.card += p.price;
+        if(p.method==="treat") o.treat += p.price;
+      }
+
+      const usersArr = [...byUser.entries()].sort((a,b)=>b[1].all-a[1].all);
+
+      view.innerHTML = `
+        <div class="card">
+          <div class="h">Σύνοψη • ${TODAY}</div>
+          <div class="row" style="flex-wrap:wrap;">
+            <div class="pill">Σύνολο: <b>${euro(totals.all)}</b></div>
+            <div class="pill">Μετρητά: <b>${euro(totals.cash)}</b></div>
+            <div class="pill">Κάρτα: <b>${euro(totals.card)}</b></div>
+            <div class="pill">Κερασμένα: <b>${euro(totals.treat)}</b></div>
+          </div>
+          <div class="small">Πάτα χρήστη για ανάλυση.</div>
+        </div>
+
+        <div class="card">
+          <div class="h">Ανά χρήστη</div>
+          ${usersArr.length===0 ? `<div class="muted2">Δεν υπάρχουν πληρωμές ακόμα.</div>` : `
+            <div class="list">
+              ${usersArr.map(([uname,o])=>`
+                <div class="li pressable" data-user="${escapeHtml(uname)}">
+                  <div class="left">
+                    <div class="name">${escapeHtml(uname)}</div>
+                    <div class="meta">${o.count} κινήσεις • Μετρητά ${euro(o.cash)} • Κάρτα ${euro(o.card)} • Κερασμένα ${euro(o.treat)}</div>
+                  </div>
+                  <div class="price">${euro(o.all)}</div>
+                </div>
+              `).join("")}
+            </div>
+          `}
+        </div>
+      `;
+
+      view.querySelectorAll("[data-user]").forEach(li=>{
+        makePressable(li, 8);
+        li.addEventListener("click", ()=> userBreakdown(li.getAttribute("data-user")));
+      });
+
+      setBottomButtons([
+        { text:"← Home", kind:"", onClick: ()=> gotoHome() },
+        { text:"CSV", kind:"", onClick: ()=> exportCSV() },
+        { text:"Ρυθμίσεις", kind:"", onClick: ()=> openSettings() }
+      ]);
+    }
+
+    function userBreakdown(uname){
+      const pay = (db.days[TODAY].payments || []).filter(p => (p.by||"—")===uname);
+      let html = `<div class="small">Κινήσεις: <b>${pay.length}</b></div>`;
+      html += `<div class="list">` + pay.slice().reverse().map(p=>`
+        <div class="li">
+          <div class="left">
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="meta">${methodLabel(p.method)} • ${escapeHtml(p.tableId)} • ${new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})}</div>
+          </div>
+          <div class="price">${euro(p.price)}</div>
+        </div>
+      `).join("") + `</div>`;
+
+      openModal({ title:`Ανάλυση: ${uname}`, bodyHtml: html, buttons:[{text:"ΟΚ", cls:"good", onClick: closeModal}] });
+    }
+
+    function exportCSV(){
+      haptic(12);
+      const pay = db.days[TODAY].payments || [];
+      const rows = [["date","time","table","product","price","method","user"].join(",")];
+      for(const p of pay){
+        const d = new Date(p.ts);
+        rows.push([
+          TODAY,
+          d.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"}),
+          p.tableId,
+          `"${String(p.name).replaceAll('"','""')}"`,
+          Number(p.price).toFixed(2),
+          p.method,
+          `"${String(p.by||"").replaceAll('"','""')}"`
+        ].join(","));
+      }
+      const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `daily_cashier_${TODAY}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    /* Idle */
+    function resetIdle(){
+      if(idleTimer) clearTimeout(idleTimer);
+      if(saverTimer) clearTimeout(saverTimer);
+      saver.style.display = "none";
+      idleTimer = setTimeout(()=>{
+        gotoHome();
+        saverTimer = setTimeout(()=>{ saver.style.display = "flex"; }, IDLE_TO_SAVER_AFTER_HOME_MS);
+      }, IDLE_TO_HOME_MS);
+    }
+
+    /* Render router */
     function render(){
       setTop();
       if(state.screen==="home") renderHome();
@@ -1371,22 +1898,51 @@
       else if(state.screen==="pay") renderPay();
       else if(state.screen==="summary") renderSummary();
       resetIdle();
+      // Make top buttons pressable
+      makePressable(el("btnSettings"), 10);
     }
 
     /* SW register */
     async function registerSW(){
       if(!("serviceWorker" in navigator)) return;
       try{
-        const reg = await navigator.serviceWorker.register("./sw.js", { scope: "./" });
+        const reg = await navigator.serviceWorker.register("./sw.js", { scope:"./" });
         if(reg.update) reg.update();
       }catch(e){}
     }
 
-    // init
+    // Init + enforce current user has PIN
+    function initSecurity(){
+      // Ensure current user exists and has PIN
+      const cur = getUser();
+      if(!cur || !cur.pin){
+        // force owner to set PIN via settings
+        confirmModal({
+          title:"Ασφάλεια",
+          bodyHtml:`<div class="small dangerText">Ο τρέχων χρήστης δεν έχει PIN. Πήγαινε Ρυθμίσεις → Υπάλληλοι και όρισε PIN.</div>`,
+          okText:"ΟΚ",
+          cancelText:""
+        });
+      }
+    }
+
+    // wiring
+    el("btnSettings").addEventListener("click", ()=>{ haptic(10); openSettings(); });
+    makePressable(el("btnSettings"), 10);
+
+    // idle listeners
+    ["click","touchstart","keydown","pointerdown","scroll"].forEach(ev=>{
+      window.addEventListener(ev, resetIdle, {passive:true});
+    });
+    saver.addEventListener("click", ()=>{ saver.style.display="none"; resetIdle(); haptic(12); });
+    saver.addEventListener("touchstart", ()=>{ saver.style.display="none"; resetIdle(); haptic(12); }, {passive:true});
+
+    // Start
     fillUsers();
     setTop();
     render();
     registerSW();
+    initSecurity();
     resetIdle();
   </script>
 </body>
