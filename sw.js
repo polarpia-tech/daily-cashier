@@ -1,4 +1,4 @@
-const CACHE_VERSION = "dc-cache-v10";
+const CACHE_VERSION = "dc-cache-v11";
 const ASSETS = [
   "./",
   "./index.html",
