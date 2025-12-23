@@ -249,7 +249,6 @@
     .btn.accent{ border-color: rgba(74,163,255,.35); box-shadow:0 0 0 3px rgba(74,163,255,.06) inset; }
     .btn:disabled{ opacity:.45; }
 
-    /* EXTRA STRONG PRIMARY PAY BUTTON */
     .btn.payPrimary{
       border-color: rgba(47,227,159,.70);
       background: linear-gradient(180deg, rgba(47,227,159,.26), rgba(17,24,36,.72));
@@ -277,7 +276,6 @@
       margin: 6px 6px 0 0;
     }
 
-    /* Modal */
     .modalBack{
       position:fixed; inset:0;
       background: rgba(0,0,0,.55);
@@ -328,7 +326,6 @@
       padding: 12px;
     }
 
-    /* Screen Saver overlay */
     .saver{
       position:fixed; inset:0;
       display:none;
@@ -347,7 +344,6 @@
     .saver .time{ font-size:42px; font-weight:1000; margin-top:6px; }
     .saver .tap{ font-size:12px; color:var(--muted2); margin-top:14px; }
 
-    /* Toast / Snackbar */
     .toastWrap{
       position:fixed;
       left:0; right:0;
@@ -395,7 +391,6 @@
     .toast.info{ border-color: rgba(74,163,255,.26); }
     .toast.info .ticon{ background: rgba(74,163,255,.10); border-color: rgba(74,163,255,.18); }
 
-    /* PRINT / PDF SHEET */
     @media print {
       body { background: #fff !important; }
       .app, .bottom, .modalBack, .toastWrap, .saver { display:none !important; }
@@ -486,88 +481,19 @@
 
   <script>
     /* ============================================================
-       ✅ STORAGE THAT DOES NOT "RESET" WITH CODE CHANGES / REFRESH
-       - Stable storage key forever
-       - Auto-migrate old keys (v1..v99)
-       - Schema versioning + safe migration
+       ✅ DATA STORAGE (stable key) + MENU LOAD FROM menu.prices.json
        ============================================================ */
 
-    const LS_KEY_STABLE = "daily_cashier_db";   // ΜΗΝ το αλλάξεις ποτέ ξανά
-    const SCHEMA_VERSION = 7;
-
-    const LEGACY_KEY_PREFIXES = [
-      "daily_cashier_db_v",
-      "daily_cashier_db_",
-      "daily_cashier_db"
-    ];
-
-    function safeParse(raw){
-      try{ return JSON.parse(raw); }catch(e){ return null; }
-    }
-
-    // Find the "best" legacy key (highest version) if stable not present
-    function findLegacyDB(){
-      let best = null; // {key, ver, obj}
-      for(let i=0;i<localStorage.length;i++){
-        const k = localStorage.key(i);
-        if(!k) continue;
-        const ok = LEGACY_KEY_PREFIXES.some(p=>k.startsWith(p));
-        if(!ok) continue;
-
-        const raw = localStorage.getItem(k);
-        if(!raw) continue;
-
-        const obj = safeParse(raw);
-        if(!obj || typeof obj !== "object") continue;
-
-        // version extracted from "..._v7" etc. else 0
-        let ver = 0;
-        const m = k.match(/_v(\d+)$/);
-        if(m) ver = Number(m[1] || 0);
-
-        // Prefer stable exact key if exists (handled elsewhere)
-        if(!best || ver > best.ver){
-          best = { key:k, ver, obj };
-        }
-      }
-      return best;
-    }
-
-    function loadDBPersistent(){
-      const stableRaw = localStorage.getItem(LS_KEY_STABLE);
-      if(stableRaw){
-        const obj = safeParse(stableRaw);
-        if(obj && typeof obj === "object") return obj;
-      }
-
-      const legacy = findLegacyDB();
-      if(legacy && legacy.obj){
-        // ✅ migrate legacy -> stable (one-time)
-        localStorage.setItem(LS_KEY_STABLE, JSON.stringify(legacy.obj));
-        return legacy.obj;
-      }
-      return null;
-    }
-
-    function saveDBPersistent(db){
-      localStorage.setItem(LS_KEY_STABLE, JSON.stringify(db));
-    }
-
-    // Note: cannot keep data if user clears browser storage. But:
-    // ✅ refresh / code changes / SW updates won't reset anymore.
-
+    const LS_KEY_STABLE = "daily_cashier_db";   // ΜΗΝ το αλλάξεις ποτέ
+    const SCHEMA_VERSION = 8;                   // bump (menu external)
     const TODAY = new Date().toISOString().slice(0,10);
 
-    // Toast
-    let toastTimer = null;
+    function safeParse(raw){ try{ return JSON.parse(raw); }catch(e){ return null; } }
+    function loadDB(){ return safeParse(localStorage.getItem(LS_KEY_STABLE) || ""); }
+    function saveDBPersistent(db){ localStorage.setItem(LS_KEY_STABLE, JSON.stringify(db)); }
 
-    // Idle behavior
-    const IDLE_HOME_MS  = 30_000;
-    const IDLE_SAVER_MS = 75_000;
-    let lastActivityTs = Date.now();
-    let saverShown = false;
-
-    const el = (id) => document.getElementById(id);
+    // UI helpers
+    const el = (id)=>document.getElementById(id);
     const view = el("view");
     const bottom = el("bottom");
     const bottomBar = el("bottomBar");
@@ -586,6 +512,7 @@
     const toastIcon = el("toastIcon");
     const toastMain = el("toastMain");
     const toastSub  = el("toastSub");
+    let toastTimer = null;
 
     function showToast(type, main, sub="", ms=2400){
       clearTimeout(toastTimer);
@@ -600,26 +527,36 @@
       toastTimer = setTimeout(()=> toastEl.classList.remove("show"), ms);
     }
 
-    function hapticStrong(){
-      try{ if(navigator.vibrate) navigator.vibrate([35, 12, 35]); }catch{}
-    }
-    function hapticSmall(){
-      try{ if(navigator.vibrate) navigator.vibrate(12); }catch{}
-    }
+    function hapticStrong(){ try{ if(navigator.vibrate) navigator.vibrate([35, 12, 35]); }catch{} }
+    function hapticSmall(){ try{ if(navigator.vibrate) navigator.vibrate(12); }catch{} }
 
     function pressFlash(elem){
       elem.classList.add("is-pressed");
       setTimeout(()=> elem.classList.remove("is-pressed"), 190);
     }
-
     function makePressable(elem, strong=false){
       if(!elem) return;
       elem.classList.add("pressable");
-      const down = ()=>{ pressFlash(elem); strong ? hapticStrong() : hapticSmall(); };
-      elem.addEventListener("pointerdown", down, {passive:true});
+      elem.addEventListener("pointerdown", ()=>{ pressFlash(elem); strong ? hapticStrong() : hapticSmall(); }, {passive:true});
     }
 
-    // Activity tracking
+    function euro(x){
+      const n = Number(x || 0);
+      return n.toLocaleString("el-GR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
+    }
+    function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+    function escHtml(s){
+      return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+    }
+
+    // Idle behavior
+    const IDLE_HOME_MS  = 30_000;
+    const IDLE_SAVER_MS = 75_000;
+    let lastActivityTs = Date.now();
+    let saverShown = false;
+
     function markActivity(){
       lastActivityTs = Date.now();
       if(saverShown) hideSaver();
@@ -628,212 +565,7 @@
       window.addEventListener(evt, markActivity, {passive:true});
     });
 
-    function euro(x){
-      const n = Number(x || 0);
-      return n.toLocaleString("el-GR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
-    }
-    function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
-
-    // Default DB (only used if nothing exists)
-    function defaultDB(){
-      return {
-        schemaVersion: SCHEMA_VERSION,
-        shopName: "Το Μαγαζί μου",
-        ownerPin: "9999",
-        ownerEmail: "",
-        ownerWhatsApp: "",
-        users: [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }],
-        currentUserId: "u1",
-        tables: [
-          { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
-          { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
-        ],
-        menu: buildMenuIfMissing(),
-        days: {}
-      };
-    }
-
-    function buildMenuIfMissing(){
-      const categories = [
-        { id:"coffee_hot",  name:"Καφέδες – Ζεστοί", emoji:"☕" },
-        { id:"coffee_cold", name:"Καφέδες – Κρύοι",  emoji:"🧊" },
-        { id:"tea",         name:"Τσάι – Ζεστά",     emoji:"🫖" },
-        { id:"choco",       name:"Σοκολάτες / Γαλακτερά", emoji:"🍫" },
-        { id:"soft",        name:"Αναψυκτικά – Νερά", emoji:"🥤" },
-        { id:"juice",       name:"Χυμοί – Smoothies", emoji:"🍊" },
-        { id:"snack",       name:"Σνακ – Γλυκά",      emoji:"🥐" },
-        { id:"beer",        name:"Μπύρες",            emoji:"🍺" },
-        { id:"wine",        name:"Κρασιά",            emoji:"🍷" },
-        { id:"spirit",      name:"Ποτά",              emoji:"🥃" },
-        { id:"cocktail",    name:"Κοκτέιλ",           emoji:"🍸" },
-        { id:"extras",      name:"Extras",            emoji:"➕" }
-      ];
-      return { categories, products: [] };
-    }
-
-    // ✅ MIGRATION: make old db safe with new code
-    function migrateDB(db){
-      if(!db || typeof db !== "object") return db;
-
-      const v = Number(db.schemaVersion || 1);
-
-      // Ensure base fields
-      if(!db.shopName) db.shopName = "Το Μαγαζί μου";
-      if(!db.ownerPin) db.ownerPin = "9999";
-      if(typeof db.ownerEmail !== "string") db.ownerEmail = "";
-      if(typeof db.ownerWhatsApp !== "string") db.ownerWhatsApp = "";
-
-      if(!Array.isArray(db.users) || db.users.length===0){
-        db.users = [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }];
-      }
-      if(!db.currentUserId) db.currentUserId = db.users[0].id;
-
-      if(!Array.isArray(db.tables) || db.tables.length===0){
-        db.tables = [
-          { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
-          { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
-        ];
-      }
-      if(!db.menu || !db.menu.categories) db.menu = buildMenuIfMissing();
-      if(!Array.isArray(db.menu.products)) db.menu.products = [];
-
-      if(!db.days || typeof db.days !== "object") db.days = {};
-
-      // v < 7: ensure shift structure exists
-      if(v < 7){
-        for(const dayKey of Object.keys(db.days)){
-          const d = db.days[dayKey];
-          if(!d || typeof d !== "object") continue;
-          if(!d.shiftId) d.shiftId = uid();
-          if(!Array.isArray(d.shifts)) d.shifts = [];
-          if(!Array.isArray(d.payments)) d.payments = [];
-          if(!d.tables) d.tables = {};
-        }
-      }
-
-      db.schemaVersion = SCHEMA_VERSION;
-      return db;
-    }
-
-    // ✅ Load + migrate + save once
-    let db = migrateDB(loadDBPersistent()) || defaultDB();
-
-    // Fill menu products if empty (same as before)
-    if(!db.menu.products || db.menu.products.length===0){
-      db.menu.products = [
-        { id:"p_espresso_single", cat:"coffee_hot", name:"Espresso μονός", price:2.60 },
-        { id:"p_espresso_double", cat:"coffee_hot", name:"Espresso διπλός", price:3.20 },
-        { id:"p_espresso_macchiato", cat:"coffee_hot", name:"Espresso macchiato", price:2.90 },
-        { id:"p_americano", cat:"coffee_hot", name:"Americano", price:3.20 },
-        { id:"p_cappuccino", cat:"coffee_hot", name:"Cappuccino", price:3.60 },
-        { id:"p_cappuccino_double", cat:"coffee_hot", name:"Cappuccino διπλός", price:4.20 },
-        { id:"p_latte_macchiato", cat:"coffee_hot", name:"Latte macchiato", price:4.20 },
-        { id:"p_flat_white", cat:"coffee_hot", name:"Flat white", price:4.40 },
-        { id:"p_mocha", cat:"coffee_hot", name:"Mocha", price:4.50 },
-        { id:"p_filter", cat:"coffee_hot", name:"Καφές φίλτρου", price:3.00 },
-        { id:"p_freddo_espresso", cat:"coffee_cold", name:"Freddo espresso", price:3.80 },
-        { id:"p_freddo_cappuccino", cat:"coffee_cold", name:"Freddo cappuccino", price:4.20 },
-        { id:"p_iced_latte", cat:"coffee_cold", name:"Iced latte", price:4.50 },
-        { id:"p_cold_brew", cat:"coffee_cold", name:"Cold brew", price:4.80 },
-        { id:"p_frappe", cat:"coffee_cold", name:"Frappe", price:3.50 },
-        { id:"p_tea_basic", cat:"tea", name:"Τσάι (μαύρο/πράσινο/βότανα)", price:3.20 },
-        { id:"p_tea_fruit", cat:"tea", name:"Τσάι φρούτων", price:3.50 },
-        { id:"p_chai_latte", cat:"tea", name:"Chai latte", price:4.30 },
-        { id:"p_hot_chocolate", cat:"choco", name:"Ζεστή σοκολάτα", price:4.20 },
-        { id:"p_cold_chocolate", cat:"choco", name:"Κρύα σοκολάτα", price:4.50 },
-        { id:"p_white_chocolate", cat:"choco", name:"Λευκή σοκολάτα", price:4.50 },
-        { id:"p_cocoa", cat:"choco", name:"Κακάο", price:4.00 },
-        { id:"p_cola", cat:"soft", name:"Coca-Cola / Zero / Fanta (0,33l)", price:3.40 },
-        { id:"p_ice_tea", cat:"soft", name:"Ice Tea", price:3.60 },
-        { id:"p_soda_tonic", cat:"soft", name:"Σόδα / Τόνικ", price:3.20 },
-        { id:"p_water_033", cat:"soft", name:"Μεταλλικό νερό (0,33l)", price:2.80 },
-        { id:"p_water_075", cat:"soft", name:"Μεταλλικό νερό (0,75l)", price:5.50 },
-        { id:"p_orange_juice", cat:"juice", name:"Φυσικός χυμός πορτοκάλι", price:4.50 },
-        { id:"p_mix_juice", cat:"juice", name:"Χυμός ανάμεικτος", price:4.80 },
-        { id:"p_fruit_smoothie", cat:"juice", name:"Smoothie φρούτων", price:5.80 },
-        { id:"p_milkshake", cat:"juice", name:"Milkshake", price:5.50 },
-        { id:"p_croissant_plain", cat:"snack", name:"Κρουασάν σκέτο", price:2.80 },
-        { id:"p_croissant_choco", cat:"snack", name:"Κρουασάν σοκολάτα", price:3.20 },
-        { id:"p_muffin", cat:"snack", name:"Μάφιν", price:3.50 },
-        { id:"p_cake_piece", cat:"snack", name:"Κέικ (κομμάτι)", price:4.20 },
-        { id:"p_cheesecake", cat:"snack", name:"Cheesecake", price:4.80 },
-        { id:"p_cookies", cat:"snack", name:"Μπισκότα", price:2.50 },
-        { id:"p_toast_ham", cat:"snack", name:"Τοστ ζαμπόν-τυρί", price:4.50 },
-        { id:"p_toast_veg", cat:"snack", name:"Τοστ vegetarian", price:4.80 },
-        { id:"p_beer_draft", cat:"beer", name:"Μπύρα βαρελίσια (0,5l)", price:5.20 },
-        { id:"p_beer_bottle", cat:"beer", name:"Μπύρα εμφιαλωμένη (0,33l)", price:4.20 },
-        { id:"p_weissbier", cat:"beer", name:"Weissbier (0,5l)", price:5.50 },
-        { id:"p_beer_zero", cat:"beer", name:"Μπύρα χωρίς αλκοόλ", price:4.20 },
-        { id:"p_wine_glass", cat:"wine", name:"Κρασί ποτήρι", price:5.50 },
-        { id:"p_wine_carafe", cat:"wine", name:"Κρασί καράφα (0,5l)", price:12.00 },
-        { id:"p_wine_bottle_22", cat:"wine", name:"Φιάλη κρασί (22€)", price:22.00 },
-        { id:"p_wine_bottle_28", cat:"wine", name:"Φιάλη κρασί (28€)", price:28.00 },
-        { id:"p_prosecco_glass", cat:"wine", name:"Prosecco ποτήρι", price:6.50 },
-        { id:"p_whisky_std", cat:"spirit", name:"Ουίσκι standard (4cl)", price:8.50 },
-        { id:"p_whisky_premium", cat:"spirit", name:"Premium ουίσκι (4cl)", price:10.50 },
-        { id:"p_vodka", cat:"spirit", name:"Βότκα (4cl)", price:8.00 },
-        { id:"p_rum", cat:"spirit", name:"Ρούμι (4cl)", price:8.50 },
-        { id:"p_gin", cat:"spirit", name:"Τζιν (4cl)", price:8.50 },
-        { id:"p_ouzo_tsipouro", cat:"spirit", name:"Ούζο / Τσίπουρο (4cl)", price:7.50 },
-        { id:"p_liqueur", cat:"spirit", name:"Λικέρ (4cl)", price:7.50 },
-        { id:"p_mojito", cat:"cocktail", name:"Mojito", price:9.50 },
-        { id:"p_caipirinha", cat:"cocktail", name:"Caipirinha", price:9.50 },
-        { id:"p_margarita", cat:"cocktail", name:"Margarita", price:10.00 },
-        { id:"p_aperol", cat:"cocktail", name:"Aperol Spritz", price:8.50 },
-        { id:"p_gin_tonic", cat:"cocktail", name:"Gin Tonic", price:9.00 },
-        { id:"p_negroni", cat:"cocktail", name:"Negroni", price:10.50 },
-        { id:"p_extra_decaf", cat:"extras", name:"Decaf (+)", price:0.30 },
-        { id:"p_extra_plant_milk", cat:"extras", name:"Φυτικό γάλα (+)", price:0.50 }
-      ];
-    }
-
-    // ✅ Save immediately so stable key is populated
-    saveDBPersistent(db);
-
-    function saveDB(){ saveDBPersistent(db); }
-
-    function ensureDay(){
-      if(!db.days[TODAY]) db.days[TODAY] = { shiftId: uid(), shifts:[], tables:{}, payments:[] };
-      for(const t of db.tables){
-        if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[] };
-        if(!Array.isArray(db.days[TODAY].tables[t.id].items)) db.days[TODAY].tables[t.id].items = [];
-      }
-      if(!db.days[TODAY].shiftId) db.days[TODAY].shiftId = uid();
-      if(!Array.isArray(db.days[TODAY].shifts)) db.days[TODAY].shifts = [];
-      if(!Array.isArray(db.days[TODAY].payments)) db.days[TODAY].payments = [];
-    }
-    ensureDay(); saveDB();
-
-    let lastUserId = db.currentUserId;
-    function getUser(){ return db.users.find(u=>u.id===db.currentUserId) || db.users[0]; }
-
-    function escHtml(s){
-      return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;").replaceAll("'","&#39;");
-    }
-
-    function setTop(){
-      el("shopNameTop").textContent = db.shopName || "—";
-      const u = getUser();
-      el("topSub").textContent = `${TODAY} • Εν υπηρεσία: ${u?.name || "—"}`;
-      document.title = db.shopName || "Daily Cashier";
-      updateSaverText();
-    }
-
-    function fillUsers(){
-      const sel = el("userSelect");
-      sel.innerHTML = "";
-      for(const u of db.users){
-        const opt = document.createElement("option");
-        opt.value = u.id;
-        opt.textContent = u.name;
-        if(u.id===db.currentUserId) opt.selected = true;
-        sel.appendChild(opt);
-      }
-      sel.value = db.currentUserId;
-      lastUserId = db.currentUserId;
-    }
-
+    // Modal helpers
     function closeModal(){
       modalBack.style.display = "none";
       modalTitle.textContent = "";
@@ -882,7 +614,6 @@
         dummy.style.display = "none";
         modalFoot.appendChild(dummy);
         modalFoot.appendChild(b);
-
         modalBack.style.display = "flex";
       });
     }
@@ -965,14 +696,136 @@
       });
     }
 
-    // state
+    // Menu helpers (external)
+    function defaultMenu(){
+      // fallback ONLY ώστε να μην σπάει, αν δεν υπάρχει menu.prices.json
+      const categories = [
+        { id:"coffee_hot",  name:"Καφέδες – Ζεστοί", emoji:"☕" },
+        { id:"coffee_cold", name:"Καφέδες – Κρύοι",  emoji:"🧊" },
+        { id:"snack",       name:"Σνακ – Γλυκά",      emoji:"🥐" },
+        { id:"soft",        name:"Αναψυκτικά – Νερά", emoji:"🥤" },
+        { id:"extras",      name:"Extras",            emoji:"➕" }
+      ];
+      const products = [
+        { id:"p_espresso", cat:"coffee_hot", name:"Espresso", price:2.60 },
+        { id:"p_capp",     cat:"coffee_hot", name:"Cappuccino", price:3.60 },
+        { id:"p_freddo",   cat:"coffee_cold", name:"Freddo espresso", price:3.80 },
+        { id:"p_water",    cat:"soft", name:"Νερό (0,33l)", price:2.80 },
+        { id:"p_cross",    cat:"snack", name:"Κρουασάν", price:2.80 },
+        { id:"p_decaf",    cat:"extras", name:"Decaf (+)", price:0.30 }
+      ];
+      return { categories, products };
+    }
+
+    async function loadMenuFromJSON(){
+      try{
+        const res = await fetch("./menu.prices.json", { cache: "no-store" });
+        if(!res.ok) throw new Error("menu.prices.json not found");
+        const data = await res.json();
+        if(!data || !Array.isArray(data.categories) || !Array.isArray(data.products)){
+          throw new Error("Invalid menu json structure");
+        }
+        return data;
+      }catch(e){
+        showToast("info","Menu default", "Δεν βρέθηκε menu.prices.json — χρησιμοποιώ default.");
+        return defaultMenu();
+      }
+    }
+
+    // DB defaults
+    function defaultDB(){
+      return {
+        schemaVersion: SCHEMA_VERSION,
+        shopName: "Το Μαγαζί μου",
+        ownerPin: "9999",
+        ownerEmail: "",
+        ownerWhatsApp: "",
+        users: [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }],
+        currentUserId: "u1",
+        tables: [
+          { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
+          { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
+        ],
+        menu: defaultMenu(),
+        days: {}
+      };
+    }
+
+    function migrateDB(db){
+      if(!db || typeof db !== "object") return db;
+      if(!db.shopName) db.shopName = "Το Μαγαζί μου";
+      if(!db.ownerPin) db.ownerPin = "9999";
+      if(typeof db.ownerEmail !== "string") db.ownerEmail = "";
+      if(typeof db.ownerWhatsApp !== "string") db.ownerWhatsApp = "";
+
+      if(!Array.isArray(db.users) || db.users.length===0){
+        db.users = [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }];
+      }
+      if(!db.currentUserId) db.currentUserId = db.users[0].id;
+
+      if(!Array.isArray(db.tables) || db.tables.length===0){
+        db.tables = [
+          { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
+          { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
+        ];
+      }
+
+      if(!db.days || typeof db.days !== "object") db.days = {};
+
+      // ensure menu container exists (will be overwritten by external menu later)
+      if(!db.menu || !db.menu.categories || !db.menu.products){
+        db.menu = defaultMenu();
+      }
+
+      db.schemaVersion = SCHEMA_VERSION;
+      return db;
+    }
+
+    // Runtime DB
+    let db = migrateDB(loadDB()) || defaultDB();
+    saveDBPersistent(db);
+
+    function ensureDay(){
+      if(!db.days[TODAY]) db.days[TODAY] = { shiftId: uid(), shifts:[], tables:{}, payments:[] };
+      if(!db.days[TODAY].shiftId) db.days[TODAY].shiftId = uid();
+      if(!Array.isArray(db.days[TODAY].shifts)) db.days[TODAY].shifts = [];
+      if(!Array.isArray(db.days[TODAY].payments)) db.days[TODAY].payments = [];
+      if(!db.days[TODAY].tables) db.days[TODAY].tables = {};
+      for(const t of db.tables){
+        if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[] };
+        if(!Array.isArray(db.days[TODAY].tables[t.id].items)) db.days[TODAY].tables[t.id].items = [];
+      }
+    }
+
+    function saveDB(){ saveDBPersistent(db); }
+
+    // State + helpers
     let state = { screen:"home", tableId:null, categoryId:null };
-    function gotoHome(){ state.screen="home"; state.tableId=null; render(); }
-    function gotoTable(tid){ state.screen="table"; state.tableId=tid; render(); }
-    function gotoAdd(tid){ state.screen="add"; state.tableId=tid; state.categoryId = state.categoryId || db.menu.categories[0]?.id; render(); }
-    function gotoPay(tid){ state.screen="pay"; state.tableId=tid; render(); }
-    function gotoSummary(){ state.screen="summary"; state.tableId=null; render(); }
-    function gotoSettings(){ state.screen="settings"; state.tableId=null; render(); }
+    let lastUserId = db.currentUserId;
+
+    function getUser(){ return db.users.find(u=>u.id===db.currentUserId) || db.users[0]; }
+
+    function setTop(){
+      el("shopNameTop").textContent = db.shopName || "—";
+      const u = getUser();
+      el("topSub").textContent = `${TODAY} • Εν υπηρεσία: ${u?.name || "—"}`;
+      document.title = db.shopName || "Daily Cashier";
+      updateSaverText();
+    }
+
+    function fillUsers(){
+      const sel = el("userSelect");
+      sel.innerHTML = "";
+      for(const u of db.users){
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.name;
+        if(u.id===db.currentUserId) opt.selected = true;
+        sel.appendChild(opt);
+      }
+      sel.value = db.currentUserId;
+      lastUserId = db.currentUserId;
+    }
 
     function dayTable(tid){ ensureDay(); return db.days[TODAY].tables[tid]; }
     function unpaidItems(tid){ return dayTable(tid).items.filter(it => !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId); }
@@ -998,7 +851,8 @@
         shiftId: db.days[TODAY].shiftId,
         tag: ""
       });
-      saveDB(); render();
+      saveDB();
+      render();
     }
 
     function removeOneUnit(tid, prodId, tag=""){
@@ -1085,7 +939,7 @@
       return String(pin) === String(db.ownerPin || "9999");
     }
 
-    // Screen saver
+    // Saver
     function updateSaverText(){
       const u = getUser();
       saverShop.textContent = db.shopName || "—";
@@ -1095,22 +949,11 @@
     }
     setInterval(()=>{ if(saverShown) updateSaverText(); }, 10_000);
 
-    function showSaver(){
-      saverShown = true;
-      updateSaverText();
-      saver.style.display = "flex";
-    }
-    function hideSaver(){
-      saverShown = false;
-      saver.style.display = "none";
-      render();
-    }
-    saver.addEventListener("pointerdown", ()=>{
-      markActivity();
-      hideSaver();
-    });
+    function showSaver(){ saverShown = true; updateSaverText(); saver.style.display = "flex"; }
+    function hideSaver(){ saverShown = false; saver.style.display = "none"; render(); }
+    saver.addEventListener("pointerdown", ()=>{ markActivity(); hideSaver(); });
 
-    // Shift logic
+    // Shift totals
     function shiftPayments(){
       const pay = db.days[TODAY].payments || [];
       return pay.filter(p => p.shiftId === db.days[TODAY].shiftId);
@@ -1172,7 +1015,7 @@
       const text = (extraNote ? (extraNote + "\n\n") : "") + shiftReportText(totals);
       const csv = csvForShift();
 
-      // 1) Web Share (choose WhatsApp/Email)
+      // 1) Web Share
       try{
         const file = new File([csv], `shift_${TODAY}_${db.days[TODAY].shiftId}.csv`, {type:"text/csv"});
         if(navigator.share){
@@ -1218,7 +1061,6 @@
         return;
       }
 
-      // AUTO SEND to owner (if there are amounts)
       if(totals.all > 0.00001){
         await sendShiftToOwner("🔒 Η βάρδια έκλεισε.");
       }else{
@@ -1311,6 +1153,14 @@
       setTimeout(()=> window.print(), 250);
     }
 
+    // Navigation
+    function gotoHome(){ state.screen="home"; state.tableId=null; render(); }
+    function gotoTable(tid){ state.screen="table"; state.tableId=tid; render(); }
+    function gotoAdd(tid){ state.screen="add"; state.tableId=tid; state.categoryId = state.categoryId || db.menu.categories[0]?.id; render(); }
+    function gotoPay(tid){ state.screen="pay"; state.tableId=tid; render(); }
+    function gotoSummary(){ state.screen="summary"; state.tableId=null; render(); }
+    function gotoSettings(){ state.screen="settings"; state.tableId=null; render(); }
+
     function renderHome(){
       view.innerHTML = `
         <div style="
@@ -1397,7 +1247,7 @@
 
       view.querySelectorAll("[data-plus]").forEach(b=>{
         makePressable(b, true);
-        b.addEventListener("click", async ()=>{
+        b.addEventListener("click", ()=>{
           const pid = b.getAttribute("data-plus");
           const tag = b.getAttribute("data-tag") || "";
           addProductToTable(pid);
@@ -1539,12 +1389,8 @@
       makePressable(cash, true);
       makePressable(card, true);
 
-      cash.addEventListener("click", ()=>{
-        try{ payAll(tid,"cash"); }catch(e){ showToast("err","Δεν ολοκληρώθηκε","Σφάλμα πληρωμής."); }
-      });
-      card.addEventListener("click", ()=>{
-        try{ payAll(tid,"card"); }catch(e){ showToast("err","Δεν ολοκληρώθηκε","Σφάλμα πληρωμής."); }
-      });
+      cash.addEventListener("click", ()=>{ try{ payAll(tid,"cash"); }catch(e){ showToast("err","Δεν ολοκληρώθηκε","Σφάλμα πληρωμής."); } });
+      card.addEventListener("click", ()=>{ try{ payAll(tid,"card"); }catch(e){ showToast("err","Δεν ολοκληρώθηκε","Σφάλμα πληρωμής."); } });
 
       view.querySelectorAll("[data-treat]").forEach(b=>{
         makePressable(b, true);
@@ -1609,10 +1455,7 @@
       btnCloseShift.addEventListener("click", async ()=>{
         const u = getUser();
         const pin = await modalPromptPin("Κλείσιμο βάρδιας", `PIN για: ${u?.name || ""}`, "Βάλε τον κωδικό σου για κλείσιμο βάρδιας.");
-        if(pin === null){
-          showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε το κλείσιμο.");
-          return;
-        }
+        if(pin === null){ showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε το κλείσιμο."); return; }
         if(String(pin).trim() !== String(u?.pin || "").trim()){
           await modalAlert("Λάθος PIN", "Δεν είναι σωστός ο κωδικός.", "ΟΚ");
           showToast("err","Δεν ολοκληρώθηκε","Λάθος PIN.");
@@ -1684,6 +1527,12 @@
           <div style="margin-top:10px;">
             <button class="btn pressable bad" id="btnChangeOwner">Αλλαγή Owner PIN</button>
           </div>
+        </div>
+
+        <div class="card">
+          <div class="h">Menu (τιμές)</div>
+          <div class="muted2">Οι τιμές φορτώνονται από <b>menu.prices.json</b>.</div>
+          <div class="hint">Αν αλλάξεις το JSON, κάνε refresh (ή κλείσε/άνοιξε). Αν έχεις Service Worker cache, θα σου πω πως να το κάνουμε να κάνει update.</div>
         </div>
       `;
 
@@ -1820,7 +1669,7 @@
       else if(state.screen==="settings") renderSettings();
     }
 
-    // User select requires USER PIN, safe revert
+    // User select requires USER PIN
     el("userSelect").addEventListener("change", async ()=>{
       const sel = el("userSelect");
       const requestedId = sel.value;
@@ -1829,10 +1678,7 @@
       if(requestedId === lastUserId) return;
 
       const targetUser = db.users.find(u=>u.id===requestedId);
-      if(!targetUser){
-        sel.value = lastUserId;
-        return;
-      }
+      if(!targetUser){ sel.value = lastUserId; return; }
 
       const pin = await modalPromptPin("Αλλαγή χρήστη", `PIN για: ${targetUser.name}`, "Βάλε τον κωδικό για να αλλάξει ο χρήστης.");
       if(pin === null){
@@ -1860,7 +1706,7 @@
     makePressable(btnGear, true);
     btnGear.addEventListener("click", ()=> gotoSettings());
 
-    // Idle loop: go home & show saver
+    // Idle loop
     setInterval(()=>{
       const idle = Date.now() - lastActivityTs;
       if(saverShown) return;
@@ -1882,9 +1728,21 @@
       }catch(e){}
     }
 
-    fillUsers();
-    render();
-    registerSW();
+    // ✅ BOOT: load external menu first, then render
+    (async ()=>{
+      ensureDay();
+      // load menu file and replace current menu
+      db.menu = await loadMenuFromJSON();
+      // keep categoryId safe
+      if(!state.categoryId || !db.menu.categories.some(c=>c.id===state.categoryId)){
+        state.categoryId = db.menu.categories[0]?.id || null;
+      }
+      saveDB();
+
+      fillUsers();
+      render();
+      registerSW();
+    })();
   </script>
 </body>
 </html>
