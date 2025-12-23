@@ -249,6 +249,23 @@
     .btn.accent{ border-color: rgba(74,163,255,.35); box-shadow:0 0 0 3px rgba(74,163,255,.06) inset; }
     .btn:disabled{ opacity:.45; }
 
+    /* ✅ EXTRA STRONG PRIMARY PAY BUTTON */
+    .btn.payPrimary{
+      border-color: rgba(47,227,159,.70);
+      background: linear-gradient(180deg, rgba(47,227,159,.26), rgba(17,24,36,.72));
+      box-shadow:
+        0 0 0 4px rgba(47,227,159,.10) inset,
+        0 14px 34px rgba(47,227,159,.10),
+        0 18px 46px rgba(0,0,0,.38);
+      letter-spacing:.6px;
+      text-transform: uppercase;
+      animation: payPulse 1.9s ease-in-out infinite;
+    }
+    @keyframes payPulse{
+      0%,100%{ transform: translateY(0) scale(1); filter: brightness(1); }
+      50%{ transform: translateY(-1px) scale(1.01); filter: brightness(1.12); }
+    }
+
     .bar.full .btn.full{ grid-column: 1 / -1; }
 
     .pill{
@@ -329,6 +346,54 @@
     .saver .mid{ font-size:14px; color:var(--muted); }
     .saver .time{ font-size:42px; font-weight:1000; margin-top:6px; }
     .saver .tap{ font-size:12px; color:var(--muted2); margin-top:14px; }
+
+    /* ✅ Toast / Snackbar */
+    .toastWrap{
+      position:fixed;
+      left:0; right:0;
+      bottom: calc(var(--safeBottom) + 86px);
+      display:flex;
+      justify-content:center;
+      pointer-events:none;
+      z-index: 997;
+      padding: 0 12px;
+    }
+    .toast{
+      pointer-events:none;
+      max-width: 560px;
+      width: 100%;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(17,24,36,.92);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 60px rgba(0,0,0,.40);
+      padding: 12px 14px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      transform: translateY(10px);
+      opacity:0;
+      transition: transform .18s ease, opacity .18s ease;
+    }
+    .toast.show{ transform: translateY(0); opacity:1; }
+    .toast .ticon{
+      width: 28px; height: 28px;
+      border-radius: 12px;
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      flex: 0 0 auto;
+      font-weight:1000;
+    }
+    .toast .ttext{ min-width:0; flex:1; }
+    .toast .tmain{ font-weight:1000; }
+    .toast .tsub{ font-size:12px; color:var(--muted2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .toast.ok{ border-color: rgba(47,227,159,.28); }
+    .toast.ok .ticon{ background: rgba(47,227,159,.12); border-color: rgba(47,227,159,.22); }
+    .toast.err{ border-color: rgba(255,85,102,.28); }
+    .toast.err .ticon{ background: rgba(255,85,102,.10); border-color: rgba(255,85,102,.22); }
+    .toast.info{ border-color: rgba(74,163,255,.26); }
+    .toast.info .ticon{ background: rgba(74,163,255,.10); border-color: rgba(74,163,255,.18); }
   </style>
 </head>
 
@@ -368,8 +433,18 @@
     <div class="tap">Αγγίξτε για επιστροφή</div>
   </div>
 
+  <div class="toastWrap" id="toastWrap" aria-live="polite">
+    <div class="toast" id="toast">
+      <div class="ticon" id="toastIcon">✓</div>
+      <div class="ttext">
+        <div class="tmain" id="toastMain">—</div>
+        <div class="tsub" id="toastSub">—</div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const LS_KEY = "daily_cashier_db_v6";
+    const LS_KEY = "daily_cashier_db_v7";
     const TODAY = new Date().toISOString().slice(0,10);
 
     // Idle behavior
@@ -377,6 +452,9 @@
     const IDLE_SAVER_MS = 75_000;  // idle on Home -> saver
     let lastActivityTs = Date.now();
     let saverShown = false;
+
+    // Toast
+    let toastTimer = null;
 
     const el = (id) => document.getElementById(id);
     const view = el("view");
@@ -392,6 +470,30 @@
     const saverShop = el("saverShop");
     const saverUser = el("saverUser");
     const saverTime = el("saverTime");
+
+    const toastWrap = el("toastWrap");
+    const toastEl = el("toast");
+    const toastIcon = el("toastIcon");
+    const toastMain = el("toastMain");
+    const toastSub  = el("toastSub");
+
+    function showToast(type, main, sub="", ms=2400){
+      clearTimeout(toastTimer);
+      toastEl.classList.remove("ok","err","info","show");
+      toastEl.classList.add(type || "info");
+      toastIcon.textContent = type==="ok" ? "✓" : (type==="err" ? "!" : "i");
+      toastMain.textContent = main || "";
+      toastSub.textContent = sub || "";
+      toastSub.style.display = sub ? "block" : "none";
+
+      // force reflow so transition works reliably
+      void toastEl.offsetWidth;
+      toastEl.classList.add("show");
+
+      toastTimer = setTimeout(()=>{
+        toastEl.classList.remove("show");
+      }, ms);
+    }
 
     function hapticStrong(){
       try{ if(navigator.vibrate) navigator.vibrate([35, 12, 35]); }catch{}
@@ -437,7 +539,7 @@
         shopName: "Το Μαγαζί μου",
         ownerPin: "9999",
         ownerEmail: "",
-        ownerWhatsApp: "", // ✅ π.χ. 491761234567 (χωρίς +)
+        ownerWhatsApp: "",
 
         users: [
           { id:"u1", name:"Υπάλληλος 1", pin:"1111" }
@@ -548,7 +650,6 @@
     // Ensure day + shift
     function ensureDay(){
       if(!db.days[TODAY]) db.days[TODAY] = { shiftId: uid(), shifts:[], tables:{}, payments:[] };
-
       for(const t of db.tables){
         if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[] };
         if(!Array.isArray(db.days[TODAY].tables[t.id].items)) db.days[TODAY].tables[t.id].items = [];
@@ -561,7 +662,6 @@
 
     // lastUserId prevents broken select revert
     let lastUserId = db.currentUserId;
-
     function getUser(){ return db.users.find(u=>u.id===db.currentUserId) || db.users[0]; }
 
     function setTop(){
@@ -739,7 +839,7 @@
     function groupUnpaid(tid){
       const map = new Map();
       for(const it of unpaidItems(tid)){
-        const k = it.prodId + "|" + it.price + "|" + (it.tag||""); // ✅ BAR: split by tag
+        const k = it.prodId + "|" + it.price + "|" + (it.tag||"");
         if(!map.has(k)) map.set(k, { prodId: it.prodId, name: it.name, price: it.price, qty:0, tag:(it.tag||"") });
         map.get(k).qty += 1;
       }
@@ -754,7 +854,7 @@
         id: uid(), prodId:p.id, name:p.name, cat:p.cat, price:Number(p.price),
         ts: Date.now(), by: getUser()?.name || "", paid:null, voided:false,
         shiftId: db.days[TODAY].shiftId,
-        tag: "" // ✅ who is it for (BAR)
+        tag: ""
       });
       saveDB(); render();
     }
@@ -766,6 +866,7 @@
         !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId
       );
       if(idx>=0){ items.splice(idx,1); saveDB(); render(); }
+      else showToast("info","Δεν υπάρχει προϊόν","Δεν βρέθηκε item για αφαίρεση.");
     }
 
     function findOneUnpaid(tid, prodId, tag=""){
@@ -783,11 +884,9 @@
 
       for(const b of btns){
         const btn = document.createElement("button");
-        btn.className = "btn pressable " + (b.kind||"") + (b.full ? " full" : "");
+        btn.className = "btn pressable " + (b.kind||"") + (b.full ? " full" : "") + (b.className ? (" " + b.className) : "");
         btn.textContent = b.text;
-        if(b.disabled){
-          btn.disabled = true;
-        }
+        if(b.disabled) btn.disabled = true;
         makePressable(btn, true);
         btn.addEventListener("click", ()=>{
           if(btn.disabled) return;
@@ -801,9 +900,9 @@
 
     async function markTreatOne(tid, prodId, tag=""){
       const it = findOneUnpaid(tid, prodId, tag);
-      if(!it) return;
+      if(!it){ showToast("info","Δεν υπάρχει προϊόν","Δεν βρέθηκε item για κέρασμα."); return; }
       const ok = await modalConfirm("Κερασμένο", `Να γίνει κερασμένο 1 τεμ. “${it.name}”;`, "Ναι", "Άκυρο");
-      if(!ok) return;
+      if(!ok){ showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε το κέρασμα."); return; }
       const u = getUser()?.name || "";
       const ts = Date.now();
       it.paid = { method:"treat", ts, by:u };
@@ -813,11 +912,16 @@
         tag: it.tag || ""
       });
       saveDB(); render();
+      showToast("ok","Ολοκληρώθηκε ✅","Το item μπήκε ως κερασμένο.");
     }
 
     function payAll(tid, method){
       const items = unpaidItems(tid);
-      if(items.length===0){ gotoHome(); return; }
+      if(items.length===0){
+        showToast("info","Δεν υπάρχει πληρωμή","Δεν υπάρχουν ανοιχτά προϊόντα.");
+        gotoHome();
+        return;
+      }
       const u = getUser()?.name || "";
       const ts = Date.now();
       for(const it of items){
@@ -829,6 +933,7 @@
         });
       }
       saveDB();
+      showToast("ok","Η συναλλαγή ολοκληρώθηκε ✅", `${method==="cash" ? "Μετρητά" : "Κάρτα"} • ${euro(items.reduce((s,i)=>s+i.price,0))}`);
       gotoHome();
     }
 
@@ -916,11 +1021,14 @@
       return rows.join("\n");
     }
 
-    async function sendShiftToOwner(){
+    async function sendShiftToOwner(extraNote=""){
       const totals = computeShiftTotals();
-      if(totals.all <= 0.00001) return;
+      if(totals.all <= 0.00001){
+        showToast("info","Δεν υπάρχει ποσό","Δεν υπάρχουν ποσά για αποστολή.");
+        return false;
+      }
 
-      const text = shiftReportText(totals);
+      const text = (extraNote ? (extraNote + "\n\n") : "") + shiftReportText(totals);
       const csv = csvForShift();
 
       // 1) Web Share (choose WhatsApp/Email)
@@ -932,7 +1040,8 @@
             payload.files = [file];
           }
           await navigator.share(payload);
-          return;
+          showToast("ok","Έγινε αποστολή ✅","Άνοιξε το share.");
+          return true;
         }
       }catch(e){}
 
@@ -941,7 +1050,8 @@
       if(wa){
         const waText = encodeURIComponent(text + "\n\n" + csv);
         window.location.href = `https://wa.me/${encodeURIComponent(wa)}?text=${waText}`;
-        return;
+        showToast("ok","Έτοιμο για WhatsApp ✅","Άνοιξε το WhatsApp.");
+        return true;
       }
 
       // 3) Email fallback
@@ -949,6 +1059,8 @@
       const subj = encodeURIComponent(`Ταμείο βάρδιας • ${db.shopName || ""} • ${TODAY}`);
       const body = encodeURIComponent(text + "\n\nCSV:\n" + csv);
       window.location.href = `mailto:${encodeURIComponent(to)}?subject=${subj}&body=${body}`;
+      showToast("ok","Έτοιμο για Email ✅","Άνοιξε το email.");
+      return true;
     }
 
     async function closeShift(){
@@ -960,7 +1072,17 @@
         "Κλείσιμο",
         "Άκυρο"
       );
-      if(!ok) return;
+      if(!ok){
+        showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε το κλείσιμο βάρδιας.");
+        return;
+      }
+
+      // ✅ AUTO SEND to owner (if there are amounts)
+      if(totals.all > 0.00001){
+        await sendShiftToOwner("🔒 Η βάρδια έκλεισε.");
+      }else{
+        showToast("info","Βάρδια έκλεισε","Χωρίς ποσά, δεν στάλθηκε ταμείο.");
+      }
 
       // Store shift record in history
       db.days[TODAY].shifts.push({
@@ -972,7 +1094,7 @@
 
       // Reset for next shift
       db.days[TODAY].shiftId = uid();
-      db.days[TODAY].payments = []; // reset payments for next shift
+      db.days[TODAY].payments = [];
 
       // Clear tables for new shift
       for(const t of db.tables){
@@ -981,7 +1103,7 @@
 
       saveDB();
       gotoHome();
-      await modalAlert("Έγινε ✅", "Η βάρδια έκλεισε και ξεκίνησε νέα βάρδια (καθαρό ταμείο).");
+      showToast("ok","Έγινε ✅","Η βάρδια έκλεισε και άνοιξε νέα βάρδια.");
     }
 
     // screens
@@ -1020,9 +1142,9 @@
         b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
       });
 
+      // ✅ Removed CSV from home
       setBottomButtons([
         { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
-        { text:"CSV", kind:"", onClick: ()=> exportCSV() },
         { text:"Ρυθμίσεις", kind:"", onClick: ()=> gotoSettings() }
       ]);
     }
@@ -1075,13 +1197,13 @@
         b.addEventListener("click", async ()=>{
           const pid = b.getAttribute("data-plus");
           const tag = b.getAttribute("data-tag") || "";
-          // + μέσα από table screen: προσθέτει ίδιο tag group
           addProductToTable(pid);
           const items = dayTable(tid).items;
           const last = items[items.length - 1];
           if(last && last.prodId===pid && last.shiftId===db.days[TODAY].shiftId && !last.paid && !last.voided){
             last.tag = String(tag||"").trim();
             saveDB(); render();
+            showToast("ok","Προστέθηκε ✅", `${last.name}${last.tag ? " ("+last.tag+")" : ""}`);
           }
         });
       });
@@ -1089,7 +1211,7 @@
       setBottomButtons([
         { text:"← Πίσω", kind:"", onClick: ()=> gotoHome() },
         { text:"+ Προϊόν", kind:"accent", onClick: ()=> gotoAdd(tid) },
-        { text:"ΠΛΗΡΩΜΗ", kind:"good", full:true, onClick: ()=> gotoPay(tid) }
+        { text:"ΠΛΗΡΩΜΗ", kind:"good", className:"payPrimary", full:true, onClick: ()=> gotoPay(tid) }
       ], true);
     }
 
@@ -1151,21 +1273,26 @@
               "",
               "Άφησε κενό αν δεν χρειάζεται."
             );
-            if(tag === null) return; // cancel
+            if(tag === null){
+              showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε η καταχώρηση στο BAR.");
+              return;
+            }
             addProductToTable(pid);
             const items = dayTable("BAR").items;
             const last = items[items.length - 1];
             if(last && last.prodId===pid && last.shiftId===db.days[TODAY].shiftId && !last.paid && !last.voided){
               last.tag = String(tag||"").trim();
               saveDB(); render();
+              showToast("ok","Προστέθηκε ✅", `${last.name}${last.tag ? " ("+last.tag+")" : ""}`);
             }
           }else{
             addProductToTable(pid);
+            showToast("ok","Προστέθηκε ✅","Το προϊόν καταχωρήθηκε.");
           }
         });
       });
 
-      // ✅ No PAYMENT button in categories/products screen
+      // No PAYMENT button here (as requested)
       setBottomButtons([
         { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) }
       ]);
@@ -1212,8 +1339,13 @@
       const card = document.getElementById("payCard");
       makePressable(cash, true);
       makePressable(card, true);
-      cash.addEventListener("click", ()=> payAll(tid,"cash"));
-      card.addEventListener("click", ()=> payAll(tid,"card"));
+
+      cash.addEventListener("click", ()=>{
+        try{ payAll(tid,"cash"); }catch(e){ showToast("err","Δεν ολοκληρώθηκε","Σφάλμα πληρωμής."); }
+      });
+      card.addEventListener("click", ()=>{
+        try{ payAll(tid,"card"); }catch(e){ showToast("err","Δεν ολοκληρώθηκε","Σφάλμα πληρωμής."); }
+      });
 
       view.querySelectorAll("[data-treat]").forEach(b=>{
         makePressable(b, true);
@@ -1273,25 +1405,29 @@
       makePressable(btnCloseShift, true);
 
       btnSendOwner.addEventListener("click", async ()=>{
-        if(!canSend) return;
+        if(!canSend){ showToast("info","Δεν υπάρχει ποσό","Δεν υπάρχουν ποσά για αποστολή."); return; }
         await sendShiftToOwner();
       });
 
       btnCloseShift.addEventListener("click", async ()=>{
-        // ✅ server/waiter PIN required (not owner)
         const u = getUser();
         const pin = await modalPromptPin("Κλείσιμο βάρδιας", `PIN για: ${u?.name || ""}`, "Βάλε τον κωδικό σου για κλείσιμο βάρδιας.");
-        if(pin === null) return;
+        if(pin === null){
+          showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε το κλείσιμο.");
+          return;
+        }
         if(String(pin).trim() !== String(u?.pin || "").trim()){
           await modalAlert("Λάθος PIN", "Δεν είναι σωστός ο κωδικός.", "ΟΚ");
+          showToast("err","Δεν ολοκληρώθηκε","Λάθος PIN.");
           return;
         }
         await closeShift();
       });
 
+      // ✅ CSV moved here (best place)
       setBottomButtons([
         { text:"← Home", kind:"", onClick: ()=> gotoHome() },
-        { text:"CSV", kind:"", onClick: ()=> exportCSV() }
+        { text:"CSV Βάρδιας", kind:"accent", disabled: !canSend, onClick: ()=> exportCSVShift() }
       ]);
     }
 
@@ -1378,39 +1514,42 @@
       [btnChangeShop, btnOwnerEmail, btnOwnerWA, btnAddUser, btnChangeOwner].forEach(b=> makePressable(b, true));
 
       btnChangeShop.addEventListener("click", async ()=>{
-        if(!(await requireOwner())) return;
+        if(!(await requireOwner())){ showToast("err","Δεν επιτρέπεται","Χρειάζεται Owner PIN."); return; }
         const name = await modalPromptText("Όνομα μαγαζιού", "Γράψε νέο όνομα:", db.shopName || "", "Θα εμφανίζεται επάνω.");
-        if(name === null || !name) return;
+        if(name === null || !name){ showToast("info","Δεν ολοκληρώθηκε","Δεν άλλαξε το όνομα."); return; }
         db.shopName = String(name).trim();
         saveDB();
         setTop();
         render();
+        showToast("ok","Αποθηκεύτηκε ✅","Αλλαγή ονόματος μαγαζιού.");
       });
 
       btnOwnerEmail.addEventListener("click", async ()=>{
-        if(!(await requireOwner())) return;
+        if(!(await requireOwner())){ showToast("err","Δεν επιτρέπεται","Χρειάζεται Owner PIN."); return; }
         const em = await modalPromptText("Email ιδιοκτήτη", "Βάλε email (προαιρετικό):", db.ownerEmail || "", "Χρησιμοποιείται στο mailto fallback.");
-        if(em === null) return;
+        if(em === null){ showToast("info","Δεν ολοκληρώθηκε","Δεν άλλαξε email."); return; }
         db.ownerEmail = String(em).trim();
         saveDB();
         render();
+        showToast("ok","Αποθηκεύτηκε ✅","Αλλαγή email ιδιοκτήτη.");
       });
 
       btnOwnerWA.addEventListener("click", async ()=>{
-        if(!(await requireOwner())) return;
+        if(!(await requireOwner())){ showToast("err","Δεν επιτρέπεται","Χρειάζεται Owner PIN."); return; }
         const wa = await modalPromptText("WhatsApp ιδιοκτήτη", "Βάλε αριθμό (χωρίς +):", db.ownerWhatsApp || "", "Π.χ. 491761234567");
-        if(wa === null) return;
+        if(wa === null){ showToast("info","Δεν ολοκληρώθηκε","Δεν άλλαξε WhatsApp."); return; }
         db.ownerWhatsApp = String(wa).replaceAll(/\s+/g,"").replaceAll("+","").trim();
         saveDB();
         render();
+        showToast("ok","Αποθηκεύτηκε ✅","Αλλαγή WhatsApp ιδιοκτήτη.");
       });
 
       btnAddUser.addEventListener("click", async ()=>{
-        if(!(await requireOwner())) return;
+        if(!(await requireOwner())){ showToast("err","Δεν επιτρέπεται","Χρειάζεται Owner PIN."); return; }
         const name = await modalPromptText("Νέος χρήστης", "Όνομα χρήστη:", "Νέος Υπάλληλος", "");
-        if(!name) return;
+        if(!name){ showToast("info","Δεν ολοκληρώθηκε","Δεν προστέθηκε χρήστης."); return; }
         const pin = await modalPromptPin("PIN χρήστη", "Βάλε PIN (4+ ψηφία)", "Θα εμφανίζεται numeric keypad.");
-        if(!pin) return;
+        if(!pin){ showToast("info","Δεν ολοκληρώθηκε","Δεν προστέθηκε χρήστης."); return; }
         const id = "u" + uid();
         db.users.push({ id, name: String(name).trim(), pin: String(pin).trim() });
         db.currentUserId = id;
@@ -1418,41 +1557,44 @@
         fillUsers();
         setTop();
         render();
+        showToast("ok","Έγινε ✅","Προστέθηκε νέος χρήστης.");
       });
 
       btnChangeOwner.addEventListener("click", async ()=>{
-        if(!(await requireOwner())) return;
+        if(!(await requireOwner())){ showToast("err","Δεν επιτρέπεται","Χρειάζεται Owner PIN."); return; }
         const newPin = await modalPromptPin("Owner PIN", "Βάλε νέο Owner PIN", "Κράτα το μυστικό.");
-        if(!newPin) return;
+        if(!newPin){ showToast("info","Δεν ολοκληρώθηκε","Δεν άλλαξε Owner PIN."); return; }
         db.ownerPin = String(newPin).trim();
         saveDB();
         render();
+        showToast("ok","Αποθηκεύτηκε ✅","Αλλαγή Owner PIN.");
       });
 
       ul.querySelectorAll("[data-epin]").forEach(b=>{
         makePressable(b, true);
         b.addEventListener("click", async ()=>{
-          if(!(await requireOwner())) return;
+          if(!(await requireOwner())){ showToast("err","Δεν επιτρέπεται","Χρειάζεται Owner PIN."); return; }
           const uid2 = b.getAttribute("data-epin");
           const user = db.users.find(x=>x.id===uid2);
           if(!user) return;
           const pin = await modalPromptPin("Αλλαγή PIN", `Νέο PIN για ${user.name}`, "Numeric keypad.");
-          if(!pin) return;
+          if(!pin){ showToast("info","Δεν ολοκληρώθηκε","Δεν άλλαξε PIN."); return; }
           user.pin = String(pin).trim();
           saveDB();
           render();
+          showToast("ok","Αποθηκεύτηκε ✅","Αλλαγή PIN χρήστη.");
         });
       });
 
       ul.querySelectorAll("[data-del]").forEach(b=>{
         makePressable(b, true);
         b.addEventListener("click", async ()=>{
-          if(!(await requireOwner())) return;
+          if(!(await requireOwner())){ showToast("err","Δεν επιτρέπεται","Χρειάζεται Owner PIN."); return; }
           const uid2 = b.getAttribute("data-del");
           const user = db.users.find(x=>x.id===uid2);
           if(!user) return;
           const ok = await modalConfirm("Διαγραφή χρήστη", `Να διαγραφεί ο χρήστης “${user.name}”;`, "Διαγραφή", "Άκυρο");
-          if(!ok) return;
+          if(!ok){ showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε διαγραφή."); return; }
 
           db.users = db.users.filter(x=>x.id!==uid2);
           if(!db.users.length){
@@ -1465,6 +1607,7 @@
           fillUsers();
           setTop();
           render();
+          showToast("ok","Έγινε ✅","Ο χρήστης διαγράφηκε.");
         });
       });
 
@@ -1473,10 +1616,10 @@
       ]);
     }
 
-    function exportCSV(){
+    function exportCSVShift(){
       const totals = computeShiftTotals();
       if(totals.all <= 0.00001){
-        modalAlert("Δεν υπάρχει ταμείο", "Δεν υπάρχουν ποσά για αυτή τη βάρδια.", "ΟΚ");
+        showToast("info","Δεν υπάρχει ταμείο","Δεν υπάρχουν ποσά για CSV.");
         return;
       }
       const csv = csvForShift();
@@ -1489,6 +1632,7 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      showToast("ok","Κατέβηκε CSV ✅", "Το αρχείο αποθηκεύτηκε.");
     }
 
     function render(){
@@ -1522,12 +1666,14 @@
       );
 
       if(pin === null){
+        showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε αλλαγή χρήστη.");
         sel.value = lastUserId;
         return;
       }
 
       if(String(pin).trim() !== String(targetUser.pin).trim()){
         await modalAlert("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ");
+        showToast("err","Δεν ολοκληρώθηκε","Λάθος PIN αλλαγής χρήστη.");
         sel.value = lastUserId;
         return;
       }
@@ -1538,6 +1684,7 @@
       saveDB();
       setTop();
       render();
+      showToast("ok","Έγινε ✅", `Ενεργός: ${targetUser.name}`);
     });
 
     const btnGear = el("btnGear");
