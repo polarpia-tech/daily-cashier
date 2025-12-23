@@ -249,7 +249,7 @@
     .btn.accent{ border-color: rgba(74,163,255,.35); box-shadow:0 0 0 3px rgba(74,163,255,.06) inset; }
     .btn:disabled{ opacity:.45; }
 
-    /* ✅ EXTRA STRONG PRIMARY PAY BUTTON */
+    /* EXTRA STRONG PRIMARY PAY BUTTON */
     .btn.payPrimary{
       border-color: rgba(47,227,159,.70);
       background: linear-gradient(180deg, rgba(47,227,159,.26), rgba(17,24,36,.72));
@@ -347,7 +347,7 @@
     .saver .time{ font-size:42px; font-weight:1000; margin-top:6px; }
     .saver .tap{ font-size:12px; color:var(--muted2); margin-top:14px; }
 
-    /* ✅ Toast / Snackbar */
+    /* Toast / Snackbar */
     .toastWrap{
       position:fixed;
       left:0; right:0;
@@ -394,6 +394,47 @@
     .toast.err .ticon{ background: rgba(255,85,102,.10); border-color: rgba(255,85,102,.22); }
     .toast.info{ border-color: rgba(74,163,255,.26); }
     .toast.info .ticon{ background: rgba(74,163,255,.10); border-color: rgba(74,163,255,.18); }
+
+    /* =========================
+       ✅ PRINT / PDF SHEET
+       ========================= */
+    @media print {
+      body { background: #fff !important; }
+      .app, .bottom, .modalBack, .toastWrap, .saver { display:none !important; }
+      #printSheet { display:block !important; }
+    }
+    #printSheet{
+      display:none;
+      color:#111;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 18px;
+    }
+    #printSheet h1{ font-size:18px; margin:0 0 6px 0; }
+    #printSheet .mutedP{ color:#444; font-size:12px; line-height:1.35; }
+    #printSheet table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    #printSheet th, #printSheet td{
+      border:1px solid #ddd;
+      padding:6px 8px;
+      text-align:left;
+      vertical-align:top;
+    }
+    #printSheet .totals{
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    #printSheet .box{
+      border:1px solid #ddd;
+      border-radius: 10px;
+      padding:8px 10px;
+      min-width: 140px;
+    }
   </style>
 </head>
 
@@ -443,6 +484,9 @@
     </div>
   </div>
 
+  <!-- ✅ PRINT SHEET FOR PDF -->
+  <div id="printSheet"></div>
+
   <script>
     const LS_KEY = "daily_cashier_db_v7";
     const TODAY = new Date().toISOString().slice(0,10);
@@ -471,7 +515,6 @@
     const saverUser = el("saverUser");
     const saverTime = el("saverTime");
 
-    const toastWrap = el("toastWrap");
     const toastEl = el("toast");
     const toastIcon = el("toastIcon");
     const toastMain = el("toastMain");
@@ -485,14 +528,9 @@
       toastMain.textContent = main || "";
       toastSub.textContent = sub || "";
       toastSub.style.display = sub ? "block" : "none";
-
-      // force reflow so transition works reliably
       void toastEl.offsetWidth;
       toastEl.classList.add("show");
-
-      toastTimer = setTimeout(()=>{
-        toastEl.classList.remove("show");
-      }, ms);
+      toastTimer = setTimeout(()=> toastEl.classList.remove("show"), ms);
     }
 
     function hapticStrong(){
@@ -540,17 +578,12 @@
         ownerPin: "9999",
         ownerEmail: "",
         ownerWhatsApp: "",
-
-        users: [
-          { id:"u1", name:"Υπάλληλος 1", pin:"1111" }
-        ],
+        users: [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }],
         currentUserId: "u1",
-
         tables: [
           { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
           { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
         ],
-
         menu: null,
         days: {}
       };
@@ -660,9 +693,13 @@
     }
     ensureDay(); saveDB();
 
-    // lastUserId prevents broken select revert
     let lastUserId = db.currentUserId;
     function getUser(){ return db.users.find(u=>u.id===db.currentUserId) || db.users[0]; }
+
+    function escHtml(s){
+      return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+    }
 
     function setTop(){
       el("shopNameTop").textContent = db.shopName || "—";
@@ -715,7 +752,6 @@
 
         modalFoot.appendChild(b1);
         modalFoot.appendChild(b2);
-
         modalBack.style.display = "flex";
       });
     }
@@ -745,7 +781,7 @@
       return new Promise((resolve)=>{
         modalTitle.textContent = title;
         modalBody.innerHTML = `
-          <div>${label}</div>
+          <div>${escHtml(label)}</div>
           <div style="margin-top:10px;">
             <input class="input" id="pinInput"
               type="password"
@@ -754,7 +790,7 @@
               autocomplete="one-time-code"
               placeholder="••••" />
           </div>
-          <div class="hint">${hint || ""}</div>
+          <div class="hint">${escHtml(hint || "")}</div>
         `;
         modalFoot.innerHTML = "";
 
@@ -781,10 +817,6 @@
       });
     }
 
-    function escHtml(s){
-      return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;").replaceAll("'","&#39;");
-    }
     function modalPromptText(title, label, initialValue="", hint=""){
       return new Promise((resolve)=>{
         modalTitle.textContent = title;
@@ -1077,7 +1109,7 @@
         return;
       }
 
-      // ✅ AUTO SEND to owner (if there are amounts)
+      // AUTO SEND to owner (if there are amounts)
       if(totals.all > 0.00001){
         await sendShiftToOwner("🔒 Η βάρδια έκλεισε.");
       }else{
@@ -1104,6 +1136,76 @@
       saveDB();
       gotoHome();
       showToast("ok","Έγινε ✅","Η βάρδια έκλεισε και άνοιξε νέα βάρδια.");
+    }
+
+    /* =========================
+       ✅ PDF EXPORT (via print)
+       ========================= */
+    function exportPDFShift(){
+      const totals = computeShiftTotals();
+      if(totals.all <= 0.00001){
+        showToast("info","Δεν υπάρχει ταμείο","Δεν υπάρχουν ποσά για PDF.");
+        return;
+      }
+
+      const pay = shiftPayments().slice().sort((a,b)=>a.ts-b.ts);
+      const u = getUser();
+
+      const sheet = document.getElementById("printSheet");
+      sheet.innerHTML = `
+        <h1>Ταμείο Βάρδιας</h1>
+        <div class="mutedP">
+          Μαγαζί: <b>${escHtml(db.shopName||"—")}</b><br>
+          Ημερομηνία: <b>${escHtml(TODAY)}</b><br>
+          Shift ID: <b>${escHtml(db.days[TODAY].shiftId)}</b><br>
+          Εν υπηρεσία: <b>${escHtml(u?.name||"—")}</b>
+        </div>
+
+        <div class="totals">
+          <div class="box">Σύνολο: <b>${escHtml(euro(totals.all))}</b></div>
+          <div class="box">Μετρητά: <b>${escHtml(euro(totals.cash))}</b></div>
+          <div class="box">Κάρτα: <b>${escHtml(euro(totals.card))}</b></div>
+          <div class="box">Κερασμένα: <b>${escHtml(euro(totals.treat))}</b></div>
+          <div class="box">Πληρωμές: <b>${totals.count}</b></div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Ώρα</th>
+              <th>Τραπέζι</th>
+              <th>Προϊόν</th>
+              <th>Tag</th>
+              <th>Μέθοδος</th>
+              <th>Τιμή</th>
+              <th>Χρήστης</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pay.map(p=>{
+              const time = new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"});
+              return `
+                <tr>
+                  <td>${escHtml(time)}</td>
+                  <td>${escHtml(p.tableId)}</td>
+                  <td>${escHtml(p.name)}</td>
+                  <td>${escHtml(p.tag||"")}</td>
+                  <td>${escHtml(String(p.method).toUpperCase())}</td>
+                  <td>${escHtml(euro(p.price))}</td>
+                  <td>${escHtml(p.by||"")}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+
+        <div class="mutedP" style="margin-top:10px;">
+          Δημιουργήθηκε: ${escHtml(new Date().toLocaleString("el-GR"))}
+        </div>
+      `;
+
+      showToast("ok","PDF έτοιμο ✅","Διάλεξε ‘Αποθήκευση ως PDF’.");
+      setTimeout(()=> window.print(), 250);
     }
 
     // screens
@@ -1142,7 +1244,6 @@
         b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
       });
 
-      // ✅ Removed CSV from home
       setBottomButtons([
         { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
         { text:"Ρυθμίσεις", kind:"", onClick: ()=> gotoSettings() }
@@ -1265,7 +1366,6 @@
         makePressable(li, true);
         li.addEventListener("click", async ()=>{
           const pid = li.getAttribute("data-add");
-
           if(state.tableId === "BAR"){
             const tag = await modalPromptText(
               "BAR • Σε ποιον;",
@@ -1292,10 +1392,7 @@
         });
       });
 
-      // No PAYMENT button here (as requested)
-      setBottomButtons([
-        { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) }
-      ]);
+      setBottomButtons([{ text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) }]);
     }
 
     function renderPay(){
@@ -1355,9 +1452,7 @@
         });
       });
 
-      setBottomButtons([
-        { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) }
-      ]);
+      setBottomButtons([{ text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) }]);
     }
 
     function renderSummary(){
@@ -1424,10 +1519,10 @@
         await closeShift();
       });
 
-      // ✅ CSV moved here (best place)
+      // ✅ PDF Button here (instead of CSV)
       setBottomButtons([
         { text:"← Home", kind:"", onClick: ()=> gotoHome() },
-        { text:"CSV Βάρδιας", kind:"accent", disabled: !canSend, onClick: ()=> exportCSVShift() }
+        { text:"PDF Βάρδιας", kind:"accent", disabled: !canSend, onClick: ()=> exportPDFShift() }
       ]);
     }
 
@@ -1611,28 +1706,7 @@
         });
       });
 
-      setBottomButtons([
-        { text:"← Home", kind:"", onClick: ()=> gotoHome() }
-      ]);
-    }
-
-    function exportCSVShift(){
-      const totals = computeShiftTotals();
-      if(totals.all <= 0.00001){
-        showToast("info","Δεν υπάρχει ταμείο","Δεν υπάρχουν ποσά για CSV.");
-        return;
-      }
-      const csv = csvForShift();
-      const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `shift_${TODAY}_${db.days[TODAY].shiftId}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      showToast("ok","Κατέβηκε CSV ✅", "Το αρχείο αποθηκεύτηκε.");
+      setBottomButtons([{ text:"← Home", kind:"", onClick: ()=> gotoHome() }]);
     }
 
     function render(){
@@ -1659,18 +1733,12 @@
         return;
       }
 
-      const pin = await modalPromptPin(
-        "Αλλαγή χρήστη",
-        `PIN για: ${targetUser.name}`,
-        "Βάλε τον κωδικό για να αλλάξει ο χρήστης."
-      );
-
+      const pin = await modalPromptPin("Αλλαγή χρήστη", `PIN για: ${targetUser.name}`, "Βάλε τον κωδικό για να αλλάξει ο χρήστης.");
       if(pin === null){
         showToast("info","Δεν ολοκληρώθηκε","Ακυρώθηκε αλλαγή χρήστη.");
         sel.value = lastUserId;
         return;
       }
-
       if(String(pin).trim() !== String(targetUser.pin).trim()){
         await modalAlert("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ");
         showToast("err","Δεν ολοκληρώθηκε","Λάθος PIN αλλαγής χρήστη.");
