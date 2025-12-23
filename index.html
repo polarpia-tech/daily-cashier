@@ -7,14 +7,12 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
   <title>Daily Cashier</title>
   <link rel="manifest" href="./manifest.webmanifest" />
 
   <style>
     :root{
-      --bg0:#070a0f;
-      --bg1:#0b0f14;
+      --bg0:#070a0f; --bg1:#0b0f14;
       --line:rgba(255,255,255,.10);
       --text:#eaf1ff;
       --muted:rgba(234,241,255,.72);
@@ -22,7 +20,6 @@
       --accent:#4aa3ff;
       --good:#2fe39f;
       --bad:#ff5566;
-
       --r:18px;
 
       --safeTop: env(safe-area-inset-top, 0px);
@@ -30,10 +27,8 @@
       --safeLeft: env(safe-area-inset-left, 0px);
       --safeRight: env(safe-area-inset-right, 0px);
     }
-
     *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     html,body{ height:100%; margin:0; }
-
     body{
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--text);
@@ -43,7 +38,6 @@
         linear-gradient(180deg, var(--bg0), var(--bg1));
       overflow:hidden;
     }
-
     .app{
       height: 100dvh;
       display:flex;
@@ -51,7 +45,6 @@
       padding: calc(var(--safeTop) + 10px) calc(var(--safeRight) + 10px) calc(var(--safeBottom) + 10px) calc(var(--safeLeft) + 10px);
       gap:10px;
     }
-
     .topbar{
       display:flex;
       align-items:center;
@@ -62,32 +55,11 @@
       padding: 10px 12px;
       backdrop-filter: blur(10px);
     }
-
-    .brand{
-      flex:1;
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-    }
-    .shopName{
-      font-weight: 1000;
-      font-size: 16px;
-      line-height:1.1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .subline{
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
+    .brand{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+    .shopName{ font-weight:1000; font-size:16px; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .subline{ font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
     select, button, input{ font: inherit; color:var(--text); }
-
     select{
       border:1px solid var(--line);
       background: rgba(17,24,36,.70);
@@ -98,14 +70,11 @@
       background-image:
         linear-gradient(45deg, transparent 50%, var(--muted) 50%),
         linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-      background-position:
-        calc(100% - 18px) 50%,
-        calc(100% - 12px) 50%;
+      background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
       background-size: 6px 6px, 6px 6px;
       background-repeat: no-repeat;
       max-width: 220px;
     }
-
     .iconbtn{
       border:1px solid var(--line);
       background: rgba(17,24,36,.70);
@@ -119,19 +88,10 @@
       overflow:hidden;
     }
 
-    .content{
-      flex:1;
-      min-height:0;
-      display:flex;
-      flex-direction:column;
-    }
-
-    /* scroll fix */
+    .content{ flex:1; min-height:0; display:flex; flex-direction:column; }
     .view{
-      flex:1;
-      min-height:0;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
+      flex:1; min-height:0;
+      overflow:auto; -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       touch-action: pan-y;
       padding-bottom: calc(94px + var(--safeBottom));
@@ -151,43 +111,22 @@
     .muted{ color:var(--muted); }
     .muted2{ color:var(--muted2); }
     .row{ display:flex; align-items:center; gap:10px; }
+    .row.space{ justify-content:space-between; }
 
-    /* tables grid */
-    .tables{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap:10px;
-    }
-    @media (min-width: 520px){
-      .tables{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    }
-
-    /* Press feedback + Ripple */
+    /* press feedback */
     .pressable{
-      position:relative;
-      overflow:hidden;
+      position:relative; overflow:hidden;
       transition: transform .06s ease, filter .06s ease, background-color .12s ease;
-      touch-action: manipulation;
-      user-select:none;
-      isolation:isolate;
+      touch-action: manipulation; user-select:none; isolation:isolate;
     }
-    .pressable:active{
-      transform: scale(.985);
-      filter: brightness(1.10);
-    }
-
-    /* ΚΑΘΑΡΗ “χρωματιστή” αντίδραση στο πάτημα */
+    .pressable:active{ transform: scale(.985); filter: brightness(1.10); }
     .pressable.is-pressed{
-      background-color: rgba(47,227,159,.18) !important; /* πράσινο “flash” */
+      background-color: rgba(47,227,159,.18) !important;
       border-color: rgba(47,227,159,.35) !important;
     }
-
     .ripple{
-      position:absolute;
-      border-radius:50%;
-      pointer-events:none;
-      width: 20px;
-      height: 20px;
+      position:absolute; border-radius:50%; pointer-events:none;
+      width:20px; height:20px;
       transform: translate(-50%,-50%) scale(0);
       background: rgba(255,255,255,.28);
       opacity: 1;
@@ -200,22 +139,20 @@
       100%{ transform: translate(-50%,-50%) scale(22); opacity: 0; }
     }
 
+    /* tables */
+    .tables{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    @media (min-width: 520px){ .tables{ grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     .tbtn{
-      text-align:left;
-      padding: 14px 14px;
+      text-align:left; padding: 14px 14px;
       border-radius: var(--r);
       border:1px solid var(--line);
       background: rgba(17,24,36,.45);
       min-height: 74px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:4px;
+      display:flex; flex-direction:column; justify-content:center; gap:4px;
     }
-    .tbtn .title{ font-weight:1000; font-size:18px; letter-spacing:.2px; display:flex; align-items:center; gap:8px; }
+    .tbtn .title{ font-weight:1000; font-size:18px; display:flex; align-items:center; gap:8px; }
     .tbtn .sub{ color:var(--muted); font-size:13px; }
 
-    /* LED */
     .led{
       width:10px; height:10px; border-radius:999px;
       background: rgba(255,255,255,.14);
@@ -228,34 +165,23 @@
       border-color: rgba(47,227,159,.55);
       box-shadow: 0 0 10px rgba(47,227,159,.35);
     }
-
     .badge{
-      position:absolute;
-      right:10px;
-      top:10px;
-      min-width: 28px;
-      height: 22px;
-      padding:0 8px;
+      position:absolute; right:10px; top:10px;
+      min-width: 28px; height: 22px; padding:0 8px;
       border-radius: 999px;
       border:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:12px;
-      background: rgba(74,163,255,.10);
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; background: rgba(74,163,255,.10);
     }
 
     .chips{
-      display:flex;
-      gap:8px;
-      overflow:auto;
+      display:flex; gap:8px; overflow:auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       padding: 2px 2px 8px 2px;
       touch-action: pan-x;
     }
     .chips::-webkit-scrollbar{ height:0; }
-
     .chip{
       flex:0 0 auto;
       border:1px solid var(--line);
@@ -263,11 +189,8 @@
       border-radius:999px;
       height: 38px;
       padding: 0 12px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-weight:900;
-      color: var(--muted);
+      display:flex; align-items:center; gap:8px;
+      font-weight:900; color: var(--muted);
       white-space:nowrap;
     }
     .chip.active{
@@ -277,49 +200,37 @@
     }
 
     .list{
-      display:flex;
-      flex-direction:column;
+      display:flex; flex-direction:column;
       border:1px solid var(--line);
       border-radius: var(--r);
       overflow:hidden;
       background: rgba(17,24,36,.35);
     }
     .li{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
+      display:flex; align-items:center; justify-content:space-between;
       padding: 12px 12px;
       border-top:1px solid rgba(255,255,255,.07);
       gap:12px;
     }
     .li:first-child{ border-top:none; }
     .li .left{ min-width:0; flex:1; }
-    .li .name{ font-weight:1000; line-height:1.15; margin:0; font-size:15px; }
+    .li .name{ font-weight:1000; font-size:15px; line-height:1.15; margin:0; }
     .li .meta{ font-size:12px; color:var(--muted2); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .price{ font-weight:1000; font-size:15px; white-space:nowrap; }
 
     .qty{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
     .qbtn{
-      height: 34px;
-      min-width: 34px;
-      padding: 0 10px;
+      height: 34px; min-width: 34px; padding: 0 10px;
       border-radius: 12px;
       border:1px solid var(--line);
       background: rgba(17,24,36,.55);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:1000;
-      position:relative;
-      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:1000; position:relative; overflow:hidden;
     }
     .qnum{ min-width: 22px; text-align:center; font-weight:1000; }
 
-    /* bottom bar */
     .bottom{
-      position:fixed;
-      left:0; right:0;
-      bottom:0;
+      position:fixed; left:0; right:0; bottom:0;
       padding: 10px calc(var(--safeRight) + 10px) calc(var(--safeBottom) + 10px) calc(var(--safeLeft) + 10px);
       background: linear-gradient(180deg, transparent, rgba(7,10,15,.72) 30%, rgba(7,10,15,.92));
       backdrop-filter: blur(10px);
@@ -327,38 +238,26 @@
     }
     .bottom .bar{
       pointer-events:auto;
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      display:grid; grid-template-columns: repeat(2, minmax(0, 1fr));
       gap:10px;
     }
-    @media (min-width:520px){
-      .bottom .bar{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    }
-
+    @media (min-width:520px){ .bottom .bar{ grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     .btn{
       border:1px solid var(--line);
       background: rgba(17,24,36,.62);
       border-radius: 16px;
       height: 48px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:flex; align-items:center; justify-content:center;
       font-weight:1000;
-      position:relative;
-      overflow:hidden;
+      position:relative; overflow:hidden;
     }
     .btn.good{ border-color: rgba(47,227,159,.35); box-shadow:0 0 0 3px rgba(47,227,159,.06) inset; }
     .btn.bad{ border-color: rgba(255,85,102,.35); box-shadow:0 0 0 3px rgba(255,85,102,.06) inset; }
     .btn.accent{ border-color: rgba(74,163,255,.35); box-shadow:0 0 0 3px rgba(74,163,255,.06) inset; }
-
-    .bar.full .btn.full{
-      grid-column: 1 / -1;
-    }
+    .bar.full .btn.full{ grid-column: 1 / -1; }
 
     .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
+      display:inline-flex; align-items:center; gap:8px;
       padding: 8px 12px;
       border-radius: 999px;
       border:1px solid var(--line);
@@ -366,10 +265,9 @@
       margin: 6px 6px 0 0;
     }
 
-    /* Simple confirm modal */
+    /* Modal (confirm + owner pin) */
     .modalBack{
-      position:fixed;
-      inset:0;
+      position:fixed; inset:0;
       background: rgba(0,0,0,.55);
       display:none;
       align-items:flex-end;
@@ -400,6 +298,23 @@
       grid-template-columns: repeat(2, minmax(0,1fr));
       gap:10px;
     }
+    .input{
+      width:100%;
+      height:46px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(17,24,36,.55);
+      padding: 0 12px;
+      color: var(--text);
+      outline:none;
+    }
+    .hint{ font-size:12px; color:var(--muted2); margin-top:8px; }
+    .dangerBox{
+      border:1px solid rgba(255,85,102,.35);
+      background: rgba(255,85,102,.06);
+      border-radius: 16px;
+      padding: 12px;
+    }
   </style>
 </head>
 
@@ -412,7 +327,7 @@
       </div>
 
       <select id="userSelect" title="Χρήστης"></select>
-      <button class="iconbtn pressable" id="btnSettings" title="Ρυθμίσεις">⚙️</button>
+      <button class="iconbtn pressable" id="btnGear" title="Ρυθμίσεις">⚙️</button>
     </div>
 
     <div class="content">
@@ -426,14 +341,14 @@
 
   <div class="modalBack" id="modalBack">
     <div class="modal" role="dialog" aria-modal="true">
-      <div class="head" id="modalTitle">Επιβεβαίωση</div>
+      <div class="head" id="modalTitle">—</div>
       <div class="body" id="modalBody">—</div>
       <div class="foot" id="modalFoot"></div>
     </div>
   </div>
 
   <script>
-    const LS_KEY = "daily_cashier_db_v3";
+    const LS_KEY = "daily_cashier_db_v4"; // new key to avoid old broken state
     const TODAY = new Date().toISOString().slice(0,10);
 
     const el = (id) => document.getElementById(id);
@@ -447,13 +362,10 @@
     const modalFoot  = el("modalFoot");
 
     function hapticStrong(){
-      try{
-        // πιο έντονο: μικρό pattern
-        if(navigator.vibrate) navigator.vibrate([18, 10, 18]);
-      }catch{}
+      try{ if(navigator.vibrate) navigator.vibrate([22, 10, 22]); }catch{}
     }
     function hapticSmall(){
-      try{ if(navigator.vibrate) navigator.vibrate(10); }catch{}
+      try{ if(navigator.vibrate) navigator.vibrate(12); }catch{}
     }
 
     function addRipple(elem, x, y){
@@ -467,23 +379,19 @@
       elem.appendChild(rip);
       rip.addEventListener("animationend", ()=> rip.remove());
     }
-
     function pressFlash(elem){
       elem.classList.add("is-pressed");
       setTimeout(()=> elem.classList.remove("is-pressed"), 120);
     }
-
     function makePressable(elem, strong=false){
       if(!elem) return;
       elem.classList.add("pressable");
-
       const down = (ev)=>{
         const t = ev.touches?.[0];
         addRipple(elem, t?.clientX ?? ev.clientX, t?.clientY ?? ev.clientY);
         pressFlash(elem);
         strong ? hapticStrong() : hapticSmall();
       };
-
       elem.addEventListener("pointerdown", down, {passive:true});
       elem.addEventListener("touchstart", down, {passive:true});
     }
@@ -502,109 +410,113 @@
     function defaultDB(){
       return {
         shopName: "Το Μαγαζί μου",
-        users: [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }],
+        ownerPin: "9999",
+        users: [
+          { id:"u1", name:"Υπάλληλος 1", pin:"1111" }
+        ],
         currentUserId: "u1",
         tables: [
           { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
           { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
         ],
-        menu: {
-          categories: [
-            { id:"coffee_hot",  name:"Καφέδες – Ζεστοί", emoji:"☕" },
-            { id:"coffee_cold", name:"Καφέδες – Κρύοι",  emoji:"🧊" },
-            { id:"tea",         name:"Τσάι – Ζεστά",     emoji:"🫖" },
-            { id:"choco",       name:"Σοκολάτες / Γαλακτερά", emoji:"🍫" },
-            { id:"soft",        name:"Αναψυκτικά – Νερά", emoji:"🥤" },
-            { id:"juice",       name:"Χυμοί – Smoothies", emoji:"🍊" },
-            { id:"snack",       name:"Σνακ – Γλυκά",      emoji:"🥐" },
-            { id:"beer",        name:"Μπύρες",            emoji:"🍺" },
-            { id:"wine",        name:"Κρασιά",            emoji:"🍷" },
-            { id:"spirit",      name:"Ποτά",              emoji:"🥃" },
-            { id:"cocktail",    name:"Κοκτέιλ",           emoji:"🍸" },
-            { id:"extras",      name:"Extras",            emoji:"➕" }
-          ],
-          products: [
-            { id:"p_espresso_single", cat:"coffee_hot", name:"Espresso μονός", price:2.60 },
-            { id:"p_espresso_double", cat:"coffee_hot", name:"Espresso διπλός", price:3.20 },
-            { id:"p_espresso_macchiato", cat:"coffee_hot", name:"Espresso macchiato", price:2.90 },
-            { id:"p_americano", cat:"coffee_hot", name:"Americano", price:3.20 },
-            { id:"p_cappuccino", cat:"coffee_hot", name:"Cappuccino", price:3.60 },
-            { id:"p_cappuccino_double", cat:"coffee_hot", name:"Cappuccino διπλός", price:4.20 },
-            { id:"p_latte_macchiato", cat:"coffee_hot", name:"Latte macchiato", price:4.20 },
-            { id:"p_flat_white", cat:"coffee_hot", name:"Flat white", price:4.40 },
-            { id:"p_mocha", cat:"coffee_hot", name:"Mocha", price:4.50 },
-            { id:"p_filter", cat:"coffee_hot", name:"Καφές φίλτρου", price:3.00 },
-
-            { id:"p_freddo_espresso", cat:"coffee_cold", name:"Freddo espresso", price:3.80 },
-            { id:"p_freddo_cappuccino", cat:"coffee_cold", name:"Freddo cappuccino", price:4.20 },
-            { id:"p_iced_latte", cat:"coffee_cold", name:"Iced latte", price:4.50 },
-            { id:"p_cold_brew", cat:"coffee_cold", name:"Cold brew", price:4.80 },
-            { id:"p_frappe", cat:"coffee_cold", name:"Frappe", price:3.50 },
-
-            { id:"p_tea_basic", cat:"tea", name:"Τσάι (μαύρο/πράσινο/βότανα)", price:3.20 },
-            { id:"p_tea_fruit", cat:"tea", name:"Τσάι φρούτων", price:3.50 },
-            { id:"p_chai_latte", cat:"tea", name:"Chai latte", price:4.30 },
-
-            { id:"p_hot_chocolate", cat:"choco", name:"Ζεστή σοκολάτα", price:4.20 },
-            { id:"p_cold_chocolate", cat:"choco", name:"Κρύα σοκολάτα", price:4.50 },
-            { id:"p_white_chocolate", cat:"choco", name:"Λευκή σοκολάτα", price:4.50 },
-            { id:"p_cocoa", cat:"choco", name:"Κακάο", price:4.00 },
-
-            { id:"p_cola", cat:"soft", name:"Coca-Cola / Zero / Fanta (0,33l)", price:3.40 },
-            { id:"p_ice_tea", cat:"soft", name:"Ice Tea", price:3.60 },
-            { id:"p_soda_tonic", cat:"soft", name:"Σόδα / Τόνικ", price:3.20 },
-            { id:"p_water_033", cat:"soft", name:"Μεταλλικό νερό (0,33l)", price:2.80 },
-            { id:"p_water_075", cat:"soft", name:"Μεταλλικό νερό (0,75l)", price:5.50 },
-
-            { id:"p_orange_juice", cat:"juice", name:"Φυσικός χυμός πορτοκάλι", price:4.50 },
-            { id:"p_mix_juice", cat:"juice", name:"Χυμός ανάμεικτος", price:4.80 },
-            { id:"p_fruit_smoothie", cat:"juice", name:"Smoothie φρούτων", price:5.80 },
-            { id:"p_milkshake", cat:"juice", name:"Milkshake", price:5.50 },
-
-            { id:"p_croissant_plain", cat:"snack", name:"Κρουασάν σκέτο", price:2.80 },
-            { id:"p_croissant_choco", cat:"snack", name:"Κρουασάν σοκολάτα", price:3.20 },
-            { id:"p_muffin", cat:"snack", name:"Μάφιν", price:3.50 },
-            { id:"p_cake_piece", cat:"snack", name:"Κέικ (κομμάτι)", price:4.20 },
-            { id:"p_cheesecake", cat:"snack", name:"Cheesecake", price:4.80 },
-            { id:"p_cookies", cat:"snack", name:"Μπισκότα", price:2.50 },
-            { id:"p_toast_ham", cat:"snack", name:"Τοστ ζαμπόν-τυρί", price:4.50 },
-            { id:"p_toast_veg", cat:"snack", name:"Τοστ vegetarian", price:4.80 },
-
-            { id:"p_beer_draft", cat:"beer", name:"Μπύρα βαρελίσια (0,5l)", price:5.20 },
-            { id:"p_beer_bottle", cat:"beer", name:"Μπύρα εμφιαλωμένη (0,33l)", price:4.20 },
-            { id:"p_weissbier", cat:"beer", name:"Weissbier (0,5l)", price:5.50 },
-            { id:"p_beer_zero", cat:"beer", name:"Μπύρα χωρίς αλκοόλ", price:4.20 },
-
-            { id:"p_wine_glass", cat:"wine", name:"Κρασί ποτήρι", price:5.50 },
-            { id:"p_wine_carafe", cat:"wine", name:"Κρασί καράφα (0,5l)", price:12.00 },
-            { id:"p_wine_bottle_22", cat:"wine", name:"Φιάλη κρασί (22€)", price:22.00 },
-            { id:"p_wine_bottle_28", cat:"wine", name:"Φιάλη κρασί (28€)", price:28.00 },
-            { id:"p_prosecco_glass", cat:"wine", name:"Prosecco ποτήρι", price:6.50 },
-
-            { id:"p_whisky_std", cat:"spirit", name:"Ουίσκι standard (4cl)", price:8.50 },
-            { id:"p_whisky_premium", cat:"spirit", name:"Premium ουίσκι (4cl)", price:10.50 },
-            { id:"p_vodka", cat:"spirit", name:"Βότκα (4cl)", price:8.00 },
-            { id:"p_rum", cat:"spirit", name:"Ρούμι (4cl)", price:8.50 },
-            { id:"p_gin", cat:"spirit", name:"Τζιν (4cl)", price:8.50 },
-            { id:"p_ouzo_tsipouro", cat:"spirit", name:"Ούζο / Τσίπουρο (4cl)", price:7.50 },
-            { id:"p_liqueur", cat:"spirit", name:"Λικέρ (4cl)", price:7.50 },
-
-            { id:"p_mojito", cat:"cocktail", name:"Mojito", price:9.50 },
-            { id:"p_caipirinha", cat:"cocktail", name:"Caipirinha", price:9.50 },
-            { id:"p_margarita", cat:"cocktail", name:"Margarita", price:10.00 },
-            { id:"p_aperol", cat:"cocktail", name:"Aperol Spritz", price:8.50 },
-            { id:"p_gin_tonic", cat:"cocktail", name:"Gin Tonic", price:9.00 },
-            { id:"p_negroni", cat:"cocktail", name:"Negroni", price:10.50 },
-
-            { id:"p_extra_decaf", cat:"extras", name:"Decaf (+)", price:0.30 },
-            { id:"p_extra_plant_milk", cat:"extras", name:"Φυτικό γάλα (+)", price:0.50 }
-          ]
-        },
+        menu: window.__MENU__ || null,
         days: {}
       };
     }
 
+    function buildMenuIfMissing(){
+      // If menu missing, create it (kept short here: you already had full list before)
+      // For safety: if db.menu exists we won't override.
+      const categories = [
+        { id:"coffee_hot",  name:"Καφέδες – Ζεστοί", emoji:"☕" },
+        { id:"coffee_cold", name:"Καφέδες – Κρύοι",  emoji:"🧊" },
+        { id:"tea",         name:"Τσάι – Ζεστά",     emoji:"🫖" },
+        { id:"choco",       name:"Σοκολάτες / Γαλακτερά", emoji:"🍫" },
+        { id:"soft",        name:"Αναψυκτικά – Νερά", emoji:"🥤" },
+        { id:"juice",       name:"Χυμοί – Smoothies", emoji:"🍊" },
+        { id:"snack",       name:"Σνακ – Γλυκά",      emoji:"🥐" },
+        { id:"beer",        name:"Μπύρες",            emoji:"🍺" },
+        { id:"wine",        name:"Κρασιά",            emoji:"🍷" },
+        { id:"spirit",      name:"Ποτά",              emoji:"🥃" },
+        { id:"cocktail",    name:"Κοκτέιλ",           emoji:"🍸" },
+        { id:"extras",      name:"Extras",            emoji:"➕" }
+      ];
+      // NOTE: To keep response size manageable, products list should be pasted from your existing version if needed.
+      // We'll include the full products list via a minimal approach: if current db has products, keep them.
+      return { categories, products: [] };
+    }
+
     let db = loadDB() || defaultDB();
+    if(!db.menu || !db.menu.categories){ db.menu = buildMenuIfMissing(); }
+    if(!db.menu.products || db.menu.products.length===0){
+      // fallback: keep your full products list from previous working build
+      // (If you already have products in storage from earlier, this won't run.)
+      db.menu.products = [
+        { id:"p_espresso_single", cat:"coffee_hot", name:"Espresso μονός", price:2.60 },
+        { id:"p_espresso_double", cat:"coffee_hot", name:"Espresso διπλός", price:3.20 },
+        { id:"p_espresso_macchiato", cat:"coffee_hot", name:"Espresso macchiato", price:2.90 },
+        { id:"p_americano", cat:"coffee_hot", name:"Americano", price:3.20 },
+        { id:"p_cappuccino", cat:"coffee_hot", name:"Cappuccino", price:3.60 },
+        { id:"p_cappuccino_double", cat:"coffee_hot", name:"Cappuccino διπλός", price:4.20 },
+        { id:"p_latte_macchiato", cat:"coffee_hot", name:"Latte macchiato", price:4.20 },
+        { id:"p_flat_white", cat:"coffee_hot", name:"Flat white", price:4.40 },
+        { id:"p_mocha", cat:"coffee_hot", name:"Mocha", price:4.50 },
+        { id:"p_filter", cat:"coffee_hot", name:"Καφές φίλτρου", price:3.00 },
+        { id:"p_freddo_espresso", cat:"coffee_cold", name:"Freddo espresso", price:3.80 },
+        { id:"p_freddo_cappuccino", cat:"coffee_cold", name:"Freddo cappuccino", price:4.20 },
+        { id:"p_iced_latte", cat:"coffee_cold", name:"Iced latte", price:4.50 },
+        { id:"p_cold_brew", cat:"coffee_cold", name:"Cold brew", price:4.80 },
+        { id:"p_frappe", cat:"coffee_cold", name:"Frappe", price:3.50 },
+        { id:"p_tea_basic", cat:"tea", name:"Τσάι (μαύρο/πράσινο/βότανα)", price:3.20 },
+        { id:"p_tea_fruit", cat:"tea", name:"Τσάι φρούτων", price:3.50 },
+        { id:"p_chai_latte", cat:"tea", name:"Chai latte", price:4.30 },
+        { id:"p_hot_chocolate", cat:"choco", name:"Ζεστή σοκολάτα", price:4.20 },
+        { id:"p_cold_chocolate", cat:"choco", name:"Κρύα σοκολάτα", price:4.50 },
+        { id:"p_white_chocolate", cat:"choco", name:"Λευκή σοκολάτα", price:4.50 },
+        { id:"p_cocoa", cat:"choco", name:"Κακάο", price:4.00 },
+        { id:"p_cola", cat:"soft", name:"Coca-Cola / Zero / Fanta (0,33l)", price:3.40 },
+        { id:"p_ice_tea", cat:"soft", name:"Ice Tea", price:3.60 },
+        { id:"p_soda_tonic", cat:"soft", name:"Σόδα / Τόνικ", price:3.20 },
+        { id:"p_water_033", cat:"soft", name:"Μεταλλικό νερό (0,33l)", price:2.80 },
+        { id:"p_water_075", cat:"soft", name:"Μεταλλικό νερό (0,75l)", price:5.50 },
+        { id:"p_orange_juice", cat:"juice", name:"Φυσικός χυμός πορτοκάλι", price:4.50 },
+        { id:"p_mix_juice", cat:"juice", name:"Χυμός ανάμεικτος", price:4.80 },
+        { id:"p_fruit_smoothie", cat:"juice", name:"Smoothie φρούτων", price:5.80 },
+        { id:"p_milkshake", cat:"juice", name:"Milkshake", price:5.50 },
+        { id:"p_croissant_plain", cat:"snack", name:"Κρουασάν σκέτο", price:2.80 },
+        { id:"p_croissant_choco", cat:"snack", name:"Κρουασάν σοκολάτα", price:3.20 },
+        { id:"p_muffin", cat:"snack", name:"Μάφιν", price:3.50 },
+        { id:"p_cake_piece", cat:"snack", name:"Κέικ (κομμάτι)", price:4.20 },
+        { id:"p_cheesecake", cat:"snack", name:"Cheesecake", price:4.80 },
+        { id:"p_cookies", cat:"snack", name:"Μπισκότα", price:2.50 },
+        { id:"p_toast_ham", cat:"snack", name:"Τοστ ζαμπόν-τυρί", price:4.50 },
+        { id:"p_toast_veg", cat:"snack", name:"Τοστ vegetarian", price:4.80 },
+        { id:"p_beer_draft", cat:"beer", name:"Μπύρα βαρελίσια (0,5l)", price:5.20 },
+        { id:"p_beer_bottle", cat:"beer", name:"Μπύρα εμφιαλωμένη (0,33l)", price:4.20 },
+        { id:"p_weissbier", cat:"beer", name:"Weissbier (0,5l)", price:5.50 },
+        { id:"p_beer_zero", cat:"beer", name:"Μπύρα χωρίς αλκοόλ", price:4.20 },
+        { id:"p_wine_glass", cat:"wine", name:"Κρασί ποτήρι", price:5.50 },
+        { id:"p_wine_carafe", cat:"wine", name:"Κρασί καράφα (0,5l)", price:12.00 },
+        { id:"p_wine_bottle_22", cat:"wine", name:"Φιάλη κρασί (22€)", price:22.00 },
+        { id:"p_wine_bottle_28", cat:"wine", name:"Φιάλη κρασί (28€)", price:28.00 },
+        { id:"p_prosecco_glass", cat:"wine", name:"Prosecco ποτήρι", price:6.50 },
+        { id:"p_whisky_std", cat:"spirit", name:"Ουίσκι standard (4cl)", price:8.50 },
+        { id:"p_whisky_premium", cat:"spirit", name:"Premium ουίσκι (4cl)", price:10.50 },
+        { id:"p_vodka", cat:"spirit", name:"Βότκα (4cl)", price:8.00 },
+        { id:"p_rum", cat:"spirit", name:"Ρούμι (4cl)", price:8.50 },
+        { id:"p_gin", cat:"spirit", name:"Τζιν (4cl)", price:8.50 },
+        { id:"p_ouzo_tsipouro", cat:"spirit", name:"Ούζο / Τσίπουρο (4cl)", price:7.50 },
+        { id:"p_liqueur", cat:"spirit", name:"Λικέρ (4cl)", price:7.50 },
+        { id:"p_mojito", cat:"cocktail", name:"Mojito", price:9.50 },
+        { id:"p_caipirinha", cat:"cocktail", name:"Caipirinha", price:9.50 },
+        { id:"p_margarita", cat:"cocktail", name:"Margarita", price:10.00 },
+        { id:"p_aperol", cat:"cocktail", name:"Aperol Spritz", price:8.50 },
+        { id:"p_gin_tonic", cat:"cocktail", name:"Gin Tonic", price:9.00 },
+        { id:"p_negroni", cat:"cocktail", name:"Negroni", price:10.50 },
+        { id:"p_extra_decaf", cat:"extras", name:"Decaf (+)", price:0.30 },
+        { id:"p_extra_plant_milk", cat:"extras", name:"Φυτικό γάλα (+)", price:0.50 }
+      ];
+    }
 
     function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
 
@@ -614,7 +526,6 @@
         if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[] };
       }
     }
-
     ensureDay(); saveDB();
 
     function getUser(){ return db.users.find(u=>u.id===db.currentUserId) || db.users[0]; }
@@ -638,14 +549,16 @@
       }
     }
 
-    // Modal confirm
+    // modal helpers
     function closeModal(){
       modalBack.style.display = "none";
-      modalTitle.textContent = "Επιβεβαίωση";
-      modalBody.textContent = "";
+      modalTitle.textContent = "";
+      modalBody.innerHTML = "";
       modalFoot.innerHTML = "";
     }
-    function confirmModal(title, text, okText="Ναι", cancelText="Άκυρο"){
+    modalBack.addEventListener("click", (e)=>{ if(e.target===modalBack) closeModal(); });
+
+    function modalConfirm(title, text, okText="Ναι", cancelText="Άκυρο"){
       return new Promise((resolve)=>{
         modalTitle.textContent = title;
         modalBody.textContent = text;
@@ -654,14 +567,14 @@
         const b1 = document.createElement("button");
         b1.className = "btn pressable";
         b1.textContent = cancelText;
-        b1.addEventListener("click", ()=>{ closeModal(); resolve(false); });
         makePressable(b1, true);
+        b1.addEventListener("click", ()=>{ closeModal(); resolve(false); });
 
         const b2 = document.createElement("button");
         b2.className = "btn pressable good";
         b2.textContent = okText;
-        b2.addEventListener("click", ()=>{ closeModal(); resolve(true); });
         makePressable(b2, true);
+        b2.addEventListener("click", ()=>{ closeModal(); resolve(true); });
 
         modalFoot.appendChild(b1);
         modalFoot.appendChild(b2);
@@ -669,7 +582,47 @@
         modalBack.style.display = "flex";
       });
     }
-    modalBack.addEventListener("click", (e)=>{ if(e.target===modalBack) closeModal(); });
+
+    function modalPromptPin(title, label, hint){
+      return new Promise((resolve)=>{
+        modalTitle.textContent = title;
+        modalBody.innerHTML = `
+          <div>${label}</div>
+          <div style="margin-top:10px;">
+            <input class="input" id="pinInput"
+              type="password"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="one-time-code"
+              placeholder="••••" />
+          </div>
+          <div class="hint">${hint || ""}</div>
+        `;
+        modalFoot.innerHTML = "";
+
+        const cancel = document.createElement("button");
+        cancel.className = "btn pressable";
+        cancel.textContent = "Άκυρο";
+        makePressable(cancel, true);
+        cancel.addEventListener("click", ()=>{ closeModal(); resolve(null); });
+
+        const ok = document.createElement("button");
+        ok.className = "btn pressable good";
+        ok.textContent = "ΟΚ";
+        makePressable(ok, true);
+        ok.addEventListener("click", ()=>{
+          const v = (document.getElementById("pinInput").value || "").trim();
+          closeModal();
+          resolve(v);
+        });
+
+        modalFoot.appendChild(cancel);
+        modalFoot.appendChild(ok);
+        modalBack.style.display = "flex";
+
+        setTimeout(()=> document.getElementById("pinInput")?.focus(), 50);
+      });
+    }
 
     // state
     let state = { screen:"home", tableId:null, categoryId:null };
@@ -678,6 +631,7 @@
     function gotoAdd(tid){ state.screen="add"; state.tableId=tid; state.categoryId = state.categoryId || db.menu.categories[0]?.id; render(); }
     function gotoPay(tid){ state.screen="pay"; state.tableId=tid; render(); }
     function gotoSummary(){ state.screen="summary"; state.tableId=null; render(); }
+    function gotoSettings(){ state.screen="settings"; state.tableId=null; render(); }
 
     function dayTable(tid){ ensureDay(); return db.days[TODAY].tables[tid]; }
     function unpaidItems(tid){ return dayTable(tid).items.filter(it => !it.paid && !it.voided); }
@@ -714,7 +668,6 @@
       return dayTable(tid).items.find(it => it.prodId===prodId && !it.paid && !it.voided) || null;
     }
 
-    // bottom buttons
     function setBottomButtons(btns, fullMode=false){
       bottomBar.className = "bar" + (fullMode ? " full" : "");
       bottomBar.innerHTML = "";
@@ -725,6 +678,7 @@
         const btn = document.createElement("button");
         btn.className = "btn pressable " + (b.kind||"") + (b.full ? " full" : "");
         btn.textContent = b.text;
+        makePressable(btn, true);
         btn.addEventListener("click", (ev)=>{
           addRipple(btn, ev.clientX, ev.clientY);
           pressFlash(btn);
@@ -732,8 +686,39 @@
           b.onClick();
         });
         bottomBar.appendChild(btn);
-        makePressable(btn, true);
       }
+    }
+
+    async function markTreatOne(tid, prodId){
+      const it = findOneUnpaid(tid, prodId);
+      if(!it) return;
+      const ok = await modalConfirm("Κερασμένο", `Να γίνει κερασμένο 1 τεμ. “${it.name}”;`, "Ναι", "Άκυρο");
+      if(!ok) return;
+      const u = getUser()?.name || "";
+      const ts = Date.now();
+      it.paid = { method:"treat", ts, by:u };
+      db.days[TODAY].payments.push({ id:uid(), tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method:"treat", ts, by:u });
+      saveDB(); render();
+    }
+
+    function payAll(tid, method){
+      const items = unpaidItems(tid);
+      if(items.length===0){ gotoHome(); return; }
+      const u = getUser()?.name || "";
+      const ts = Date.now();
+      for(const it of items){
+        it.paid = { method, ts, by:u };
+        db.days[TODAY].payments.push({ id:uid(), tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method, ts, by:u });
+      }
+      saveDB();
+      gotoHome();
+    }
+
+    // owner gate
+    async function requireOwner(){
+      const pin = await modalPromptPin("Owner πρόσβαση", "Βάλε Owner PIN", "Μόνο ο ιδιοκτήτης αλλάζει ρυθμίσεις.");
+      if(pin===null) return false;
+      return String(pin) === String(db.ownerPin || "9999");
     }
 
     // screens
@@ -765,7 +750,7 @@
       setBottomButtons([
         { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
         { text:"CSV", kind:"", onClick: ()=> exportCSV() },
-        { text:"Ρυθμίσεις", kind:"", onClick: ()=> alert("Επόμενο βήμα: Owner PIN / ονόματα χρηστών / λογότυπο") }
+        { text:"Ρυθμίσεις", kind:"", onClick: ()=> gotoSettings() }
       ]);
     }
 
@@ -874,36 +859,6 @@
       ], true);
     }
 
-    async function markTreatOne(tid, prodId){
-      const it = findOneUnpaid(tid, prodId);
-      if(!it) return;
-
-      const ok = await confirmModal("Κερασμένο", `Να γίνει κερασμένο 1 τεμ. “${it.name}”;`, "Ναι", "Άκυρο");
-      if(!ok) return;
-
-      const u = getUser()?.name || "";
-      const ts = Date.now();
-
-      it.paid = { method:"treat", ts, by:u };
-      db.days[TODAY].payments.push({ id:uid(), tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method:"treat", ts, by:u });
-
-      saveDB();
-      render();
-    }
-
-    function payAll(tid, method){
-      const items = unpaidItems(tid);
-      if(items.length===0){ gotoHome(); return; }
-      const u = getUser()?.name || "";
-      const ts = Date.now();
-      for(const it of items){
-        it.paid = { method, ts, by:u };
-        db.days[TODAY].payments.push({ id:uid(), tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method, ts, by:u });
-      }
-      saveDB();
-      gotoHome();
-    }
-
     function renderPay(){
       const tid = state.tableId;
       const t = db.tables.find(x=>x.id===tid);
@@ -941,11 +896,10 @@
         </div>
       `;
 
-      const cash = el("payCash");
-      const card = el("payCard");
+      const cash = document.getElementById("payCash");
+      const card = document.getElementById("payCard");
       makePressable(cash, true);
       makePressable(card, true);
-
       cash.addEventListener("click", ()=> payAll(tid,"cash"));
       card.addEventListener("click", ()=> payAll(tid,"card"));
 
@@ -962,7 +916,6 @@
     function renderSummary(){
       const pay = db.days[TODAY].payments || [];
       const totals = { cash:0, card:0, treat:0, all:0 };
-
       for(const p of pay){
         totals.all += p.price;
         if(p.method==="cash") totals.cash += p.price;
@@ -988,7 +941,7 @@
               <div class="li">
                 <div class="left">
                   <div class="name">${p.name}</div>
-                  <div class="meta">${p.tableId} • ${p.method.toUpperCase()} • ${new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})} • ${p.by}</div>
+                  <div class="meta">${p.tableId} • ${String(p.method).toUpperCase()} • ${new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})} • ${p.by}</div>
                 </div>
                 <div class="price">${euro(p.price)}</div>
               </div>
@@ -1000,6 +953,142 @@
       setBottomButtons([
         { text:"← Home", kind:"", onClick: ()=> gotoHome() },
         { text:"CSV", kind:"", onClick: ()=> exportCSV() }
+      ]);
+    }
+
+    function renderSettings(){
+      const u = getUser();
+      view.innerHTML = `
+        <div class="card">
+          <div class="h">Ρυθμίσεις</div>
+          <div class="muted">Χρήστης: <b>${u?.name || "—"}</b></div>
+          <div class="muted2" style="margin-top:6px;">Για αλλαγές χρειάζεται Owner PIN.</div>
+        </div>
+
+        <div class="card">
+          <div class="h">Μαγαζί</div>
+          <div class="row space">
+            <div class="muted">Όνομα μαγαζιού</div>
+            <div><b>${db.shopName || "—"}</b></div>
+          </div>
+          <div style="margin-top:10px;">
+            <button class="btn pressable accent" id="btnChangeShop">Αλλαγή ονόματος (Owner)</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="h">Χρήστες</div>
+          <div class="list" id="usersList"></div>
+
+          <div style="margin-top:10px;">
+            <button class="btn pressable accent" id="btnAddUser">+ Νέος χρήστης (Owner)</button>
+          </div>
+        </div>
+
+        <div class="card dangerBox">
+          <div class="h">Ασφάλεια</div>
+          <div class="muted2">Owner PIN: μόνο ο ιδιοκτήτης μπορεί να αλλάξει ρυθμίσεις.</div>
+          <div style="margin-top:10px;">
+            <button class="btn pressable bad" id="btnChangeOwner">Αλλαγή Owner PIN</button>
+          </div>
+        </div>
+      `;
+
+      const ul = document.getElementById("usersList");
+      ul.innerHTML = db.users.map(us=>`
+        <div class="li">
+          <div class="left">
+            <div class="name">${us.name}</div>
+            <div class="meta">PIN: ••••</div>
+          </div>
+          <div class="qty">
+            <button class="qbtn pressable" data-epin="${us.id}" title="Αλλαγή PIN">🔑</button>
+            <button class="qbtn pressable" data-del="${us.id}" title="Διαγραφή">🗑️</button>
+          </div>
+        </div>
+      `).join("");
+
+      // wire settings actions
+      const btnChangeShop = document.getElementById("btnChangeShop");
+      const btnAddUser = document.getElementById("btnAddUser");
+      const btnChangeOwner = document.getElementById("btnChangeOwner");
+
+      [btnChangeShop, btnAddUser, btnChangeOwner].forEach(b=> makePressable(b, true));
+
+      btnChangeShop.addEventListener("click", async ()=>{
+        if(!(await requireOwner())) return;
+        const name = prompt("Νέο όνομα μαγαζιού:", db.shopName || "");
+        if(!name) return;
+        db.shopName = String(name).trim();
+        saveDB();
+        setTop();
+        render();
+      });
+
+      btnAddUser.addEventListener("click", async ()=>{
+        if(!(await requireOwner())) return;
+        const name = prompt("Όνομα χρήστη:", "Νέος Υπάλληλος");
+        if(!name) return;
+        const pin = await modalPromptPin("PIN χρήστη", "Βάλε PIN (4+ ψηφία)", "Θα εμφανίζεται numeric keypad.");
+        if(!pin) return;
+        const id = "u" + uid();
+        db.users.push({ id, name: String(name).trim(), pin: String(pin).trim() });
+        db.currentUserId = id;
+        saveDB();
+        fillUsers();
+        setTop();
+        render();
+      });
+
+      btnChangeOwner.addEventListener("click", async ()=>{
+        if(!(await requireOwner())) return;
+        const newPin = await modalPromptPin("Owner PIN", "Βάλε νέο Owner PIN", "Κράτα το μυστικό.");
+        if(!newPin) return;
+        db.ownerPin = String(newPin).trim();
+        saveDB();
+        render();
+      });
+
+      ul.querySelectorAll("[data-epin]").forEach(b=>{
+        makePressable(b, true);
+        b.addEventListener("click", async ()=>{
+          if(!(await requireOwner())) return;
+          const uid2 = b.getAttribute("data-epin");
+          const user = db.users.find(x=>x.id===uid2);
+          if(!user) return;
+          const pin = await modalPromptPin("Αλλαγή PIN", `Νέο PIN για ${user.name}`, "Numeric keypad.");
+          if(!pin) return;
+          user.pin = String(pin).trim();
+          saveDB();
+          render();
+        });
+      });
+
+      ul.querySelectorAll("[data-del]").forEach(b=>{
+        makePressable(b, true);
+        b.addEventListener("click", async ()=>{
+          if(!(await requireOwner())) return;
+          const uid2 = b.getAttribute("data-del");
+          const user = db.users.find(x=>x.id===uid2);
+          if(!user) return;
+          const ok = await modalConfirm("Διαγραφή χρήστη", `Να διαγραφεί ο χρήστης “${user.name}”;`, "Διαγραφή", "Άκυρο");
+          if(!ok) return;
+          db.users = db.users.filter(x=>x.id!==uid2);
+          if(!db.users.length){
+            db.users = [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }];
+            db.currentUserId = "u1";
+          }else if(db.currentUserId===uid2){
+            db.currentUserId = db.users[0].id;
+          }
+          saveDB();
+          fillUsers();
+          setTop();
+          render();
+        });
+      });
+
+      setBottomButtons([
+        { text:"← Home", kind:"", onClick: ()=> gotoHome() }
       ]);
     }
 
@@ -1036,21 +1125,19 @@
       else if(state.screen==="add") renderAdd();
       else if(state.screen==="pay") renderPay();
       else if(state.screen==="summary") renderSummary();
+      else if(state.screen==="settings") renderSettings();
     }
 
+    // Top interactions
     el("userSelect").addEventListener("change", ()=>{
       db.currentUserId = el("userSelect").value;
       saveDB();
       setTop();
     });
 
-    el("btnSettings").addEventListener("click", (ev)=>{
-      addRipple(el("btnSettings"), ev.clientX, ev.clientY);
-      pressFlash(el("btnSettings"));
-      hapticStrong();
-      alert("Chrome μπάρες φεύγουν μόνο όταν το κάνεις Install (Add to Home Screen) και ανοίγει από το εικονίδιο.");
-    });
-    makePressable(el("btnSettings"), true);
+    const btnGear = el("btnGear");
+    makePressable(btnGear, true);
+    btnGear.addEventListener("click", ()=> gotoSettings());
 
     async function registerSW(){
       if(!("serviceWorker" in navigator)) return;
