@@ -113,7 +113,7 @@
     .row{ display:flex; align-items:center; gap:10px; }
     .row.space{ justify-content:space-between; }
 
-    /* ✅ PRESS ONLY (no ripple) */
+    /* PRESS ONLY (no ripple) */
     .pressable{
       position:relative; overflow:hidden;
       transition: transform .06s ease, filter .06s ease, background-color .12s ease, box-shadow .12s ease, border-color .12s ease;
@@ -132,7 +132,6 @@
         0 10px 26px rgba(0,0,0,.22);
     }
 
-    /* tables */
     .tables{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
     @media (min-width: 520px){ .tables{ grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     .tbtn{
@@ -142,6 +141,7 @@
       background: rgba(17,24,36,.45);
       min-height: 74px;
       display:flex; flex-direction:column; justify-content:center; gap:4px;
+      position:relative;
     }
     .tbtn .title{ font-weight:1000; font-size:18px; display:flex; align-items:center; gap:8px; }
     .tbtn .sub{ color:var(--muted); font-size:13px; }
@@ -258,7 +258,7 @@
       margin: 6px 6px 0 0;
     }
 
-    /* Modal (confirm + owner pin) */
+    /* Modal */
     .modalBack{
       position:fixed; inset:0;
       background: rgba(0,0,0,.55);
@@ -308,6 +308,25 @@
       border-radius: 16px;
       padding: 12px;
     }
+
+    /* Screen Saver overlay */
+    .saver{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:10px;
+      background: radial-gradient(900px 600px at 50% 0%, rgba(74,163,255,.10), transparent 55%),
+                  rgba(0,0,0,.92);
+      z-index: 998;
+      padding: calc(var(--safeTop) + 20px) 20px calc(var(--safeBottom) + 20px) 20px;
+      text-align:center;
+    }
+    .saver .big{ font-size:22px; font-weight:1000; letter-spacing:.2px; }
+    .saver .mid{ font-size:14px; color:var(--muted); }
+    .saver .time{ font-size:42px; font-weight:1000; margin-top:6px; }
+    .saver .tap{ font-size:12px; color:var(--muted2); margin-top:14px; }
   </style>
 </head>
 
@@ -320,7 +339,8 @@
       </div>
 
       <select id="userSelect" title="Χρήστης"></select>
- <button class="iconbtn pressable" id="btnGear" title="Ρυθμίσεις">⚙️</button>
+      <!-- ✅ fixed button -->
+      <button class="iconbtn pressable" id="btnGear" title="Ρυθμίσεις" aria-label="Ρυθμίσεις">⚙️</button>
     </div>
 
     <div class="content">
@@ -340,9 +360,22 @@
     </div>
   </div>
 
+  <div class="saver" id="saver">
+    <div class="big" id="saverShop">—</div>
+    <div class="mid" id="saverUser">—</div>
+    <div class="time" id="saverTime">—</div>
+    <div class="tap">Αγγίξτε για επιστροφή</div>
+  </div>
+
   <script>
-    const LS_KEY = "daily_cashier_db_v4";
+    const LS_KEY = "daily_cashier_db_v5";
     const TODAY = new Date().toISOString().slice(0,10);
+
+    // Idle behavior
+    const IDLE_HOME_MS  = 30_000;  // 30s no touch -> go Home
+    const IDLE_SAVER_MS = 75_000;  // if idle on Home -> show saver (after 75s)
+    let lastActivityTs = Date.now();
+    let saverShown = false;
 
     const el = (id) => document.getElementById(id);
     const view = el("view");
@@ -354,8 +387,13 @@
     const modalBody  = el("modalBody");
     const modalFoot  = el("modalFoot");
 
+    const saver = el("saver");
+    const saverShop = el("saverShop");
+    const saverUser = el("saverUser");
+    const saverTime = el("saverTime");
+
     function hapticStrong(){
-      try{ if(navigator.vibrate) navigator.vibrate([28, 12, 28]); }catch{}
+      try{ if(navigator.vibrate) navigator.vibrate([35, 12, 35]); }catch{}
     }
     function hapticSmall(){
       try{ if(navigator.vibrate) navigator.vibrate(12); }catch{}
@@ -363,19 +401,25 @@
 
     function pressFlash(elem){
       elem.classList.add("is-pressed");
-      setTimeout(()=> elem.classList.remove("is-pressed"), 140);
+      setTimeout(()=> elem.classList.remove("is-pressed"), 190);
     }
 
-    // ✅ No ripple + no double-fire: ONLY pointerdown
+    // No ripple + no double-fire: ONLY pointerdown
     function makePressable(elem, strong=false){
       if(!elem) return;
       elem.classList.add("pressable");
-      const down = ()=>{
-        pressFlash(elem);
-        strong ? hapticStrong() : hapticSmall();
-      };
+      const down = ()=>{ pressFlash(elem); strong ? hapticStrong() : hapticSmall(); };
       elem.addEventListener("pointerdown", down, {passive:true});
     }
+
+    // Activity tracking
+    function markActivity(){
+      lastActivityTs = Date.now();
+      if(saverShown) hideSaver();
+    }
+    ["pointerdown","touchstart","mousedown","keydown","wheel"].forEach(evt=>{
+      window.addEventListener(evt, markActivity, {passive:true});
+    });
 
     function euro(x){
       const n = Number(x || 0);
@@ -392,15 +436,20 @@
       return {
         shopName: "Το Μαγαζί μου",
         ownerPin: "9999",
+        ownerEmail: "",
+
         users: [
           { id:"u1", name:"Υπάλληλος 1", pin:"1111" }
         ],
         currentUserId: "u1",
+
         tables: [
           { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
           { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
         ],
         menu: window.__MENU__ || null,
+
+        // ✅ shifts history (per day)
         days: {}
       };
     }
@@ -424,6 +473,7 @@
     }
 
     let db = loadDB() || defaultDB();
+
     if(!db.menu || !db.menu.categories){ db.menu = buildMenuIfMissing(); }
     if(!db.menu.products || db.menu.products.length===0){
       db.menu.products = [
@@ -495,15 +545,25 @@
 
     function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
 
+    // ✅ Ensure day + shift
     function ensureDay(){
-      if(!db.days[TODAY]) db.days[TODAY] = { tables:{}, payments:[] };
+      if(!db.days[TODAY]) db.days[TODAY] = { shiftId: uid(), shifts:[], tables:{}, payments:[] };
+
+      // tables per day: items + BAR note
       for(const t of db.tables){
-        if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[] };
+        if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[], note:"" };
+        if(db.days[TODAY].tables[t.id].note === undefined) db.days[TODAY].tables[t.id].note = "";
+        if(!Array.isArray(db.days[TODAY].tables[t.id].items)) db.days[TODAY].tables[t.id].items = [];
       }
+
+      // shiftId exists
+      if(!db.days[TODAY].shiftId) db.days[TODAY].shiftId = uid();
+      if(!Array.isArray(db.days[TODAY].shifts)) db.days[TODAY].shifts = [];
+      if(!Array.isArray(db.days[TODAY].payments)) db.days[TODAY].payments = [];
     }
     ensureDay(); saveDB();
 
-    // ✅ IMPORTANT: lastUserId exists, prevents broken change handler
+    // lastUserId prevents broken select revert
     let lastUserId = db.currentUserId;
 
     function getUser(){ return db.users.find(u=>u.id===db.currentUserId) || db.users[0]; }
@@ -513,6 +573,7 @@
       const u = getUser();
       el("topSub").textContent = `${TODAY} • Εν υπηρεσία: ${u?.name || "—"}`;
       document.title = db.shopName || "Daily Cashier";
+      updateSaverText();
     }
 
     function fillUsers(){
@@ -525,7 +586,6 @@
         if(u.id===db.currentUserId) opt.selected = true;
         sel.appendChild(opt);
       }
-      // keep select consistent
       sel.value = db.currentUserId;
       lastUserId = db.currentUserId;
     }
@@ -564,7 +624,6 @@
       });
     }
 
-    // ✅ 1-button alert (for wrong PIN etc.)
     function modalAlert(title, text, okText="ΟΚ"){
       return new Promise((resolve)=>{
         modalTitle.textContent = title;
@@ -577,7 +636,6 @@
         makePressable(b, true);
         b.addEventListener("click", ()=>{ closeModal(); resolve(true); });
 
-        // occupy full width by adding a dummy + CSS grid? easiest: add two cols with first hidden
         const dummy = document.createElement("div");
         dummy.style.display = "none";
         modalFoot.appendChild(dummy);
@@ -623,8 +681,50 @@
         modalFoot.appendChild(cancel);
         modalFoot.appendChild(ok);
         modalBack.style.display = "flex";
-
         setTimeout(()=> document.getElementById("pinInput")?.focus(), 50);
+      });
+    }
+
+    // ✅ text prompt (no browser prompt)
+    function escHtml(s){
+      return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+    }
+    function modalPromptText(title, label, initialValue="", hint=""){
+      return new Promise((resolve)=>{
+        modalTitle.textContent = title;
+        modalBody.innerHTML = `
+          <div>${escHtml(label)}</div>
+          <div style="margin-top:10px;">
+            <input class="input" id="textInput"
+              type="text"
+              autocomplete="off"
+              value="${escHtml(initialValue)}" />
+          </div>
+          <div class="hint">${escHtml(hint || "")}</div>
+        `;
+        modalFoot.innerHTML = "";
+
+        const cancel = document.createElement("button");
+        cancel.className = "btn pressable";
+        cancel.textContent = "Άκυρο";
+        makePressable(cancel, true);
+        cancel.addEventListener("click", ()=>{ closeModal(); resolve(null); });
+
+        const ok = document.createElement("button");
+        ok.className = "btn pressable good";
+        ok.textContent = "ΟΚ";
+        makePressable(ok, true);
+        ok.addEventListener("click", ()=>{
+          const v = (document.getElementById("textInput").value || "").trim();
+          closeModal();
+          resolve(v);
+        });
+
+        modalFoot.appendChild(cancel);
+        modalFoot.appendChild(ok);
+        modalBack.style.display = "flex";
+        setTimeout(()=> document.getElementById("textInput")?.focus(), 50);
       });
     }
 
@@ -638,7 +738,7 @@
     function gotoSettings(){ state.screen="settings"; state.tableId=null; render(); }
 
     function dayTable(tid){ ensureDay(); return db.days[TODAY].tables[tid]; }
-    function unpaidItems(tid){ return dayTable(tid).items.filter(it => !it.paid && !it.voided); }
+    function unpaidItems(tid){ return dayTable(tid).items.filter(it => !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId); }
     function tableTotal(tid){ return unpaidItems(tid).reduce((s,it)=>s+it.price,0); }
 
     function groupUnpaid(tid){
@@ -651,25 +751,38 @@
       return [...map.values()];
     }
 
+    function tableNote(tid){
+      const t = dayTable(tid);
+      if(t.note === undefined) t.note = "";
+      return t.note || "";
+    }
+    function setTableNote(tid, text){
+      const t = dayTable(tid);
+      t.note = String(text || "").trim();
+      saveDB();
+      render();
+    }
+
     function addProductToTable(prodId){
       const tid = state.tableId;
       const p = db.menu.products.find(x=>x.id===prodId);
       if(!tid || !p) return;
       dayTable(tid).items.push({
         id: uid(), prodId:p.id, name:p.name, cat:p.cat, price:Number(p.price),
-        ts: Date.now(), by: getUser()?.name || "", paid:null, voided:false
+        ts: Date.now(), by: getUser()?.name || "", paid:null, voided:false,
+        shiftId: db.days[TODAY].shiftId
       });
       saveDB(); render();
     }
 
     function removeOneUnit(tid, prodId){
       const items = dayTable(tid).items;
-      const idx = items.findIndex(it => it.prodId===prodId && !it.paid && !it.voided);
+      const idx = items.findIndex(it => it.prodId===prodId && !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId);
       if(idx>=0){ items.splice(idx,1); saveDB(); render(); }
     }
 
     function findOneUnpaid(tid, prodId){
-      return dayTable(tid).items.find(it => it.prodId===prodId && !it.paid && !it.voided) || null;
+      return dayTable(tid).items.find(it => it.prodId===prodId && !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId) || null;
     }
 
     function setBottomButtons(btns, fullMode=false){
@@ -700,7 +813,10 @@
       const u = getUser()?.name || "";
       const ts = Date.now();
       it.paid = { method:"treat", ts, by:u };
-      db.days[TODAY].payments.push({ id:uid(), tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method:"treat", ts, by:u });
+      db.days[TODAY].payments.push({
+        id:uid(), shiftId: db.days[TODAY].shiftId,
+        tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method:"treat", ts, by:u
+      });
       saveDB(); render();
     }
 
@@ -711,7 +827,10 @@
       const ts = Date.now();
       for(const it of items){
         it.paid = { method, ts, by:u };
-        db.days[TODAY].payments.push({ id:uid(), tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method, ts, by:u });
+        db.days[TODAY].payments.push({
+          id:uid(), shiftId: db.days[TODAY].shiftId,
+          tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method, ts, by:u
+        });
       }
       saveDB();
       gotoHome();
@@ -722,6 +841,141 @@
       const pin = await modalPromptPin("Owner πρόσβαση", "Βάλε Owner PIN", "Μόνο ο ιδιοκτήτης αλλάζει ρυθμίσεις.");
       if(pin===null) return false;
       return String(pin) === String(db.ownerPin || "9999");
+    }
+
+    // Screen saver
+    function updateSaverText(){
+      const u = getUser();
+      saverShop.textContent = db.shopName || "—";
+      saverUser.textContent = `Εν υπηρεσία: ${u?.name || "—"} • ${TODAY}`;
+      const now = new Date();
+      saverTime.textContent = now.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"});
+    }
+    setInterval(()=>{ if(saverShown) updateSaverText(); }, 10_000);
+
+    function showSaver(){
+      saverShown = true;
+      updateSaverText();
+      saver.style.display = "flex";
+    }
+    function hideSaver(){
+      saverShown = false;
+      saver.style.display = "none";
+      render();
+    }
+    saver.addEventListener("pointerdown", ()=>{
+      markActivity();
+      hideSaver();
+    });
+
+    // Shift logic
+    function shiftPayments(){
+      const pay = db.days[TODAY].payments || [];
+      return pay.filter(p => p.shiftId === db.days[TODAY].shiftId);
+    }
+    function computeShiftTotals(){
+      const pay = shiftPayments();
+      const totals = { cash:0, card:0, treat:0, all:0, count: pay.length };
+      for(const p of pay){
+        totals.all += p.price;
+        if(p.method==="cash") totals.cash += p.price;
+        if(p.method==="card") totals.card += p.price;
+        if(p.method==="treat") totals.treat += p.price;
+      }
+      return totals;
+    }
+
+    function shiftReportText(totals){
+      const u = getUser();
+      return [
+        `Μαγαζί: ${db.shopName || "—"}`,
+        `Ημερομηνία: ${TODAY}`,
+        `Βάρδια (Shift ID): ${db.days[TODAY].shiftId}`,
+        `Χρήστης: ${u?.name || "—"}`,
+        `Σύνολο: ${euro(totals.all)}`,
+        `Μετρητά: ${euro(totals.cash)}`,
+        `Κάρτα: ${euro(totals.card)}`,
+        `Κερασμένα: ${euro(totals.treat)}`,
+        `Πληρωμές: ${totals.count}`
+      ].join("\n");
+    }
+
+    function csvForShift(){
+      const pay = shiftPayments();
+      const rows = [["date","time","shiftId","table","product","price","method","user"].join(",")];
+      for(const p of pay){
+        const d = new Date(p.ts);
+        rows.push([
+          TODAY,
+          d.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"}),
+          p.shiftId,
+          p.tableId,
+          `"${String(p.name).replaceAll('"','""')}"`,
+          Number(p.price).toFixed(2),
+          p.method,
+          `"${String(p.by||"").replaceAll('"','""')}"`
+        ].join(","));
+      }
+      return rows.join("\n");
+    }
+
+    async function sendShiftToOwner(){
+      const totals = computeShiftTotals();
+      const text = shiftReportText(totals);
+      const csv = csvForShift();
+
+      // Try Web Share with file
+      try{
+        const file = new File([csv], `shift_${TODAY}_${db.days[TODAY].shiftId}.csv`, {type:"text/csv"});
+        if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({
+            title: `Ταμείο βάρδιας • ${db.shopName || ""}`,
+            text,
+            files:[file]
+          });
+          return;
+        }
+      }catch(e){}
+
+      // Fallback: mailto
+      const to = (db.ownerEmail || "").trim();
+      const subj = encodeURIComponent(`Ταμείο βάρδιας • ${db.shopName || ""} • ${TODAY}`);
+      const body = encodeURIComponent(text + "\n\nCSV:\n" + csv);
+      const mailto = `mailto:${encodeURIComponent(to)}?subject=${subj}&body=${body}`;
+      window.location.href = mailto;
+    }
+
+    async function closeShift(){
+      const totals = computeShiftTotals();
+      const ok = await modalConfirm(
+        "Κλείσιμο βάρδιας",
+        `Να κλείσει η βάρδια;\n\nΣύνολο: ${euro(totals.all)}\nΜετρητά: ${euro(totals.cash)}\nΚάρτα: ${euro(totals.card)}\nΚερασμένα: ${euro(totals.treat)}`,
+        "Κλείσιμο",
+        "Άκυρο"
+      );
+      if(!ok) return;
+
+      // Store shift record in history
+      db.days[TODAY].shifts.push({
+        id: db.days[TODAY].shiftId,
+        closedAt: Date.now(),
+        user: getUser()?.name || "",
+        totals
+      });
+
+      // Reset for next shift
+      db.days[TODAY].shiftId = uid();
+      db.days[TODAY].payments = []; // reset payments for next shift
+
+      // Clear tables: items + notes for new shift
+      for(const t of db.tables){
+        db.days[TODAY].tables[t.id].items = [];
+        db.days[TODAY].tables[t.id].note = "";
+      }
+
+      saveDB();
+      gotoHome();
+      await modalAlert("Έγινε ✅", "Η βάρδια έκλεισε και ξεκίνησε νέα βάρδια (καθαρό ταμείο).");
     }
 
     // screens
@@ -741,13 +995,17 @@
             const total = tableTotal(t.id);
             const count = unpaidItems(t.id).length;
             const open = total>0;
+            const note = (t.id==="BAR") ? tableNote("BAR") : "";
             return `
               <button class="tbtn pressable" data-tid="${t.id}">
                 <div class="title">
                   <span class="led ${open ? "open" : ""}"></span>
                   ${t.label}
                 </div>
-                <div class="sub">${open ? ("Υπόλοιπο: " + euro(total)) : "—"}</div>
+                <div class="sub">${
+                  open ? ("Υπόλοιπο: " + euro(total)) :
+                  (t.id==="BAR" && note ? ("Σημείωση: " + escHtml(note)) : "—")
+                }</div>
                 <div class="badge">${count}</div>
               </button>
             `;
@@ -772,11 +1030,26 @@
       const t = db.tables.find(x=>x.id===tid);
       const groups = groupUnpaid(tid);
       const total = tableTotal(tid);
+      const isBar = (tid === "BAR");
+      const note = isBar ? tableNote("BAR") : "";
 
       view.innerHTML = `
         <div class="card">
           <div class="h">Τραπέζι: ${t?.label || tid}</div>
           <div class="muted">Υπόλοιπο: <b>${euro(total)}</b></div>
+
+          ${isBar ? `
+            <div style="margin-top:10px;">
+              <div class="muted2">Σημείωση BAR:</div>
+              <div class="row space" style="margin-top:6px; gap:10px;">
+                <div class="muted" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  ${note ? escHtml(note) : "—"}
+                </div>
+                <button class="qbtn pressable" id="btnBarNote" title="Σημείωση">✍️</button>
+              </div>
+              <div class="hint">π.χ. “φαλακρός”, “κόκκινη μπλούζα”, “αδύνατος”.</div>
+            </div>
+          ` : ""}
         </div>
 
         <div class="card">
@@ -786,7 +1059,7 @@
               ${groups.map(g=>`
                 <div class="li">
                   <div class="left">
-                    <div class="name">${g.name}</div>
+                    <div class="name">${escHtml(g.name)}</div>
                     <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
                   </div>
                   <div class="qty">
@@ -809,6 +1082,23 @@
         makePressable(b, true);
         b.addEventListener("click", ()=> addProductToTable(b.getAttribute("data-plus")));
       });
+
+      if(isBar){
+        const b = document.getElementById("btnBarNote");
+        if(b){
+          makePressable(b, true);
+          b.addEventListener("click", async ()=>{
+            const text = await modalPromptText(
+              "Σημείωση BAR",
+              "Γράψε αναφορά για την παρέα:",
+              tableNote("BAR"),
+              "Ισχύει για σήμερα."
+            );
+            if(text === null) return;
+            setTableNote("BAR", text);
+          });
+        }
+      }
 
       setBottomButtons([
         { text:"← Πίσω", kind:"", onClick: ()=> gotoHome() },
@@ -835,7 +1125,7 @@
           <div class="chips">
             ${cats.map(c=>`
               <button class="chip pressable ${c.id===activeCat?"active":""}" data-cat="${c.id}">
-                ${c.emoji} ${c.name}
+                ${c.emoji} ${escHtml(c.name)}
               </button>
             `).join("")}
           </div>
@@ -847,7 +1137,7 @@
             ${products.map(p=>`
               <div class="li pressable" data-add="${p.id}">
                 <div class="left">
-                  <div class="name">${p.name}</div>
+                  <div class="name">${escHtml(p.name)}</div>
                   <div class="meta">${euro(p.price)}</div>
                 </div>
                 <div class="price">${euro(p.price)}</div>
@@ -896,7 +1186,7 @@
               ${groups.map(g=>`
                 <div class="li">
                   <div class="left">
-                    <div class="name">${g.name}</div>
+                    <div class="name">${escHtml(g.name)}</div>
                     <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
                   </div>
                   <div class="qty">
@@ -927,24 +1217,25 @@
     }
 
     function renderSummary(){
-      const pay = db.days[TODAY].payments || [];
-      const totals = { cash:0, card:0, treat:0, all:0 };
-      for(const p of pay){
-        totals.all += p.price;
-        if(p.method==="cash") totals.cash += p.price;
-        if(p.method==="card") totals.card += p.price;
-        if(p.method==="treat") totals.treat += p.price;
-      }
+      const totals = computeShiftTotals();
+      const pay = shiftPayments();
 
       view.innerHTML = `
         <div class="card">
           <div class="h">Σύνοψη • ${TODAY}</div>
+          <div class="muted2">Shift: <b>${db.days[TODAY].shiftId}</b></div>
           <div>
             <span class="pill">Σύνολο: <b>${euro(totals.all)}</b></span>
             <span class="pill">Μετρητά: <b>${euro(totals.cash)}</b></span>
             <span class="pill">Κάρτα: <b>${euro(totals.card)}</b></span>
             <span class="pill">Κερασμένα: <b>${euro(totals.treat)}</b></span>
           </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn pressable" style="flex:1;" id="btnSendOwner">Αποστολή ιδιοκτήτη</button>
+            <button class="btn pressable bad" style="flex:1;" id="btnCloseShift">Κλείσιμο βάρδιας</button>
+          </div>
+          <div class="hint">Το “Κλείσιμο βάρδιας” μηδενίζει τα πάντα και ανοίγει νέα βάρδια.</div>
         </div>
 
         <div class="card">
@@ -953,8 +1244,8 @@
             ${pay.slice().reverse().map(p=>`
               <div class="li">
                 <div class="left">
-                  <div class="name">${p.name}</div>
-                  <div class="meta">${p.tableId} • ${String(p.method).toUpperCase()} • ${new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})} • ${p.by}</div>
+                  <div class="name">${escHtml(p.name)}</div>
+                  <div class="meta">${escHtml(p.tableId)} • ${String(p.method).toUpperCase()} • ${new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})} • ${escHtml(p.by)}</div>
                 </div>
                 <div class="price">${euro(p.price)}</div>
               </div>
@@ -962,6 +1253,22 @@
           </div>
         </div>
       `;
+
+      const btnSendOwner = document.getElementById("btnSendOwner");
+      const btnCloseShift = document.getElementById("btnCloseShift");
+      makePressable(btnSendOwner, true);
+      makePressable(btnCloseShift, true);
+
+      btnSendOwner.addEventListener("click", async ()=>{
+        // Owner email is optional; share works anyway
+        await sendShiftToOwner();
+      });
+
+      btnCloseShift.addEventListener("click", async ()=>{
+        // για ασφάλεια: ζητάμε Owner PIN
+        if(!(await requireOwner())) return;
+        await closeShift();
+      });
 
       setBottomButtons([
         { text:"← Home", kind:"", onClick: ()=> gotoHome() },
@@ -974,7 +1281,7 @@
       view.innerHTML = `
         <div class="card">
           <div class="h">Ρυθμίσεις</div>
-          <div class="muted">Χρήστης: <b>${u?.name || "—"}</b></div>
+          <div class="muted">Χρήστης: <b>${escHtml(u?.name || "—")}</b></div>
           <div class="muted2" style="margin-top:6px;">Για αλλαγές χρειάζεται Owner PIN.</div>
         </div>
 
@@ -982,10 +1289,21 @@
           <div class="h">Μαγαζί</div>
           <div class="row space">
             <div class="muted">Όνομα μαγαζιού</div>
-            <div><b>${db.shopName || "—"}</b></div>
+            <div><b>${escHtml(db.shopName || "—")}</b></div>
           </div>
           <div style="margin-top:10px;">
             <button class="btn pressable accent" id="btnChangeShop">Αλλαγή ονόματος (Owner)</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="h">Ιδιοκτήτης</div>
+          <div class="row space">
+            <div class="muted">Email ιδιοκτήτη</div>
+            <div><b>${escHtml(db.ownerEmail || "—")}</b></div>
+          </div>
+          <div style="margin-top:10px;">
+            <button class="btn pressable accent" id="btnOwnerEmail">Αλλαγή email (Owner)</button>
           </div>
         </div>
 
@@ -1011,7 +1329,7 @@
       ul.innerHTML = db.users.map(us=>`
         <div class="li">
           <div class="left">
-            <div class="name">${us.name}</div>
+            <div class="name">${escHtml(us.name)}</div>
             <div class="meta">PIN: ••••</div>
           </div>
           <div class="qty">
@@ -1022,24 +1340,34 @@
       `).join("");
 
       const btnChangeShop = document.getElementById("btnChangeShop");
+      const btnOwnerEmail = document.getElementById("btnOwnerEmail");
       const btnAddUser = document.getElementById("btnAddUser");
       const btnChangeOwner = document.getElementById("btnChangeOwner");
 
-      [btnChangeShop, btnAddUser, btnChangeOwner].forEach(b=> makePressable(b, true));
+      [btnChangeShop, btnOwnerEmail, btnAddUser, btnChangeOwner].forEach(b=> makePressable(b, true));
 
       btnChangeShop.addEventListener("click", async ()=>{
         if(!(await requireOwner())) return;
-        const name = prompt("Νέο όνομα μαγαζιού:", db.shopName || "");
-        if(!name) return;
+        const name = await modalPromptText("Όνομα μαγαζιού", "Γράψε νέο όνομα:", db.shopName || "", "Θα εμφανίζεται επάνω.");
+        if(name === null || !name) return;
         db.shopName = String(name).trim();
         saveDB();
         setTop();
         render();
       });
 
+      btnOwnerEmail.addEventListener("click", async ()=>{
+        if(!(await requireOwner())) return;
+        const em = await modalPromptText("Email ιδιοκτήτη", "Βάλε email (προαιρετικό):", db.ownerEmail || "", "Χρησιμοποιείται στο mailto fallback.");
+        if(em === null) return;
+        db.ownerEmail = String(em).trim();
+        saveDB();
+        render();
+      });
+
       btnAddUser.addEventListener("click", async ()=>{
         if(!(await requireOwner())) return;
-        const name = prompt("Όνομα χρήστη:", "Νέος Υπάλληλος");
+        const name = await modalPromptText("Νέος χρήστης", "Όνομα χρήστη:", "Νέος Υπάλληλος", "");
         if(!name) return;
         const pin = await modalPromptPin("PIN χρήστη", "Βάλε PIN (4+ ψηφία)", "Θα εμφανίζεται numeric keypad.");
         if(!pin) return;
@@ -1106,25 +1434,12 @@
     }
 
     function exportCSV(){
-      const pay = db.days[TODAY].payments || [];
-      const rows = [["date","time","table","product","price","method","user"].join(",")];
-      for(const p of pay){
-        const d = new Date(p.ts);
-        rows.push([
-          TODAY,
-          d.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"}),
-          p.tableId,
-          `"${String(p.name).replaceAll('"','""')}"`,
-          Number(p.price).toFixed(2),
-          p.method,
-          `"${String(p.by||"").replaceAll('"','""')}"`
-        ].join(","));
-      }
-      const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8"});
+      const csv = csvForShift();
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `daily_cashier_${TODAY}.csv`;
+      a.download = `shift_${TODAY}_${db.days[TODAY].shiftId}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -1141,55 +1456,67 @@
       else if(state.screen==="settings") renderSettings();
     }
 
-    // ✅ Top interactions: user select requires USER PIN, safe revert
+    // User select requires USER PIN, safe revert
     el("userSelect").addEventListener("change", async ()=>{
-  const sel = el("userSelect");
-  const requestedId = sel.value;
+      const sel = el("userSelect");
+      const requestedId = sel.value;
 
-  // ΓΥΡΝΑ ΤΟ ΑΜΕΣΑ ΠΙΣΩ (ώστε να μη "περνάει" λάθος αλλαγή)
-  sel.value = lastUserId;
+      sel.value = lastUserId;
+      if(requestedId === lastUserId) return;
 
-  // Αν είναι ίδιος, τέλος
-  if(requestedId === lastUserId) return;
+      const targetUser = db.users.find(u=>u.id===requestedId);
+      if(!targetUser){
+        sel.value = lastUserId;
+        return;
+      }
 
-  const targetUser = db.users.find(u=>u.id===requestedId);
-  if(!targetUser){
-    sel.value = lastUserId;
-    return;
-  }
+      const pin = await modalPromptPin(
+        "Αλλαγή χρήστη",
+        `PIN για: ${targetUser.name}`,
+        "Βάλε τον κωδικό για να αλλάξει ο χρήστης."
+      );
 
-  const pin = await modalPromptPin(
-    "Αλλαγή χρήστη",
-    `PIN για: ${targetUser.name}`,
-    "Βάλε τον κωδικό για να αλλάξει ο χρήστης."
-  );
+      if(pin === null){
+        sel.value = lastUserId;
+        return;
+      }
 
-  // Άκυρο
-  if(pin === null){
-    sel.value = lastUserId;
-    return;
-  }
+      if(String(pin).trim() !== String(targetUser.pin).trim()){
+        await modalAlert("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ");
+        sel.value = lastUserId;
+        return;
+      }
 
-  // Λάθος PIN
-  if(String(pin).trim() !== String(targetUser.pin).trim()){
-    await modalAlert("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ");
-    sel.value = lastUserId;
-    return;
-  }
-
-  // ✅ Σωστό PIN -> τώρα και μόνο τώρα αλλάζει
-  db.currentUserId = requestedId;
-  lastUserId = requestedId;
-  sel.value = requestedId;
-  saveDB();
-  setTop();
-  render();
-});
-
+      db.currentUserId = requestedId;
+      lastUserId = requestedId;
+      sel.value = requestedId;
+      saveDB();
+      setTop();
+      render();
+    });
 
     const btnGear = el("btnGear");
     makePressable(btnGear, true);
     btnGear.addEventListener("click", ()=> gotoSettings());
+
+    // Idle loop: go home & show saver
+    setInterval(()=>{
+      const idle = Date.now() - lastActivityTs;
+
+      // if saver is shown, keep it until tap
+      if(saverShown) return;
+
+      // if not home and idle > 30s -> home
+      if(state.screen !== "home" && idle > IDLE_HOME_MS){
+        gotoHome();
+        return;
+      }
+
+      // if home and idle > saver threshold -> saver
+      if(state.screen === "home" && idle > IDLE_SAVER_MS){
+        showSaver();
+      }
+    }, 500);
 
     async function registerSW(){
       if(!("serviceWorker" in navigator)) return;
