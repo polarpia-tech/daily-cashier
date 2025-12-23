@@ -247,6 +247,8 @@
     .btn.good{ border-color: rgba(47,227,159,.35); box-shadow:0 0 0 3px rgba(47,227,159,.06) inset; }
     .btn.bad{ border-color: rgba(255,85,102,.35); box-shadow:0 0 0 3px rgba(255,85,102,.06) inset; }
     .btn.accent{ border-color: rgba(74,163,255,.35); box-shadow:0 0 0 3px rgba(74,163,255,.06) inset; }
+    .btn:disabled{ opacity:.45; }
+
     .bar.full .btn.full{ grid-column: 1 / -1; }
 
     .pill{
@@ -339,7 +341,6 @@
       </div>
 
       <select id="userSelect" title="Χρήστης"></select>
-      <!-- ✅ fixed button -->
       <button class="iconbtn pressable" id="btnGear" title="Ρυθμίσεις" aria-label="Ρυθμίσεις">⚙️</button>
     </div>
 
@@ -368,12 +369,12 @@
   </div>
 
   <script>
-    const LS_KEY = "daily_cashier_db_v5";
+    const LS_KEY = "daily_cashier_db_v6";
     const TODAY = new Date().toISOString().slice(0,10);
 
     // Idle behavior
     const IDLE_HOME_MS  = 30_000;  // 30s no touch -> go Home
-    const IDLE_SAVER_MS = 75_000;  // if idle on Home -> show saver (after 75s)
+    const IDLE_SAVER_MS = 75_000;  // idle on Home -> saver
     let lastActivityTs = Date.now();
     let saverShown = false;
 
@@ -404,7 +405,6 @@
       setTimeout(()=> elem.classList.remove("is-pressed"), 190);
     }
 
-    // No ripple + no double-fire: ONLY pointerdown
     function makePressable(elem, strong=false){
       if(!elem) return;
       elem.classList.add("pressable");
@@ -437,6 +437,7 @@
         shopName: "Το Μαγαζί μου",
         ownerPin: "9999",
         ownerEmail: "",
+        ownerWhatsApp: "", // ✅ π.χ. 491761234567 (χωρίς +)
 
         users: [
           { id:"u1", name:"Υπάλληλος 1", pin:"1111" }
@@ -447,9 +448,8 @@
           { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
           { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
         ],
-        menu: window.__MENU__ || null,
 
-        // ✅ shifts history (per day)
+        menu: null,
         days: {}
       };
     }
@@ -473,8 +473,8 @@
     }
 
     let db = loadDB() || defaultDB();
-
     if(!db.menu || !db.menu.categories){ db.menu = buildMenuIfMissing(); }
+
     if(!db.menu.products || db.menu.products.length===0){
       db.menu.products = [
         { id:"p_espresso_single", cat:"coffee_hot", name:"Espresso μονός", price:2.60 },
@@ -545,18 +545,14 @@
 
     function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
 
-    // ✅ Ensure day + shift
+    // Ensure day + shift
     function ensureDay(){
       if(!db.days[TODAY]) db.days[TODAY] = { shiftId: uid(), shifts:[], tables:{}, payments:[] };
 
-      // tables per day: items + BAR note
       for(const t of db.tables){
-        if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[], note:"" };
-        if(db.days[TODAY].tables[t.id].note === undefined) db.days[TODAY].tables[t.id].note = "";
+        if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[] };
         if(!Array.isArray(db.days[TODAY].tables[t.id].items)) db.days[TODAY].tables[t.id].items = [];
       }
-
-      // shiftId exists
       if(!db.days[TODAY].shiftId) db.days[TODAY].shiftId = uid();
       if(!Array.isArray(db.days[TODAY].shifts)) db.days[TODAY].shifts = [];
       if(!Array.isArray(db.days[TODAY].payments)) db.days[TODAY].payments = [];
@@ -685,7 +681,6 @@
       });
     }
 
-    // ✅ text prompt (no browser prompt)
     function escHtml(s){
       return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
         .replaceAll('"',"&quot;").replaceAll("'","&#39;");
@@ -744,23 +739,11 @@
     function groupUnpaid(tid){
       const map = new Map();
       for(const it of unpaidItems(tid)){
-        const k = it.prodId + "|" + it.price;
-        if(!map.has(k)) map.set(k, { prodId: it.prodId, name: it.name, price: it.price, qty:0 });
+        const k = it.prodId + "|" + it.price + "|" + (it.tag||""); // ✅ BAR: split by tag
+        if(!map.has(k)) map.set(k, { prodId: it.prodId, name: it.name, price: it.price, qty:0, tag:(it.tag||"") });
         map.get(k).qty += 1;
       }
       return [...map.values()];
-    }
-
-    function tableNote(tid){
-      const t = dayTable(tid);
-      if(t.note === undefined) t.note = "";
-      return t.note || "";
-    }
-    function setTableNote(tid, text){
-      const t = dayTable(tid);
-      t.note = String(text || "").trim();
-      saveDB();
-      render();
     }
 
     function addProductToTable(prodId){
@@ -770,19 +753,26 @@
       dayTable(tid).items.push({
         id: uid(), prodId:p.id, name:p.name, cat:p.cat, price:Number(p.price),
         ts: Date.now(), by: getUser()?.name || "", paid:null, voided:false,
-        shiftId: db.days[TODAY].shiftId
+        shiftId: db.days[TODAY].shiftId,
+        tag: "" // ✅ who is it for (BAR)
       });
       saveDB(); render();
     }
 
-    function removeOneUnit(tid, prodId){
+    function removeOneUnit(tid, prodId, tag=""){
       const items = dayTable(tid).items;
-      const idx = items.findIndex(it => it.prodId===prodId && !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId);
+      const idx = items.findIndex(it =>
+        it.prodId===prodId && (it.tag||"")===(tag||"") &&
+        !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId
+      );
       if(idx>=0){ items.splice(idx,1); saveDB(); render(); }
     }
 
-    function findOneUnpaid(tid, prodId){
-      return dayTable(tid).items.find(it => it.prodId===prodId && !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId) || null;
+    function findOneUnpaid(tid, prodId, tag=""){
+      return dayTable(tid).items.find(it =>
+        it.prodId===prodId && (it.tag||"")===(tag||"") &&
+        !it.paid && !it.voided && it.shiftId === db.days[TODAY].shiftId
+      ) || null;
     }
 
     function setBottomButtons(btns, fullMode=false){
@@ -795,8 +785,12 @@
         const btn = document.createElement("button");
         btn.className = "btn pressable " + (b.kind||"") + (b.full ? " full" : "");
         btn.textContent = b.text;
+        if(b.disabled){
+          btn.disabled = true;
+        }
         makePressable(btn, true);
         btn.addEventListener("click", ()=>{
+          if(btn.disabled) return;
           pressFlash(btn);
           hapticStrong();
           b.onClick();
@@ -805,8 +799,8 @@
       }
     }
 
-    async function markTreatOne(tid, prodId){
-      const it = findOneUnpaid(tid, prodId);
+    async function markTreatOne(tid, prodId, tag=""){
+      const it = findOneUnpaid(tid, prodId, tag);
       if(!it) return;
       const ok = await modalConfirm("Κερασμένο", `Να γίνει κερασμένο 1 τεμ. “${it.name}”;`, "Ναι", "Άκυρο");
       if(!ok) return;
@@ -815,7 +809,8 @@
       it.paid = { method:"treat", ts, by:u };
       db.days[TODAY].payments.push({
         id:uid(), shiftId: db.days[TODAY].shiftId,
-        tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method:"treat", ts, by:u
+        tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method:"treat", ts, by:u,
+        tag: it.tag || ""
       });
       saveDB(); render();
     }
@@ -829,14 +824,15 @@
         it.paid = { method, ts, by:u };
         db.days[TODAY].payments.push({
           id:uid(), shiftId: db.days[TODAY].shiftId,
-          tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method, ts, by:u
+          tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method, ts, by:u,
+          tag: it.tag || ""
         });
       }
       saveDB();
       gotoHome();
     }
 
-    // owner gate
+    // owner gate (for settings only)
     async function requireOwner(){
       const pin = await modalPromptPin("Owner πρόσβαση", "Βάλε Owner PIN", "Μόνο ο ιδιοκτήτης αλλάζει ρυθμίσεις.");
       if(pin===null) return false;
@@ -902,7 +898,7 @@
 
     function csvForShift(){
       const pay = shiftPayments();
-      const rows = [["date","time","shiftId","table","product","price","method","user"].join(",")];
+      const rows = [["date","time","shiftId","table","product","tag","price","method","user"].join(",")];
       for(const p of pay){
         const d = new Date(p.ts);
         rows.push([
@@ -911,6 +907,7 @@
           p.shiftId,
           p.tableId,
           `"${String(p.name).replaceAll('"','""')}"`,
+          `"${String(p.tag||"").replaceAll('"','""')}"`,
           Number(p.price).toFixed(2),
           p.method,
           `"${String(p.by||"").replaceAll('"','""')}"`
@@ -921,32 +918,42 @@
 
     async function sendShiftToOwner(){
       const totals = computeShiftTotals();
+      if(totals.all <= 0.00001) return;
+
       const text = shiftReportText(totals);
       const csv = csvForShift();
 
-      // Try Web Share with file
+      // 1) Web Share (choose WhatsApp/Email)
       try{
         const file = new File([csv], `shift_${TODAY}_${db.days[TODAY].shiftId}.csv`, {type:"text/csv"});
-        if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-          await navigator.share({
-            title: `Ταμείο βάρδιας • ${db.shopName || ""}`,
-            text,
-            files:[file]
-          });
+        if(navigator.share){
+          const payload = { title:`Ταμείο βάρδιας • ${db.shopName || ""}`, text };
+          if(navigator.canShare && navigator.canShare({files:[file]})){
+            payload.files = [file];
+          }
+          await navigator.share(payload);
           return;
         }
       }catch(e){}
 
-      // Fallback: mailto
+      // 2) WhatsApp direct
+      const wa = (db.ownerWhatsApp || "").trim();
+      if(wa){
+        const waText = encodeURIComponent(text + "\n\n" + csv);
+        window.location.href = `https://wa.me/${encodeURIComponent(wa)}?text=${waText}`;
+        return;
+      }
+
+      // 3) Email fallback
       const to = (db.ownerEmail || "").trim();
       const subj = encodeURIComponent(`Ταμείο βάρδιας • ${db.shopName || ""} • ${TODAY}`);
       const body = encodeURIComponent(text + "\n\nCSV:\n" + csv);
-      const mailto = `mailto:${encodeURIComponent(to)}?subject=${subj}&body=${body}`;
-      window.location.href = mailto;
+      window.location.href = `mailto:${encodeURIComponent(to)}?subject=${subj}&body=${body}`;
     }
 
     async function closeShift(){
       const totals = computeShiftTotals();
+
       const ok = await modalConfirm(
         "Κλείσιμο βάρδιας",
         `Να κλείσει η βάρδια;\n\nΣύνολο: ${euro(totals.all)}\nΜετρητά: ${euro(totals.cash)}\nΚάρτα: ${euro(totals.card)}\nΚερασμένα: ${euro(totals.treat)}`,
@@ -967,10 +974,9 @@
       db.days[TODAY].shiftId = uid();
       db.days[TODAY].payments = []; // reset payments for next shift
 
-      // Clear tables: items + notes for new shift
+      // Clear tables for new shift
       for(const t of db.tables){
         db.days[TODAY].tables[t.id].items = [];
-        db.days[TODAY].tables[t.id].note = "";
       }
 
       saveDB();
@@ -995,17 +1001,13 @@
             const total = tableTotal(t.id);
             const count = unpaidItems(t.id).length;
             const open = total>0;
-            const note = (t.id==="BAR") ? tableNote("BAR") : "";
             return `
               <button class="tbtn pressable" data-tid="${t.id}">
                 <div class="title">
                   <span class="led ${open ? "open" : ""}"></span>
-                  ${t.label}
+                  ${escHtml(t.label)}
                 </div>
-                <div class="sub">${
-                  open ? ("Υπόλοιπο: " + euro(total)) :
-                  (t.id==="BAR" && note ? ("Σημείωση: " + escHtml(note)) : "—")
-                }</div>
+                <div class="sub">${open ? ("Υπόλοιπο: " + euro(total)) : "—"}</div>
                 <div class="badge">${count}</div>
               </button>
             `;
@@ -1030,26 +1032,12 @@
       const t = db.tables.find(x=>x.id===tid);
       const groups = groupUnpaid(tid);
       const total = tableTotal(tid);
-      const isBar = (tid === "BAR");
-      const note = isBar ? tableNote("BAR") : "";
 
       view.innerHTML = `
         <div class="card">
-          <div class="h">Τραπέζι: ${t?.label || tid}</div>
+          <div class="h">Τραπέζι: ${escHtml(t?.label || tid)}</div>
           <div class="muted">Υπόλοιπο: <b>${euro(total)}</b></div>
-
-          ${isBar ? `
-            <div style="margin-top:10px;">
-              <div class="muted2">Σημείωση BAR:</div>
-              <div class="row space" style="margin-top:6px; gap:10px;">
-                <div class="muted" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                  ${note ? escHtml(note) : "—"}
-                </div>
-                <button class="qbtn pressable" id="btnBarNote" title="Σημείωση">✍️</button>
-              </div>
-              <div class="hint">π.χ. “φαλακρός”, “κόκκινη μπλούζα”, “αδύνατος”.</div>
-            </div>
-          ` : ""}
+          ${tid==="BAR" ? `<div class="hint">Στο BAR, κάθε προϊόν παίρνει “σε ποιον” (π.χ. φαλακρός/χοντρός).</div>` : ``}
         </div>
 
         <div class="card">
@@ -1059,13 +1047,13 @@
               ${groups.map(g=>`
                 <div class="li">
                   <div class="left">
-                    <div class="name">${escHtml(g.name)}</div>
+                    <div class="name">${escHtml(g.name)}${g.tag ? ` <span class="muted2">(${escHtml(g.tag)})</span>` : ``}</div>
                     <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
                   </div>
                   <div class="qty">
-                    <button class="qbtn pressable" data-minus="${g.prodId}">−</button>
+                    <button class="qbtn pressable" data-minus="${g.prodId}" data-tag="${escHtml(g.tag||"")}">−</button>
                     <div class="qnum">${g.qty}</div>
-                    <button class="qbtn pressable" data-plus="${g.prodId}">+</button>
+                    <button class="qbtn pressable" data-plus="${g.prodId}" data-tag="${escHtml(g.tag||"")}">+</button>
                   </div>
                 </div>
               `).join("")}
@@ -1076,29 +1064,27 @@
 
       view.querySelectorAll("[data-minus]").forEach(b=>{
         makePressable(b, true);
-        b.addEventListener("click", ()=> removeOneUnit(tid, b.getAttribute("data-minus")));
-      });
-      view.querySelectorAll("[data-plus]").forEach(b=>{
-        makePressable(b, true);
-        b.addEventListener("click", ()=> addProductToTable(b.getAttribute("data-plus")));
+        b.addEventListener("click", ()=>{
+          const tag = b.getAttribute("data-tag") || "";
+          removeOneUnit(tid, b.getAttribute("data-minus"), tag);
+        });
       });
 
-      if(isBar){
-        const b = document.getElementById("btnBarNote");
-        if(b){
-          makePressable(b, true);
-          b.addEventListener("click", async ()=>{
-            const text = await modalPromptText(
-              "Σημείωση BAR",
-              "Γράψε αναφορά για την παρέα:",
-              tableNote("BAR"),
-              "Ισχύει για σήμερα."
-            );
-            if(text === null) return;
-            setTableNote("BAR", text);
-          });
-        }
-      }
+      view.querySelectorAll("[data-plus]").forEach(b=>{
+        makePressable(b, true);
+        b.addEventListener("click", async ()=>{
+          const pid = b.getAttribute("data-plus");
+          const tag = b.getAttribute("data-tag") || "";
+          // + μέσα από table screen: προσθέτει ίδιο tag group
+          addProductToTable(pid);
+          const items = dayTable(tid).items;
+          const last = items[items.length - 1];
+          if(last && last.prodId===pid && last.shiftId===db.days[TODAY].shiftId && !last.paid && !last.voided){
+            last.tag = String(tag||"").trim();
+            saveDB(); render();
+          }
+        });
+      });
 
       setBottomButtons([
         { text:"← Πίσω", kind:"", onClick: ()=> gotoHome() },
@@ -1116,8 +1102,9 @@
 
       view.innerHTML = `
         <div class="card">
-          <div class="h">+ Προϊόν • ${t?.label || tid}</div>
+          <div class="h">+ Προϊόν • ${escHtml(t?.label || tid)}</div>
           <div class="muted">Υπόλοιπο: <b>${euro(tableTotal(tid))}</b></div>
+          ${tid==="BAR" ? `<div class="hint">Στο BAR θα σε ρωτήσει “σε ποιον” κάθε φορά.</div>` : ``}
         </div>
 
         <div class="card">
@@ -1151,15 +1138,37 @@
         makePressable(b, true);
         b.addEventListener("click", ()=>{ state.categoryId=b.getAttribute("data-cat"); render(); });
       });
+
       view.querySelectorAll("[data-add]").forEach(li=>{
         makePressable(li, true);
-        li.addEventListener("click", ()=> addProductToTable(li.getAttribute("data-add")));
+        li.addEventListener("click", async ()=>{
+          const pid = li.getAttribute("data-add");
+
+          if(state.tableId === "BAR"){
+            const tag = await modalPromptText(
+              "BAR • Σε ποιον;",
+              "Γράψε αναφορά (π.χ. χοντρός / φαλακρός / κόκκινη μπλούζα):",
+              "",
+              "Άφησε κενό αν δεν χρειάζεται."
+            );
+            if(tag === null) return; // cancel
+            addProductToTable(pid);
+            const items = dayTable("BAR").items;
+            const last = items[items.length - 1];
+            if(last && last.prodId===pid && last.shiftId===db.days[TODAY].shiftId && !last.paid && !last.voided){
+              last.tag = String(tag||"").trim();
+              saveDB(); render();
+            }
+          }else{
+            addProductToTable(pid);
+          }
+        });
       });
 
+      // ✅ No PAYMENT button in categories/products screen
       setBottomButtons([
-        { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) },
-        { text:"ΠΛΗΡΩΜΗ", kind:"good", full:true, onClick: ()=> gotoPay(tid) }
-      ], true);
+        { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) }
+      ]);
     }
 
     function renderPay(){
@@ -1170,7 +1179,7 @@
 
       view.innerHTML = `
         <div class="card">
-          <div class="h">Πληρωμή • ${t?.label || tid}</div>
+          <div class="h">Πληρωμή • ${escHtml(t?.label || tid)}</div>
           <div class="muted">Υπόλοιπο: <b>${euro(total)}</b></div>
           <div class="row" style="margin-top:10px;">
             <button class="btn pressable good" style="flex:1;" id="payCash">Μετρητά</button>
@@ -1186,11 +1195,11 @@
               ${groups.map(g=>`
                 <div class="li">
                   <div class="left">
-                    <div class="name">${escHtml(g.name)}</div>
+                    <div class="name">${escHtml(g.name)}${g.tag ? ` <span class="muted2">(${escHtml(g.tag)})</span>` : ``}</div>
                     <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
                   </div>
                   <div class="qty">
-                    <button class="qbtn pressable" title="Κερασμένο 1 τεμ." data-treat="${g.prodId}">🎁</button>
+                    <button class="qbtn pressable" title="Κερασμένο 1 τεμ." data-treat="${g.prodId}" data-tag="${escHtml(g.tag||"")}">🎁</button>
                   </div>
                 </div>
               `).join("")}
@@ -1208,7 +1217,10 @@
 
       view.querySelectorAll("[data-treat]").forEach(b=>{
         makePressable(b, true);
-        b.addEventListener("click", ()=> markTreatOne(tid, b.getAttribute("data-treat")));
+        b.addEventListener("click", ()=>{
+          const tag = b.getAttribute("data-tag") || "";
+          markTreatOne(tid, b.getAttribute("data-treat"), tag);
+        });
       });
 
       setBottomButtons([
@@ -1219,11 +1231,12 @@
     function renderSummary(){
       const totals = computeShiftTotals();
       const pay = shiftPayments();
+      const canSend = totals.all > 0.00001;
 
       view.innerHTML = `
         <div class="card">
           <div class="h">Σύνοψη • ${TODAY}</div>
-          <div class="muted2">Shift: <b>${db.days[TODAY].shiftId}</b></div>
+          <div class="muted2">Shift: <b>${escHtml(db.days[TODAY].shiftId)}</b></div>
           <div>
             <span class="pill">Σύνολο: <b>${euro(totals.all)}</b></span>
             <span class="pill">Μετρητά: <b>${euro(totals.cash)}</b></span>
@@ -1232,7 +1245,7 @@
           </div>
 
           <div class="row" style="margin-top:12px;">
-            <button class="btn pressable" style="flex:1;" id="btnSendOwner">Αποστολή ιδιοκτήτη</button>
+            <button class="btn pressable" style="flex:1;" id="btnSendOwner" ${canSend ? "" : "disabled"}>Αποστολή ιδιοκτήτη</button>
             <button class="btn pressable bad" style="flex:1;" id="btnCloseShift">Κλείσιμο βάρδιας</button>
           </div>
           <div class="hint">Το “Κλείσιμο βάρδιας” μηδενίζει τα πάντα και ανοίγει νέα βάρδια.</div>
@@ -1244,7 +1257,7 @@
             ${pay.slice().reverse().map(p=>`
               <div class="li">
                 <div class="left">
-                  <div class="name">${escHtml(p.name)}</div>
+                  <div class="name">${escHtml(p.name)}${p.tag ? ` <span class="muted2">(${escHtml(p.tag)})</span>` : ``}</div>
                   <div class="meta">${escHtml(p.tableId)} • ${String(p.method).toUpperCase()} • ${new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})} • ${escHtml(p.by)}</div>
                 </div>
                 <div class="price">${euro(p.price)}</div>
@@ -1260,13 +1273,19 @@
       makePressable(btnCloseShift, true);
 
       btnSendOwner.addEventListener("click", async ()=>{
-        // Owner email is optional; share works anyway
+        if(!canSend) return;
         await sendShiftToOwner();
       });
 
       btnCloseShift.addEventListener("click", async ()=>{
-        // για ασφάλεια: ζητάμε Owner PIN
-        if(!(await requireOwner())) return;
+        // ✅ server/waiter PIN required (not owner)
+        const u = getUser();
+        const pin = await modalPromptPin("Κλείσιμο βάρδιας", `PIN για: ${u?.name || ""}`, "Βάλε τον κωδικό σου για κλείσιμο βάρδιας.");
+        if(pin === null) return;
+        if(String(pin).trim() !== String(u?.pin || "").trim()){
+          await modalAlert("Λάθος PIN", "Δεν είναι σωστός ο κωδικός.", "ΟΚ");
+          return;
+        }
         await closeShift();
       });
 
@@ -1298,6 +1317,7 @@
 
         <div class="card">
           <div class="h">Ιδιοκτήτης</div>
+
           <div class="row space">
             <div class="muted">Email ιδιοκτήτη</div>
             <div><b>${escHtml(db.ownerEmail || "—")}</b></div>
@@ -1305,6 +1325,16 @@
           <div style="margin-top:10px;">
             <button class="btn pressable accent" id="btnOwnerEmail">Αλλαγή email (Owner)</button>
           </div>
+
+          <div class="row space" style="margin-top:12px;">
+            <div class="muted">WhatsApp (νούμερο)</div>
+            <div><b>${escHtml(db.ownerWhatsApp || "—")}</b></div>
+          </div>
+          <div style="margin-top:10px;">
+            <button class="btn pressable accent" id="btnOwnerWA">Αλλαγή WhatsApp (Owner)</button>
+          </div>
+
+          <div class="hint">WhatsApp: βάλε π.χ. 49176xxxxxxx (χωρίς +).</div>
         </div>
 
         <div class="card">
@@ -1341,10 +1371,11 @@
 
       const btnChangeShop = document.getElementById("btnChangeShop");
       const btnOwnerEmail = document.getElementById("btnOwnerEmail");
+      const btnOwnerWA = document.getElementById("btnOwnerWA");
       const btnAddUser = document.getElementById("btnAddUser");
       const btnChangeOwner = document.getElementById("btnChangeOwner");
 
-      [btnChangeShop, btnOwnerEmail, btnAddUser, btnChangeOwner].forEach(b=> makePressable(b, true));
+      [btnChangeShop, btnOwnerEmail, btnOwnerWA, btnAddUser, btnChangeOwner].forEach(b=> makePressable(b, true));
 
       btnChangeShop.addEventListener("click", async ()=>{
         if(!(await requireOwner())) return;
@@ -1361,6 +1392,15 @@
         const em = await modalPromptText("Email ιδιοκτήτη", "Βάλε email (προαιρετικό):", db.ownerEmail || "", "Χρησιμοποιείται στο mailto fallback.");
         if(em === null) return;
         db.ownerEmail = String(em).trim();
+        saveDB();
+        render();
+      });
+
+      btnOwnerWA.addEventListener("click", async ()=>{
+        if(!(await requireOwner())) return;
+        const wa = await modalPromptText("WhatsApp ιδιοκτήτη", "Βάλε αριθμό (χωρίς +):", db.ownerWhatsApp || "", "Π.χ. 491761234567");
+        if(wa === null) return;
+        db.ownerWhatsApp = String(wa).replaceAll(/\s+/g,"").replaceAll("+","").trim();
         saveDB();
         render();
       });
@@ -1434,6 +1474,11 @@
     }
 
     function exportCSV(){
+      const totals = computeShiftTotals();
+      if(totals.all <= 0.00001){
+        modalAlert("Δεν υπάρχει ταμείο", "Δεν υπάρχουν ποσά για αυτή τη βάρδια.", "ΟΚ");
+        return;
+      }
       const csv = csvForShift();
       const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
       const url = URL.createObjectURL(blob);
@@ -1502,17 +1547,12 @@
     // Idle loop: go home & show saver
     setInterval(()=>{
       const idle = Date.now() - lastActivityTs;
-
-      // if saver is shown, keep it until tap
       if(saverShown) return;
 
-      // if not home and idle > 30s -> home
       if(state.screen !== "home" && idle > IDLE_HOME_MS){
         gotoHome();
         return;
       }
-
-      // if home and idle > saver threshold -> saver
       if(state.screen === "home" && idle > IDLE_SAVER_MS){
         showSaver();
       }
