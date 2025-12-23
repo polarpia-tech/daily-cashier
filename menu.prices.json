@@ -3,17 +3,17 @@
   "currency": "EUR",
   "locale": "el-GR",
   "categories": [
-    { "id": "aperitif", "name": "Aperitifs" },
-    { "id": "soft", "name": "Soft Drinks" },
-    { "id": "juice", "name": "Juices" },
-    { "id": "beer", "name": "Ayinger Biere" },
-    { "id": "rum", "name": "Rum" },
-    { "id": "shots", "name": "Shot’s" },
-    { "id": "coffee_hot", "name": "Coffee & Tea" },
-    { "id": "spirit", "name": "Spirituosen & Digestive" },
-    { "id": "cocktail", "name": "Longdrinks" },
-    { "id": "wine", "name": "Offene griechische Weine" }
-  ],
+  { "id": "aperitif", "name": "Aperitifs", "emoji": "🍸" },
+  { "id": "soft", "name": "Soft Drinks", "emoji": "🥤" },
+  { "id": "juice", "name": "Juices", "emoji": "🧃" },
+  { "id": "beer", "name": "Ayinger Biere", "emoji": "🍺" },
+  { "id": "rum", "name": "Rum", "emoji": "🥃" },
+  { "id": "shots", "name": "Shot’s", "emoji": "🎯" },
+  { "id": "coffee_hot", "name": "Coffee & Tea", "emoji": "☕" },
+  { "id": "spirit", "name": "Spirituosen & Digestive", "emoji": "🥃" },
+  { "id": "cocktail", "name": "Longdrinks", "emoji": "🍹" },
+  { "id": "wine", "name": "Offene griechische Weine", "emoji": "🍷" }
+],
   "products": [
     { "id": "aperol", "cat": "aperitif", "name": "Aperol Spritz (0,2 l)", "price": 6.50 },
     { "id": "tsipouro", "cat": "spirit", "name": "Tsipouro (5 cl)", "price": 5.00 },
