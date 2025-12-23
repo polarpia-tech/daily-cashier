@@ -320,7 +320,7 @@
       </div>
 
       <select id="userSelect" title="Χρήστης"></select>
-      <button class="iconbtn pressable" id="btnGear" title="Ρυθμίσεις">⚙️</button>
+      <button class="iconbtn pressable" id="btnGear" title="Ρυθμίσεις"⚙️</button>
     </div>
 
     <div class="content">
@@ -1143,40 +1143,49 @@
 
     // ✅ Top interactions: user select requires USER PIN, safe revert
     el("userSelect").addEventListener("change", async ()=>{
-      const sel = el("userSelect");
-      const targetId = sel.value;
+  const sel = el("userSelect");
+  const requestedId = sel.value;
 
-      if(targetId === lastUserId) return;
+  // ΓΥΡΝΑ ΤΟ ΑΜΕΣΑ ΠΙΣΩ (ώστε να μη "περνάει" λάθος αλλαγή)
+  sel.value = lastUserId;
 
-      const targetUser = db.users.find(u=>u.id===targetId);
-      if(!targetUser){
-        sel.value = lastUserId;
-        return;
-      }
+  // Αν είναι ίδιος, τέλος
+  if(requestedId === lastUserId) return;
 
-      const pin = await modalPromptPin(
-        "Αλλαγή χρήστη",
-        `PIN για: ${targetUser.name}`,
-        "Βάλε τον κωδικό για να αλλάξει ο χρήστης."
-      );
+  const targetUser = db.users.find(u=>u.id===requestedId);
+  if(!targetUser){
+    sel.value = lastUserId;
+    return;
+  }
 
-      if(pin === null){
-        sel.value = lastUserId;
-        return;
-      }
+  const pin = await modalPromptPin(
+    "Αλλαγή χρήστη",
+    `PIN για: ${targetUser.name}`,
+    "Βάλε τον κωδικό για να αλλάξει ο χρήστης."
+  );
 
-      if(String(pin).trim() !== String(targetUser.pin).trim()){
-        await modalAlert("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ");
-        sel.value = lastUserId;
-        return;
-      }
+  // Άκυρο
+  if(pin === null){
+    sel.value = lastUserId;
+    return;
+  }
 
-      db.currentUserId = targetId;
-      lastUserId = targetId;
-      saveDB();
-      setTop();
-      render();
-    });
+  // Λάθος PIN
+  if(String(pin).trim() !== String(targetUser.pin).trim()){
+    await modalAlert("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ");
+    sel.value = lastUserId;
+    return;
+  }
+
+  // ✅ Σωστό PIN -> τώρα και μόνο τώρα αλλάζει
+  db.currentUserId = requestedId;
+  lastUserId = requestedId;
+  sel.value = requestedId;
+  saveDB();
+  setTop();
+  render();
+});
+
 
     const btnGear = el("btnGear");
     makePressable(btnGear, true);
