@@ -395,9 +395,7 @@
     .toast.info{ border-color: rgba(74,163,255,.26); }
     .toast.info .ticon{ background: rgba(74,163,255,.10); border-color: rgba(74,163,255,.18); }
 
-    /* =========================
-       ✅ PRINT / PDF SHEET
-       ========================= */
+    /* PRINT / PDF SHEET */
     @media print {
       body { background: #fff !important; }
       .app, .bottom, .modalBack, .toastWrap, .saver { display:none !important; }
@@ -484,21 +482,90 @@
     </div>
   </div>
 
-  <!-- ✅ PRINT SHEET FOR PDF -->
   <div id="printSheet"></div>
 
   <script>
-    const LS_KEY = "daily_cashier_db_v7";
-    const TODAY = new Date().toISOString().slice(0,10);
+    /* ============================================================
+       ✅ STORAGE THAT DOES NOT "RESET" WITH CODE CHANGES / REFRESH
+       - Stable storage key forever
+       - Auto-migrate old keys (v1..v99)
+       - Schema versioning + safe migration
+       ============================================================ */
 
-    // Idle behavior
-    const IDLE_HOME_MS  = 30_000;  // 30s no touch -> go Home
-    const IDLE_SAVER_MS = 75_000;  // idle on Home -> saver
-    let lastActivityTs = Date.now();
-    let saverShown = false;
+    const LS_KEY_STABLE = "daily_cashier_db";   // ΜΗΝ το αλλάξεις ποτέ ξανά
+    const SCHEMA_VERSION = 7;
+
+    const LEGACY_KEY_PREFIXES = [
+      "daily_cashier_db_v",
+      "daily_cashier_db_",
+      "daily_cashier_db"
+    ];
+
+    function safeParse(raw){
+      try{ return JSON.parse(raw); }catch(e){ return null; }
+    }
+
+    // Find the "best" legacy key (highest version) if stable not present
+    function findLegacyDB(){
+      let best = null; // {key, ver, obj}
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(!k) continue;
+        const ok = LEGACY_KEY_PREFIXES.some(p=>k.startsWith(p));
+        if(!ok) continue;
+
+        const raw = localStorage.getItem(k);
+        if(!raw) continue;
+
+        const obj = safeParse(raw);
+        if(!obj || typeof obj !== "object") continue;
+
+        // version extracted from "..._v7" etc. else 0
+        let ver = 0;
+        const m = k.match(/_v(\d+)$/);
+        if(m) ver = Number(m[1] || 0);
+
+        // Prefer stable exact key if exists (handled elsewhere)
+        if(!best || ver > best.ver){
+          best = { key:k, ver, obj };
+        }
+      }
+      return best;
+    }
+
+    function loadDBPersistent(){
+      const stableRaw = localStorage.getItem(LS_KEY_STABLE);
+      if(stableRaw){
+        const obj = safeParse(stableRaw);
+        if(obj && typeof obj === "object") return obj;
+      }
+
+      const legacy = findLegacyDB();
+      if(legacy && legacy.obj){
+        // ✅ migrate legacy -> stable (one-time)
+        localStorage.setItem(LS_KEY_STABLE, JSON.stringify(legacy.obj));
+        return legacy.obj;
+      }
+      return null;
+    }
+
+    function saveDBPersistent(db){
+      localStorage.setItem(LS_KEY_STABLE, JSON.stringify(db));
+    }
+
+    // Note: cannot keep data if user clears browser storage. But:
+    // ✅ refresh / code changes / SW updates won't reset anymore.
+
+    const TODAY = new Date().toISOString().slice(0,10);
 
     // Toast
     let toastTimer = null;
+
+    // Idle behavior
+    const IDLE_HOME_MS  = 30_000;
+    const IDLE_SAVER_MS = 75_000;
+    let lastActivityTs = Date.now();
+    let saverShown = false;
 
     const el = (id) => document.getElementById(id);
     const view = el("view");
@@ -567,13 +634,10 @@
     }
     function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
 
-    function loadDB(){
-      try{ const raw = localStorage.getItem(LS_KEY); if(raw) return JSON.parse(raw); }catch(e){}
-      return null;
-    }
-
+    // Default DB (only used if nothing exists)
     function defaultDB(){
       return {
+        schemaVersion: SCHEMA_VERSION,
         shopName: "Το Μαγαζί μου",
         ownerPin: "9999",
         ownerEmail: "",
@@ -584,7 +648,7 @@
           { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
           { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
         ],
-        menu: null,
+        menu: buildMenuIfMissing(),
         days: {}
       };
     }
@@ -607,9 +671,54 @@
       return { categories, products: [] };
     }
 
-    let db = loadDB() || defaultDB();
-    if(!db.menu || !db.menu.categories){ db.menu = buildMenuIfMissing(); }
+    // ✅ MIGRATION: make old db safe with new code
+    function migrateDB(db){
+      if(!db || typeof db !== "object") return db;
 
+      const v = Number(db.schemaVersion || 1);
+
+      // Ensure base fields
+      if(!db.shopName) db.shopName = "Το Μαγαζί μου";
+      if(!db.ownerPin) db.ownerPin = "9999";
+      if(typeof db.ownerEmail !== "string") db.ownerEmail = "";
+      if(typeof db.ownerWhatsApp !== "string") db.ownerWhatsApp = "";
+
+      if(!Array.isArray(db.users) || db.users.length===0){
+        db.users = [{ id:"u1", name:"Υπάλληλος 1", pin:"1111" }];
+      }
+      if(!db.currentUserId) db.currentUserId = db.users[0].id;
+
+      if(!Array.isArray(db.tables) || db.tables.length===0){
+        db.tables = [
+          { id:"T1",  label:"T1" }, { id:"T2",  label:"T2" }, { id:"T3",  label:"T3" }, { id:"T4",  label:"T4" },
+          { id:"T5",  label:"T5" }, { id:"T6",  label:"T6" }, { id:"BAR", label:"BAR" }, { id:"OUT", label:"ΕΞΩ" }
+        ];
+      }
+      if(!db.menu || !db.menu.categories) db.menu = buildMenuIfMissing();
+      if(!Array.isArray(db.menu.products)) db.menu.products = [];
+
+      if(!db.days || typeof db.days !== "object") db.days = {};
+
+      // v < 7: ensure shift structure exists
+      if(v < 7){
+        for(const dayKey of Object.keys(db.days)){
+          const d = db.days[dayKey];
+          if(!d || typeof d !== "object") continue;
+          if(!d.shiftId) d.shiftId = uid();
+          if(!Array.isArray(d.shifts)) d.shifts = [];
+          if(!Array.isArray(d.payments)) d.payments = [];
+          if(!d.tables) d.tables = {};
+        }
+      }
+
+      db.schemaVersion = SCHEMA_VERSION;
+      return db;
+    }
+
+    // ✅ Load + migrate + save once
+    let db = migrateDB(loadDBPersistent()) || defaultDB();
+
+    // Fill menu products if empty (same as before)
     if(!db.menu.products || db.menu.products.length===0){
       db.menu.products = [
         { id:"p_espresso_single", cat:"coffee_hot", name:"Espresso μονός", price:2.60 },
@@ -678,9 +787,11 @@
       ];
     }
 
-    function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+    // ✅ Save immediately so stable key is populated
+    saveDBPersistent(db);
 
-    // Ensure day + shift
+    function saveDB(){ saveDBPersistent(db); }
+
     function ensureDay(){
       if(!db.days[TODAY]) db.days[TODAY] = { shiftId: uid(), shifts:[], tables:{}, payments:[] };
       for(const t of db.tables){
@@ -723,7 +834,6 @@
       lastUserId = db.currentUserId;
     }
 
-    // modal helpers
     function closeModal(){
       modalBack.style.display = "none";
       modalTitle.textContent = "";
@@ -969,7 +1079,6 @@
       gotoHome();
     }
 
-    // owner gate (for settings only)
     async function requireOwner(){
       const pin = await modalPromptPin("Owner πρόσβαση", "Βάλε Owner PIN", "Μόνο ο ιδιοκτήτης αλλάζει ρυθμίσεις.");
       if(pin===null) return false;
@@ -1116,7 +1225,6 @@
         showToast("info","Βάρδια έκλεισε","Χωρίς ποσά, δεν στάλθηκε ταμείο.");
       }
 
-      // Store shift record in history
       db.days[TODAY].shifts.push({
         id: db.days[TODAY].shiftId,
         closedAt: Date.now(),
@@ -1124,11 +1232,9 @@
         totals
       });
 
-      // Reset for next shift
       db.days[TODAY].shiftId = uid();
       db.days[TODAY].payments = [];
 
-      // Clear tables for new shift
       for(const t of db.tables){
         db.days[TODAY].tables[t.id].items = [];
       }
@@ -1138,9 +1244,6 @@
       showToast("ok","Έγινε ✅","Η βάρδια έκλεισε και άνοιξε νέα βάρδια.");
     }
 
-    /* =========================
-       ✅ PDF EXPORT (via print)
-       ========================= */
     function exportPDFShift(){
       const totals = computeShiftTotals();
       if(totals.all <= 0.00001){
@@ -1208,7 +1311,6 @@
       setTimeout(()=> window.print(), 250);
     }
 
-    // screens
     function renderHome(){
       view.innerHTML = `
         <div style="
@@ -1519,7 +1621,6 @@
         await closeShift();
       });
 
-      // ✅ PDF Button here (instead of CSV)
       setBottomButtons([
         { text:"← Home", kind:"", onClick: ()=> gotoHome() },
         { text:"PDF Βάρδιας", kind:"accent", disabled: !canSend, onClick: ()=> exportPDFShift() }
