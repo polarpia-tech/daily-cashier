@@ -1140,11 +1140,41 @@
     }
 
     // Top interactions
-    el("userSelect").addEventListener("change", ()=>{
-      db.currentUserId = el("userSelect").value;
-      saveDB();
-      setTop();
-    });
+    el("userSelect").addEventListener("change", async ()=>{
+  const targetId = el("userSelect").value;
+  const targetUser = db.users.find(u=>u.id===targetId);
+  if(!targetUser){
+    el("userSelect").value = lastUserId;
+    return;
+  }
+
+  const pin = await modalPromptPin(
+    "Αλλαγή χρήστη",
+    `PIN για: ${targetUser.name}`,
+    "Βάλε τον κωδικό για να αλλάξει ο χρήστης."
+  );
+
+  // Άκυρο
+  if(pin === null){
+    el("userSelect").value = lastUserId;
+    return;
+  }
+
+  // Λάθος PIN
+  if(String(pin).trim() !== String(targetUser.pin).trim()){
+    await modalConfirm("Λάθος PIN", "Ο κωδικός δεν είναι σωστός.", "ΟΚ", " ");
+    el("userSelect").value = lastUserId;
+    return;
+  }
+
+  // Σωστό PIN -> αλλάζει
+  db.currentUserId = targetId;
+  lastUserId = targetId;
+  saveDB();
+  setTop();
+  render();
+});
+
 
     const btnGear = el("btnGear");
     makePressable(btnGear, true);
