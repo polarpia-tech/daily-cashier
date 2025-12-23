@@ -1,4 +1,4 @@
-const CACHE_VERSION = "dc-cache-v2";
+const CACHE_VERSION = "dc-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -24,20 +24,23 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
+
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
-      return fetch(req).then((res) => {
-        // cache same-origin GET
-        try {
-          const url = new URL(req.url);
-          if (req.method === "GET" && url.origin === location.origin) {
-            const clone = res.clone();
-            caches.open(CACHE_VERSION).then((cache) => cache.put(req, clone));
-          }
-        } catch {}
-        return res;
-      }).catch(() => cached || new Response("Offline", { status: 503 }));
+
+      return fetch(req)
+        .then((res) => {
+          try {
+            const url = new URL(req.url);
+            if (req.method === "GET" && url.origin === location.origin) {
+              const clone = res.clone();
+              caches.open(CACHE_VERSION).then((cache) => cache.put(req, clone));
+            }
+          } catch {}
+          return res;
+        })
+        .catch(() => cached || new Response("Offline", { status: 503 }));
     })
   );
 });
