@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "currency": "EUR",
+  "locale": "el-GR",
+  "categories": [
+    { "id": "coffee_hot",  "name": "Καφέδες – Ζεστοί", "emoji": "☕" },
+    { "id": "coffee_cold", "name": "Καφέδες – Κρύοι",  "emoji": "🧊" },
+    { "id": "tea",         "name": "Τσάι – Ζεστά",     "emoji": "🫖" },
+    { "id": "choco",       "name": "Σοκολάτες / Γαλακτερά", "emoji": "🍫" },
+    { "id": "soft",        "name": "Αναψυκτικά – Νερά", "emoji": "🥤" },
+    { "id": "juice",       "name": "Χυμοί – Smoothies", "emoji": "🍊" },
+    { "id": "snack",       "name": "Σνακ – Γλυκά",      "emoji": "🥐" },
+    { "id": "beer",        "name": "Μπύρες",            "emoji": "🍺" },
+    { "id": "wine",        "name": "Κρασιά",            "emoji": "🍷" },
+    { "id": "spirit",      "name": "Ποτά",              "emoji": "🥃" },
+    { "id": "cocktail",    "name": "Κοκτέιλ",           "emoji": "🍸" },
+    { "id": "extras",      "name": "Extras",            "emoji": "➕" }
+  ],
+  "products": [
+    { "id": "p_espresso_single", "cat": "coffee_hot", "name": "Espresso μονός", "price": 2.60 },
+    { "id": "p_espresso_double", "cat": "coffee_hot", "name": "Espresso διπλός", "price": 3.20 },
+    { "id": "p_espresso_macchiato", "cat": "coffee_hot", "name": "Espresso macchiato", "price": 2.90 },
+    { "id": "p_americano", "cat": "coffee_hot", "name": "Americano", "price": 3.20 },
+    { "id": "p_cappuccino", "cat": "coffee_hot", "name": "Cappuccino", "price": 3.60 },
+    { "id": "p_cappuccino_double", "cat": "coffee_hot", "name": "Cappuccino διπλός", "price": 4.20 },
+    { "id": "p_latte_macchiato", "cat": "coffee_hot", "name": "Latte macchiato", "price": 4.20 },
+    { "id": "p_flat_white", "cat": "coffee_hot", "name": "Flat white", "price": 4.40 },
+    { "id": "p_mocha", "cat": "coffee_hot", "name": "Mocha", "price": 4.50 },
+    { "id": "p_filter", "cat": "coffee_hot", "name": "Καφές φίλτρου", "price": 3.00 },
+
+    { "id": "p_freddo_espresso", "cat": "coffee_cold", "name": "Freddo espresso", "price": 3.80 },
+    { "id": "p_freddo_cappuccino", "cat": "coffee_cold", "name": "Freddo cappuccino", "price": 4.20 },
+    { "id": "p_iced_latte", "cat": "coffee_cold", "name": "Iced latte", "price": 4.50 },
+    { "id": "p_cold_brew", "cat": "coffee_cold", "name": "Cold brew", "price": 4.80 },
+    { "id": "p_frappe", "cat": "coffee_cold", "name": "Frappe", "price": 3.50 },
+
+    { "id": "p_tea_basic", "cat": "tea", "name": "Τσάι (μαύρο/πράσινο/βότανα)", "price": 3.20 },
+    { "id": "p_tea_fruit", "cat": "tea", "name": "Τσάι φρούτων", "price": 3.50 },
+    { "id": "p_chai_latte", "cat": "tea", "name": "Chai latte", "price": 4.30 },
+
+    { "id": "p_hot_chocolate", "cat": "choco", "name": "Ζεστή σοκολάτα", "price": 4.20 },
+    { "id": "p_cold_chocolate", "cat": "choco", "name": "Κρύα σοκολάτα", "price": 4.50 },
+    { "id": "p_white_chocolate", "cat": "choco", "name": "Λευκή σοκολάτα", "price": 4.50 },
+    { "id": "p_cocoa", "cat": "choco", "name": "Κακάο", "price": 4.00 },
+
+    { "id": "p_cola", "cat": "soft", "name": "Coca-Cola / Zero / Fanta (0,33l)", "price": 3.40 },
+    { "id": "p_ice_tea", "cat": "soft", "name": "Ice Tea", "price": 3.60 },
+    { "id": "p_soda_tonic", "cat": "soft", "name": "Σόδα / Τόνικ", "price": 3.20 },
+    { "id": "p_water_033", "cat": "soft", "name": "Μεταλλικό νερό (0,33l)", "price": 2.80 },
+    { "id": "p_water_075", "cat": "soft", "name": "Μεταλλικό νερό (0,75l)", "price": 5.50 },
+
+    { "id": "p_orange_juice", "cat": "juice", "name": "Φυσικός χυμός πορτοκάλι", "price": 4.50 },
+    { "id": "p_mix_juice", "cat": "juice", "name": "Χυμός ανάμεικτος", "price": 4.80 },
+    { "id": "p_fruit_smoothie", "cat": "juice", "name": "Smoothie φρούτων", "price": 5.80 },
+    { "id": "p_milkshake", "cat": "juice", "name": "Milkshake", "price": 5.50 },
+
+    { "id": "p_croissant_plain", "cat": "snack", "name": "Κρουασάν σκέτο", "price": 2.80 },
+    { "id": "p_croissant_choco", "cat": "snack", "name": "Κρουασάν σοκολάτα", "price": 3.20 },
+    { "id": "p_muffin", "cat": "snack", "name": "Μάφιν", "price": 3.50 },
+    { "id": "p_cake_piece", "cat": "snack", "name": "Κέικ (κομμάτι)", "price": 4.20 },
+    { "id": "p_cheesecake", "cat": "snack", "name": "Cheesecake", "price": 4.80 },
+    { "id": "p_cookies", "cat": "snack", "name": "Μπισκότα", "price": 2.50 },
+    { "id": "p_toast_ham", "cat": "snack", "name": "Τοστ ζαμπόν-τυρί", "price": 4.50 },
+    { "id": "p_toast_veg", "cat": "snack", "name": "Τοστ vegetarian", "price": 4.80 },
+
+    { "id": "p_beer_draft", "cat": "beer", "name": "Μπύρα βαρελίσια (0,5l)", "price": 5.20 },
+    { "id": "p_beer_bottle", "cat": "beer", "name": "Μπύρα εμφιαλωμένη (0,33l)", "price": 4.20 },
+    { "id": "p_weissbier", "cat": "beer", "name": "Weissbier (0,5l)", "price": 5.50 },
+    { "id": "p_beer_zero", "cat": "beer", "name": "Μπύρα χωρίς αλκοόλ", "price": 4.20 },
+
+    { "id": "p_wine_glass", "cat": "wine", "name": "Κρασί ποτήρι", "price": 5.50 },
+    { "id": "p_wine_carafe", "cat": "wine", "name": "Κρασί καράφα (0,5l)", "price": 12.00 },
+    { "id": "p_wine_bottle_22", "cat": "wine", "name": "Φιάλη κρασί (22€)", "price": 22.00 },
+    { "id": "p_wine_bottle_28", "cat": "wine", "name": "Φιάλη κρασί (28€)", "price": 28.00 },
+    { "id": "p_prosecco_glass", "cat": "wine", "name": "Prosecco ποτήρι", "price": 6.50 },
+
+    { "id": "p_whisky_std", "cat": "spirit", "name": "Ουίσκι standard (4cl)", "price": 8.50 },
+    { "id": "p_whisky_premium", "cat": "spirit", "name": "Premium ουίσκι (4cl)", "price": 10.50 },
+    { "id": "p_vodka", "cat": "spirit", "name": "Βότκα (4cl)", "price": 8.00 },
+    { "id": "p_rum", "cat": "spirit", "name": "Ρούμι (4cl)", "price": 8.50 },
+    { "id": "p_gin", "cat": "spirit", "name": "Τζιν (4cl)", "price": 8.50 },
+    { "id": "p_ouzo_tsipouro", "cat": "spirit", "name": "Ούζο / Τσίπουρο (4cl)", "price": 7.50 },
+    { "id": "p_liqueur", "cat": "spirit", "name": "Λικέρ (4cl)", "price": 7.50 },
+
+    { "id": "p_mojito", "cat": "cocktail", "name": "Mojito", "price": 9.50 },
+    { "id": "p_caipirinha", "cat": "cocktail", "name": "Caipirinha", "price": 9.50 },
+    { "id": "p_margarita", "cat": "cocktail", "name": "Margarita", "price": 10.00 },
+    { "id": "p_aperol", "cat": "cocktail", "name": "Aperol Spritz", "price": 8.50 },
+    { "id": "p_gin_tonic", "cat": "cocktail", "name": "Gin Tonic", "price": 9.00 },
+    { "id": "p_negroni", "cat": "cocktail", "name": "Negroni", "price": 10.50 },
+
+    { "id": "p_extra_decaf", "cat": "extras", "name": "Decaf (+)", "price": 0.30 },
+    { "id": "p_extra_plant_milk", "cat": "extras", "name": "Φυτικό γάλα (+)", "price": 0.50 }
+  ]
+}
