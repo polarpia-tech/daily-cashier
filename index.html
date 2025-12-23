@@ -723,36 +723,47 @@
 
     // screens
     function renderHome(){
-      view.innerHTML = `
-        <div class="tables">
-          ${db.tables.map(t=>{
-            const total = tableTotal(t.id);
-            const count = unpaidItems(t.id).length;
-            const open = total>0;
-            return `
-              <button class="tbtn pressable" data-tid="${t.id}">
-                <div class="title">
-                  <span class="led ${open ? "open" : ""}"></span>
-                  ${t.label}
-                </div>
-                <div class="sub">${open ? ("Υπόλοιπο: " + euro(total)) : "—"}</div>
-                <div class="badge">${count}</div>
-              </button>
-            `;
-          }).join("")}
-        </div>
-      `;
-      view.querySelectorAll("[data-tid]").forEach(b=>{
-        makePressable(b, true);
-        b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
-      });
+  view.innerHTML = `
+    <div style="
+      text-align:center;
+      font-weight:1000;
+      letter-spacing:.2px;
+      margin: 6px 0 10px 0;
+      color: rgba(234,241,255,.92);
+      font-size: 16px;
+    ">Τραπέζια - Bar</div>
 
-      setBottomButtons([
-        { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
-        { text:"CSV", kind:"", onClick: ()=> exportCSV() },
-        { text:"Ρυθμίσεις", kind:"", onClick: ()=> gotoSettings() }
-      ]);
-    }
+    <div class="tables">
+      ${db.tables.map(t=>{
+        const total = tableTotal(t.id);
+        const count = unpaidItems(t.id).length;
+        const open = total>0;
+        return `
+          <button class="tbtn pressable" data-tid="${t.id}">
+            <div class="title">
+              <span class="led ${open ? "open" : ""}"></span>
+              ${t.label}
+            </div>
+            <div class="sub">${open ? ("Υπόλοιπο: " + euro(total)) : "—"}</div>
+            <div class="badge">${count}</div>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  view.querySelectorAll("[data-tid]").forEach(b=>{
+    makePressable(b, true);
+    b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
+  });
+
+  setBottomButtons([
+    { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
+    { text:"CSV", kind:"", onClick: ()=> exportCSV() },
+    { text:"Ρυθμίσεις", kind:"", onClick: ()=> gotoSettings() }
+  ]);
+}
+
 
     function renderTable(){
       const tid = state.tableId;
