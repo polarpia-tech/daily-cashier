@@ -2,9 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="utf-8" />
-  <!-- viewport-fit=cover βοηθάει να γεμίζει σωστά σε “full screen” -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-
   <meta name="theme-color" content="#0b0f14" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,7 +15,6 @@
     :root{
       --bg0:#070a0f;
       --bg1:#0b0f14;
-      --card:#111824;
       --line:rgba(255,255,255,.10);
       --text:#eaf1ff;
       --muted:rgba(234,241,255,.72);
@@ -47,7 +44,6 @@
       overflow:hidden;
     }
 
-    /* 100dvh για σωστό ύψος σε Android (chrome bars κλπ) */
     .app{
       height: 100dvh;
       display:flex;
@@ -56,7 +52,6 @@
       gap:10px;
     }
 
-    /* TOPBAR πιο compact + δείχνει ΟΝΟΜΑ ΜΑΓΑΖΙΟΥ */
     .topbar{
       display:flex;
       align-items:center;
@@ -131,7 +126,7 @@
       flex-direction:column;
     }
 
-    /* MAIN SCROLL AREA – fix scroll παντού */
+    /* scroll fix */
     .view{
       flex:1;
       min-height:0;
@@ -139,7 +134,7 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       touch-action: pan-y;
-      padding-bottom: calc(88px + var(--safeBottom)); /* χώρο για bottom bar */
+      padding-bottom: calc(94px + var(--safeBottom));
     }
     .view::-webkit-scrollbar{ width:0; height:0; }
 
@@ -156,7 +151,6 @@
     .muted{ color:var(--muted); }
     .muted2{ color:var(--muted2); }
     .row{ display:flex; align-items:center; gap:10px; }
-    .row.space{ justify-content:space-between; }
 
     /* tables grid */
     .tables{
@@ -168,11 +162,11 @@
       .tables{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
-    /* PRESSABLE + ΠΟΛΥ ΚΑΛΥΤΕΡΟ RIPPLE */
+    /* Press feedback + Ripple */
     .pressable{
       position:relative;
       overflow:hidden;
-      transition: transform .06s ease, filter .06s ease;
+      transition: transform .06s ease, filter .06s ease, background-color .12s ease;
       touch-action: manipulation;
       user-select:none;
       isolation:isolate;
@@ -181,6 +175,13 @@
       transform: scale(.985);
       filter: brightness(1.10);
     }
+
+    /* ΚΑΘΑΡΗ “χρωματιστή” αντίδραση στο πάτημα */
+    .pressable.is-pressed{
+      background-color: rgba(47,227,159,.18) !important; /* πράσινο “flash” */
+      border-color: rgba(47,227,159,.35) !important;
+    }
+
     .ripple{
       position:absolute;
       border-radius:50%;
@@ -188,7 +189,6 @@
       width: 20px;
       height: 20px;
       transform: translate(-50%,-50%) scale(0);
-      /* πιο “material” έντονο */
       background: rgba(255,255,255,.28);
       opacity: 1;
       animation: ripple .50s ease-out forwards;
@@ -215,7 +215,7 @@
     .tbtn .title{ font-weight:1000; font-size:18px; letter-spacing:.2px; display:flex; align-items:center; gap:8px; }
     .tbtn .sub{ color:var(--muted); font-size:13px; }
 
-    /* ΛΑΜΠΑΚΙ */
+    /* LED */
     .led{
       width:10px; height:10px; border-radius:999px;
       background: rgba(255,255,255,.14);
@@ -351,17 +351,60 @@
     .btn.bad{ border-color: rgba(255,85,102,.35); box-shadow:0 0 0 3px rgba(255,85,102,.06) inset; }
     .btn.accent{ border-color: rgba(74,163,255,.35); box-shadow:0 0 0 3px rgba(74,163,255,.06) inset; }
 
-    /* full-width button helper */
     .bar.full .btn.full{
-      grid-column: 1 / -1; /* πιάνει όλο το πλάτος */
+      grid-column: 1 / -1;
     }
 
-    button, .li, .chip, .tbtn { cursor:pointer; }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border:1px solid var(--line);
+      background: rgba(17,24,36,.40);
+      margin: 6px 6px 0 0;
+    }
+
+    /* Simple confirm modal */
+    .modalBack{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 10px;
+      padding-bottom: calc(10px + var(--safeBottom));
+      z-index:999;
+    }
+    .modal{
+      width:min(560px, 100%);
+      border-radius: 22px;
+      border:1px solid var(--line);
+      background: rgba(17,24,36,.90);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 30px 80px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+    .modal .head{
+      padding: 14px 14px 10px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      font-weight:1000;
+    }
+    .modal .body{ padding: 14px; color:var(--muted); line-height:1.4; }
+    .modal .foot{
+      padding: 12px 14px 14px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:10px;
+    }
   </style>
 </head>
 
 <body>
-  <div class="app" id="app">
+  <div class="app">
     <div class="topbar">
       <div class="brand">
         <div class="shopName" id="shopNameTop">—</div>
@@ -381,6 +424,14 @@
     <div class="bar" id="bottomBar"></div>
   </div>
 
+  <div class="modalBack" id="modalBack">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="head" id="modalTitle">Επιβεβαίωση</div>
+      <div class="body" id="modalBody">—</div>
+      <div class="foot" id="modalFoot"></div>
+    </div>
+  </div>
+
   <script>
     const LS_KEY = "daily_cashier_db_v3";
     const TODAY = new Date().toISOString().slice(0,10);
@@ -390,8 +441,19 @@
     const bottom = el("bottom");
     const bottomBar = el("bottomBar");
 
-    function haptic(ms=10){
-      try{ if(navigator.vibrate) navigator.vibrate(ms); }catch{}
+    const modalBack = el("modalBack");
+    const modalTitle = el("modalTitle");
+    const modalBody  = el("modalBody");
+    const modalFoot  = el("modalFoot");
+
+    function hapticStrong(){
+      try{
+        // πιο έντονο: μικρό pattern
+        if(navigator.vibrate) navigator.vibrate([18, 10, 18]);
+      }catch{}
+    }
+    function hapticSmall(){
+      try{ if(navigator.vibrate) navigator.vibrate(10); }catch{}
     }
 
     function addRipple(elem, x, y){
@@ -405,14 +467,23 @@
       elem.appendChild(rip);
       rip.addEventListener("animationend", ()=> rip.remove());
     }
-    function makePressable(elem, vib=10){
+
+    function pressFlash(elem){
+      elem.classList.add("is-pressed");
+      setTimeout(()=> elem.classList.remove("is-pressed"), 120);
+    }
+
+    function makePressable(elem, strong=false){
       if(!elem) return;
       elem.classList.add("pressable");
+
       const down = (ev)=>{
         const t = ev.touches?.[0];
         addRipple(elem, t?.clientX ?? ev.clientX, t?.clientY ?? ev.clientY);
-        haptic(vib);
+        pressFlash(elem);
+        strong ? hapticStrong() : hapticSmall();
       };
+
       elem.addEventListener("pointerdown", down, {passive:true});
       elem.addEventListener("touchstart", down, {passive:true});
     }
@@ -427,6 +498,7 @@
       try{ const raw = localStorage.getItem(LS_KEY); if(raw) return JSON.parse(raw); }catch(e){}
       return null;
     }
+
     function defaultDB(){
       return {
         shopName: "Το Μαγαζί μου",
@@ -533,6 +605,7 @@
     }
 
     let db = loadDB() || defaultDB();
+
     function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
 
     function ensureDay(){
@@ -541,6 +614,7 @@
         if(!db.days[TODAY].tables[t.id]) db.days[TODAY].tables[t.id] = { items:[] };
       }
     }
+
     ensureDay(); saveDB();
 
     function getUser(){ return db.users.find(u=>u.id===db.currentUserId) || db.users[0]; }
@@ -564,6 +638,40 @@
       }
     }
 
+    // Modal confirm
+    function closeModal(){
+      modalBack.style.display = "none";
+      modalTitle.textContent = "Επιβεβαίωση";
+      modalBody.textContent = "";
+      modalFoot.innerHTML = "";
+    }
+    function confirmModal(title, text, okText="Ναι", cancelText="Άκυρο"){
+      return new Promise((resolve)=>{
+        modalTitle.textContent = title;
+        modalBody.textContent = text;
+        modalFoot.innerHTML = "";
+
+        const b1 = document.createElement("button");
+        b1.className = "btn pressable";
+        b1.textContent = cancelText;
+        b1.addEventListener("click", ()=>{ closeModal(); resolve(false); });
+        makePressable(b1, true);
+
+        const b2 = document.createElement("button");
+        b2.className = "btn pressable good";
+        b2.textContent = okText;
+        b2.addEventListener("click", ()=>{ closeModal(); resolve(true); });
+        makePressable(b2, true);
+
+        modalFoot.appendChild(b1);
+        modalFoot.appendChild(b2);
+
+        modalBack.style.display = "flex";
+      });
+    }
+    modalBack.addEventListener("click", (e)=>{ if(e.target===modalBack) closeModal(); });
+
+    // state
     let state = { screen:"home", tableId:null, categoryId:null };
     function gotoHome(){ state.screen="home"; state.tableId=null; render(); }
     function gotoTable(tid){ state.screen="table"; state.tableId=tid; render(); }
@@ -602,21 +710,33 @@
       if(idx>=0){ items.splice(idx,1); saveDB(); render(); }
     }
 
+    function findOneUnpaid(tid, prodId){
+      return dayTable(tid).items.find(it => it.prodId===prodId && !it.paid && !it.voided) || null;
+    }
+
+    // bottom buttons
     function setBottomButtons(btns, fullMode=false){
       bottomBar.className = "bar" + (fullMode ? " full" : "");
       bottomBar.innerHTML = "";
       if(!btns || btns.length===0){ bottom.style.display="none"; return; }
       bottom.style.display="block";
+
       for(const b of btns){
         const btn = document.createElement("button");
         btn.className = "btn pressable " + (b.kind||"") + (b.full ? " full" : "");
         btn.textContent = b.text;
-        btn.addEventListener("click", (ev)=>{ addRipple(btn, ev.clientX, ev.clientY); haptic(12); b.onClick(); });
+        btn.addEventListener("click", (ev)=>{
+          addRipple(btn, ev.clientX, ev.clientY);
+          pressFlash(btn);
+          hapticStrong();
+          b.onClick();
+        });
         bottomBar.appendChild(btn);
-        makePressable(btn, 12);
+        makePressable(btn, true);
       }
     }
 
+    // screens
     function renderHome(){
       view.innerHTML = `
         <div class="tables">
@@ -638,14 +758,14 @@
         </div>
       `;
       view.querySelectorAll("[data-tid]").forEach(b=>{
-        makePressable(b, 12);
+        makePressable(b, true);
         b.addEventListener("click", ()=> gotoTable(b.getAttribute("data-tid")));
       });
 
       setBottomButtons([
         { text:"Σύνοψη", kind:"accent", onClick: ()=> gotoSummary() },
         { text:"CSV", kind:"", onClick: ()=> exportCSV() },
-        { text:"Ρυθμίσεις", kind:"", onClick: ()=> alert("Ρυθμίσεις: (θα το επεκτείνουμε)") }
+        { text:"Ρυθμίσεις", kind:"", onClick: ()=> alert("Επόμενο βήμα: Owner PIN / ονόματα χρηστών / λογότυπο") }
       ]);
     }
 
@@ -684,15 +804,14 @@
       `;
 
       view.querySelectorAll("[data-minus]").forEach(b=>{
-        makePressable(b, 10);
+        makePressable(b, true);
         b.addEventListener("click", ()=> removeOneUnit(tid, b.getAttribute("data-minus")));
       });
       view.querySelectorAll("[data-plus]").forEach(b=>{
-        makePressable(b, 10);
+        makePressable(b, true);
         b.addEventListener("click", ()=> addProductToTable(b.getAttribute("data-plus")));
       });
 
-      /* ΠΛΗΡΩΜΗ full-width */
       setBottomButtons([
         { text:"← Πίσω", kind:"", onClick: ()=> gotoHome() },
         { text:"+ Προϊόν", kind:"accent", onClick: ()=> gotoAdd(tid) },
@@ -741,11 +860,11 @@
       `;
 
       view.querySelectorAll("[data-cat]").forEach(b=>{
-        makePressable(b, 10);
+        makePressable(b, true);
         b.addEventListener("click", ()=>{ state.categoryId=b.getAttribute("data-cat"); render(); });
       });
       view.querySelectorAll("[data-add]").forEach(li=>{
-        makePressable(li, 10);
+        makePressable(li, true);
         li.addEventListener("click", ()=> addProductToTable(li.getAttribute("data-add")));
       });
 
@@ -755,31 +874,21 @@
       ], true);
     }
 
-    function renderPay(){
-      const tid = state.tableId;
-      const t = db.tables.find(x=>x.id===tid);
-      const total = tableTotal(tid);
+    async function markTreatOne(tid, prodId){
+      const it = findOneUnpaid(tid, prodId);
+      if(!it) return;
 
-      view.innerHTML = `
-        <div class="card">
-          <div class="h">Πληρωμή • ${t?.label || tid}</div>
-          <div class="muted">Υπόλοιπο: <b>${euro(total)}</b></div>
-          <div class="row" style="margin-top:10px;">
-            <button class="btn pressable good" style="flex:1;" id="payCash">Μετρητά</button>
-            <button class="btn pressable accent" style="flex:1;" id="payCard">Κάρτα</button>
-          </div>
-        </div>
-      `;
+      const ok = await confirmModal("Κερασμένο", `Να γίνει κερασμένο 1 τεμ. “${it.name}”;`, "Ναι", "Άκυρο");
+      if(!ok) return;
 
-      makePressable(el("payCash"), 14);
-      makePressable(el("payCard"), 14);
+      const u = getUser()?.name || "";
+      const ts = Date.now();
 
-      el("payCash").addEventListener("click", ()=> payAll(tid,"cash"));
-      el("payCard").addEventListener("click", ()=> payAll(tid,"card"));
+      it.paid = { method:"treat", ts, by:u };
+      db.days[TODAY].payments.push({ id:uid(), tableId:tid, prodId:it.prodId, name:it.name, price:it.price, method:"treat", ts, by:u });
 
-      setBottomButtons([
-        { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) }
-      ]);
+      saveDB();
+      render();
     }
 
     function payAll(tid, method){
@@ -795,20 +904,81 @@
       gotoHome();
     }
 
+    function renderPay(){
+      const tid = state.tableId;
+      const t = db.tables.find(x=>x.id===tid);
+      const total = tableTotal(tid);
+      const groups = groupUnpaid(tid);
+
+      view.innerHTML = `
+        <div class="card">
+          <div class="h">Πληρωμή • ${t?.label || tid}</div>
+          <div class="muted">Υπόλοιπο: <b>${euro(total)}</b></div>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn pressable good" style="flex:1;" id="payCash">Μετρητά</button>
+            <button class="btn pressable accent" style="flex:1;" id="payCard">Κάρτα</button>
+          </div>
+          <div class="muted2" style="margin-top:8px;">🎁 = Κερασμένο (αφαιρεί 1 τεμ. από το υπόλοιπο)</div>
+        </div>
+
+        <div class="card">
+          <div class="h">Ανοιχτά προϊόντα</div>
+          ${groups.length===0 ? `<div class="muted">Καθαρό ✅</div>` : `
+            <div class="list">
+              ${groups.map(g=>`
+                <div class="li">
+                  <div class="left">
+                    <div class="name">${g.name}</div>
+                    <div class="meta">${euro(g.price)} • ${g.qty} τεμ.</div>
+                  </div>
+                  <div class="qty">
+                    <button class="qbtn pressable" title="Κερασμένο 1 τεμ." data-treat="${g.prodId}">🎁</button>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          `}
+        </div>
+      `;
+
+      const cash = el("payCash");
+      const card = el("payCard");
+      makePressable(cash, true);
+      makePressable(card, true);
+
+      cash.addEventListener("click", ()=> payAll(tid,"cash"));
+      card.addEventListener("click", ()=> payAll(tid,"card"));
+
+      view.querySelectorAll("[data-treat]").forEach(b=>{
+        makePressable(b, true);
+        b.addEventListener("click", ()=> markTreatOne(tid, b.getAttribute("data-treat")));
+      });
+
+      setBottomButtons([
+        { text:"← Πίσω", kind:"", onClick: ()=> gotoTable(tid) }
+      ]);
+    }
+
     function renderSummary(){
       const pay = db.days[TODAY].payments || [];
-      const totals = { cash:0, card:0, all:0 };
+      const totals = { cash:0, card:0, treat:0, all:0 };
+
       for(const p of pay){
         totals.all += p.price;
         if(p.method==="cash") totals.cash += p.price;
         if(p.method==="card") totals.card += p.price;
+        if(p.method==="treat") totals.treat += p.price;
       }
 
       view.innerHTML = `
         <div class="card">
           <div class="h">Σύνοψη • ${TODAY}</div>
-          <div class="muted">Σύνολο: <b>${euro(totals.all)}</b></div>
-          <div class="muted">Μετρητά: <b>${euro(totals.cash)}</b> • Κάρτα: <b>${euro(totals.card)}</b></div>
+          <div>
+            <span class="pill">Σύνολο: <b>${euro(totals.all)}</b></span>
+            <span class="pill">Μετρητά: <b>${euro(totals.cash)}</b></span>
+            <span class="pill">Κάρτα: <b>${euro(totals.card)}</b></span>
+            <span class="pill">Κερασμένα: <b>${euro(totals.treat)}</b></span>
+          </div>
         </div>
 
         <div class="card">
@@ -818,7 +988,7 @@
               <div class="li">
                 <div class="left">
                   <div class="name">${p.name}</div>
-                  <div class="meta">${p.tableId} • ${new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})} • ${p.by}</div>
+                  <div class="meta">${p.tableId} • ${p.method.toUpperCase()} • ${new Date(p.ts).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})} • ${p.by}</div>
                 </div>
                 <div class="price">${euro(p.price)}</div>
               </div>
@@ -868,9 +1038,7 @@
       else if(state.screen==="summary") renderSummary();
     }
 
-    /* User PIN */
     el("userSelect").addEventListener("change", ()=>{
-      // απλό: δεν αλλάζω εδώ PIN flow για να μην το κάνω βαρύ τώρα
       db.currentUserId = el("userSelect").value;
       saveDB();
       setTop();
@@ -878,10 +1046,11 @@
 
     el("btnSettings").addEventListener("click", (ev)=>{
       addRipple(el("btnSettings"), ev.clientX, ev.clientY);
-      haptic(12);
-      alert("Για να φύγουν οι Chrome μπάρες: Install (Add to Home Screen) και άνοιγμα από το εικονίδιο.");
+      pressFlash(el("btnSettings"));
+      hapticStrong();
+      alert("Chrome μπάρες φεύγουν μόνο όταν το κάνεις Install (Add to Home Screen) και ανοίγει από το εικονίδιο.");
     });
-    makePressable(el("btnSettings"), 10);
+    makePressable(el("btnSettings"), true);
 
     async function registerSW(){
       if(!("serviceWorker" in navigator)) return;
