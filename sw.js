@@ -1,4 +1,4 @@
-const CACHE_VERSION = "dc-cache-v4";
+const CACHE_VERSION = "dc-cache-v5";
 const ASSETS = [
   "./",
   "./index.html",
@@ -40,7 +40,7 @@ self.addEventListener("fetch", (event) => {
           } catch {}
           return res;
         })
-        .catch(() => cached || new Response("Offline", { status: 503 }));
+        .catch(() => cached || new Response("Offline", { status: 503 }))
     })
   );
 });
