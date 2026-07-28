@@ -88,6 +88,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: pointer;
     }
     .ticket-item.is-treat {
       border-color: var(--purple);
@@ -350,9 +351,9 @@
         <div style="display:flex; gap:8px; align-items:center;">
           <span id="userBadge" style="font-size:12px; font-weight:700; color:var(--accent);"></span>
           <button onclick="openUnpaidListModal()" style="background:rgba(245,158,11,0.15); border:1px solid var(--warning); color:var(--warning); padding:8px 12px; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer;">📜 Βερεσέ (<span id="unpaidBadgeCount">0</span>)</button>
-          <button id="btnReports" onclick="openReportsModal()" style="background:var(--surface); border:1px solid var(--panel-border); color:#fff; padding:8px 12px; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer;">📊 Αναφορές</button>
-          <button id="btnExpenses" onclick="openExpensesModal()" style="background:var(--surface); border:1px solid var(--panel-border); color:#fff; padding:8px 12px; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer;">💸 Έξοδα</button>
-          <button id="btnSettings" onclick="openSettingsModal()" style="background:var(--surface); border:1px solid var(--panel-border); color:#fff; padding:8px 12px; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer;">⚙️</button>
+          <button id="btnReports" onclick="openReportsModal()" style="background:var(--surface); border:1px solid var(--panel-border); color:#fff; padding:8px 12px; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer; display:none;">📊 Αναφορές</button>
+          <button id="btnExpenses" onclick="openExpensesModal()" style="background:var(--surface); border:1px solid var(--panel-border); color:#fff; padding:8px 12px; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer; display:none;">💸 Έξοδα</button>
+          <button id="btnSettings" onclick="openSettingsModal()" style="background:var(--surface); border:1px solid var(--panel-border); color:#fff; padding:8px 12px; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer; display:none;">⚙️</button>
           <button onclick="logout()" style="background:rgba(239, 68, 68, 0.2); border:1px solid var(--danger); color:var(--danger); padding:8px 12px; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer;">🚪 Exit</button>
         </div>
       </header>
